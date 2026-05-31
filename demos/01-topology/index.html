@@ -3,336 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>01 双轴正交模型</title>
+    <title>01 双轴正交模型 — Schema-As-Code 联邦自治架构</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         :root {
             --cp-blue: #1565c0;
             --dp-orange: #ef6c00;
             --infra-purple: #6a1b9a;
+            --success: #4caf50;
+            --bg: #f5f7fa;
+            --card: #ffffff;
             --text: #1a1a2e;
             --text-secondary: #666;
-            --border: #e0e6ed;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
+            background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            padding: 24px;
         }
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
-            color: white;
-            padding: 24px 32px;
+            text-align: center;
+            margin-bottom: 24px;
         }
-        .header a.back {
+        .header h1 { font-size: 20px; color: var(--text); }
+        .header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+        .back {
             display: inline-block;
-            color: rgba(255,255,255,0.7);
+            margin-bottom: 16px;
+            color: var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
-            margin-bottom: 12px;
         }
-        .header h1 { font-size: 20px; margin-bottom: 8px; }
-        .header p { font-size: 13px; opacity: 0.8; max-width: 700px; }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 32px;
-        }
-        .mermaid-wrap {
-            background: white;
-            border: 1px solid var(--border);
+        .mermaid-container {
+            background: var(--card);
+            border: 1px solid #e0e6ed;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
-            overflow-x: auto;
+            display: flex;
+            justify-content: center;
         }
-        .legend {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        .legend-item {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 16px;
-            border-left: 4px solid;
-        }
-        .legend-item.cp { border-left-color: var(--cp-blue); }
-        .legend-item.dp { border-left-color: var(--dp-orange); }
-        .legend-item.infra { border-left-color: var(--infra-purple); }
-        .legend-item h4 { font-size: 14px; margin-bottom: 4px; }
-        .legend-item p { font-size: 12px; color: var(--text-secondary); }
+        .mermaid { width: 100%; max-width: 1000px; }
         
-        .detail-panel {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            display: none;
-            margin-bottom: 20px;
+        /* 覆盖 Mermaid 默认样式 */
+        .node rect, .node circle, .node ellipse, .node polygon, .node path {
+            stroke-width: 2px !important;
         }
-        .detail-panel.show { display: block; }
-        .detail-panel h3 { font-size: 16px; margin-bottom: 12px; color: var(--text); }
-        .detail-panel ul { padding-left: 20px; }
-        .detail-panel li { font-size: 13px; line-height: 1.8; color: var(--text); }
-        .detail-panel code {
+        
+        #detail-panel {
+            background: var(--card);
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            display: none;
+        }
+        #detail-panel.show { display: block; }
+        #detail-panel h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0e6ed;
+        }
+        #detail-panel p, #detail-panel li {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+        #detail-panel ul { padding-left: 20px; }
+        #detail-panel code {
             background: #f5f5f5;
             padding: 2px 6px;
             border-radius: 4px;
             font-size: 12px;
             color: var(--cp-blue);
         }
-        .detail-panel a { color: var(--cp-blue); }
-        
-        .controls {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .controls button {
-            padding: 10px 24px;
-            margin: 0 8px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn-play { background: #4caf50; color: white; }
-        .btn-play:hover { background: #388e3c; }
-        .btn-reset { background: var(--text-secondary); color: white; }
-        .btn-reset:hover { background: #444; }
-        
-        /* Mermaid 节点悬停效果 */
-        .node rect, .node circle, .node polygon, .node path {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        @media (max-width: 768px) {
-            .legend { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body>
+    <a class="back" href="../../">← 返回沙盘首页</a>
+    
     <div class="header">
-        <a class="back" href="../../">← 返回沙盘首页</a>
-        <h1>01 双轴正交模型 — Schema-As-Code 联邦自治架构</h1>
-        <p>纵向基础设施（业务价值流动）与横向语义治理网格（规则与观测流动）的正交穿透。点击任意节点查看详情。</p>
+        <h1>01 双轴正交模型（Orthogonal Governance Mesh）</h1>
+        <p>纵向：基础设施层（业务价值流动）| 横向：语义治理网格（规则与观测流动）| 点击节点查看详情</p>
     </div>
 
-    <div class="container">
-        <div class="mermaid-wrap">
-            <div class="mermaid" id="mermaid-graph">
+    <div class="mermaid-container">
+        <div class="mermaid">
 graph TB
-    subgraph CP["控制平面 Control Plane"]
-        CP_NODE[intent-schema-compiler<br/>语义层 / 治理层 / 执行层<br/>Git-Native | 版本化 | 引用闭环]:::cp
+    subgraph 控制平面["🔷 控制平面（Control Plane）"]
+        CP[intent-schema-compiler<br/>语义层 / 治理层 / 执行层<br/>YAML 意图协议本体]
     end
 
-    subgraph DP["数据平面 Data Plane"]
+    subgraph 数据平面["🔶 数据平面（Data Plane）— 五模块拓扑"]
         direction LR
-        R[Registry<br/>版本管理 + 影响面分析]:::dp
-        C[Compiler<br/>YAML 转 可执行产物]:::dp
-        V[Validator<br/>四层推演安检]:::dp
-        RT[Runtime<br/>HOC / 中间件 / Tool Guard]:::dp
-        B[Bridge<br/>漂移归因 + 反哺 PR]:::dp
+        R[Registry<br/>📋 版本管理<br/>影响面分析]
+        C[Compiler<br/>⚙️ 契约编译<br/>产物生成]
+        V[Validator<br/>🛡️ 四层推演<br/>语法/语义/安全/美感]
+        RT[Runtime<br/>🚀 运行时拦截<br/>HOC/中间件/Tool Guard]
+        B[Bridge<br/>👁️ 观测桥接器<br/>漂移归因 + 反哺 PR]
+        
         R --> C --> V --> RT --> B
+        B -.->|观测反哺| R
     end
 
-    subgraph INFRA["基础设施层 Infrastructure"]
+    subgraph 基础设施层["🟣 基础设施层（纵向生产链路）"]
         direction LR
-        L1[L1 Token<br/>Ant Design / Carbon]:::infra
-        L2[L2 组件<br/>React / Vue / Angular]:::infra
-        L3[L3 API<br/>OpenAPI / GraphQL]:::infra
-        L4[L4 容器<br/>K8s / Envoy / Docker]:::infra
-        L5[L5 DB / LLM<br/>MySQL / PostgreSQL / GPT]:::infra
+        L1[L1 Token<br/>Ant Design / Carbon]
+        L2[L2 组件<br/>React / Vue / Angular]
+        L3[L3 API<br/>OpenAPI / GraphQL]
+        L4[L4 容器<br/>K8s / Envoy / Docker]
+        L5[L5 DB / LLM<br/>MySQL / PostgreSQL / GPT]
+        
         L1 --> L2 --> L3 --> L4 --> L5
     end
 
-    CP_NODE -->|"声明式同步<br/>GitOps"| R
+    CP -->|声明式同步<br/>GitOps| R
+    
+    C -.->|规则下渗| L1
+    C -.->|规则下渗| L2
+    C -.->|规则下渗| L3
+    C -.->|规则下渗| L4
+    C -.->|规则下渗| L5
+    
+    L1 -.->|观测上采| B
+    L2 -.->|观测上采| B
+    L3 -.->|观测上采| B
+    L4 -.->|观测上采| B
+    L5 -.->|观测上采| B
 
-    C -.->|"规则下渗"| L1
-    C -.->|"规则下渗"| L2
-    C -.->|"规则下渗"| L3
-    C -.->|"规则下渗"| L4
-    C -.->|"规则下渗"| L5
+    click CP call showDetail('cp')
+    click R call showDetail('registry')
+    click C call showDetail('compiler')
+    click V call showDetail('validator')
+    click RT call showDetail('runtime')
+    click B call showDetail('bridge')
+    click L1 call showDetail('l1')
+    click L2 call showDetail('l2')
+    click L3 call showDetail('l3')
+    click L4 call showDetail('l4')
+    click L5 call showDetail('l5')
 
-    L5 -.->|"观测上采"| B
-    B -.->|"闭环反哺<br/>自动 PR"| CP_NODE
-
-    classDef cp fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#1565c0
-    classDef dp fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#ef6c00
-    classDef infra fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#6a1b9a
-    classDef group fill:#fafafa,stroke:#999,stroke-width:1px
-            </div>
-        </div>
-
-        <div class="legend">
-            <div class="legend-item cp">
-                <h4>🔷 控制平面</h4>
-                <p>全局唯一语义事实源。存储 YAML 意图协议，Git-Native、版本化、Diff 可见。</p>
-            </div>
-            <div class="legend-item dp">
-                <h4>🔶 数据平面</h4>
-                <p>Registry→Compiler→Validator→Runtime→Bridge 五模块执行拓扑，松耦合。</p>
-            </div>
-            <div class="legend-item infra">
-                <h4>🟣 基础设施层</h4>
-                <p>现有业务系统（Token→组件→API→容器→DB/LLM），被网格注入规则，不替代。</p>
-            </div>
-        </div>
-
-        <div class="detail-panel" id="detail-panel">
-            <h3 id="detail-title">点击上方节点查看详情</h3>
-            <div id="detail-content">
-                <p>点击 Mermaid 图表中的任意节点，查看该节点的详细职责、输入输出与状态。</p>
-            </div>
-        </div>
-
-        <div class="controls">
-            <button class="btn-play" onclick="playFlow()">▶ 播放数据流动画</button>
-            <button class="btn-reset" onclick="resetFlow()">↺ 重置</button>
+    style CP fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#0d47a1
+    style R fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style C fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style V fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style RT fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style B fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    style L1 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    style L2 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    style L3 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    style L4 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    style L5 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
         </div>
     </div>
 
+    <div id="detail-panel">
+        <h3 id="detail-title">详情</h3>
+        <div id="detail-content"></div>
+    </div>
+
     <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            securityLevel: 'loose',
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#fff3e0',
+                primaryTextColor: '#e65100',
+                primaryBorderColor: '#ef6c00',
+                lineColor: '#999',
+                secondaryColor: '#f3e5f5',
+                tertiaryColor: '#e3f2fd',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+            }
+        });
+
         const details = {
-            'CP_NODE': {
+            cp: {
                 title: '🔷 控制平面（Control Plane）— intent-schema-compiler',
                 content: `
+                    <p><strong>定位：</strong>全局唯一语义事实源，设计意图的"联邦宪法"。</p>
                     <ul>
-                        <li><strong>定位：</strong>全局唯一语义事实源，设计意图的"联邦宪法"</li>
-                        <li><strong>三层结构：</strong>
-                            <ul>
-                                <li>语义层：定义语义令牌（<<code>status.critical</code>）携带视觉映射 + LLM 约束 + 同义词防火墙</li>
-                                <li>治理层：定义不可变边界（<<code>violation_action: block</code>）、人机边界矩阵</li>
-                                <li>执行层：场景测试（Happy Path + Edge Case）、编译思维链</li>
-                            </ul>
-                        </li>
-                        <li><strong>关键属性：</strong>Git-Native、版本化、引用闭环、Diff 可见</li>
-                        <li><strong>物理载体：</strong><a href="https://github.com/2436041978-ops/intent-schema-compiler" target="_blank">github.com/2436041978-ops/intent-schema-compiler</a></li>
+                        <li><strong>语义层：</strong>语义令牌（<<code>status.critical</code>）携带视觉映射 + LLM 约束 + 同义词防火墙</li>
+                        <li><strong>治理层：</strong>意图契约定义不可变边界（<<code>violation_action: block</code>）、人机边界矩阵</li>
+                        <li><strong>执行层：</strong>场景测试（Happy Path + Edge Case）、编译思维链</li>
                     </ul>
+                    <p><strong>关键属性：</strong>Git-Native、版本化、引用闭环、Diff 可见。</p>
                 `
             },
-            'R': {
+            registry: {
                 title: '📋 Registry — 语义注册表',
                 content: `
+                    <p><strong>职责：</strong>管理语义 ID 全局唯一注册、版本化与兼容性分析、跨产品绑定配置。</p>
                     <ul>
-                        <li><strong>职责：</strong>语义 ID 全局唯一注册、版本化与兼容性分析</li>
-                        <li><strong>核心能力：</strong>SemVer 版本管理、影响面分析（Git Diff → 下游产品定位）</li>
-                        <li><strong>产出：</strong>版本化语义索引、影响面报告</li>
+                        <li>SemVer 版本管理：Breaking Change 自动冻结旧版本</li>
+                        <li>影响面分析：Git Diff → 自动定位下游需同步的产品与组件</li>
+                        <li>产品绑定：<code>bindings/product-a.yaml</code> 记录各域引用的意图契约</li>
                     </ul>
                 `
             },
-            'C': {
+            compiler: {
                 title: '⚙️ Compiler — 契约编译器',
                 content: `
+                    <p><strong>职责：</strong>将控制平面的 YAML 声明翻译为各层可消费的"规则产物"。</p>
                     <ul>
-                        <li><strong>职责：</strong>将 YAML 意图协议翻译为各层可执行产物</li>
-                        <li><strong>三阶段编译：</strong>Load → Parse → Derive → Generate → Verify → Analyze</li>
-                        <li><strong>五层产物：</strong>Token 层 CSS、组件层 TS/ESLint、API 层 OpenAPI、容器层 OPA、DB 层 DDL</li>
+                        <li>三阶段编译：意图加载 → 语义解析 → 约束推导 → 产物生成 → 场景验证 → 影响分析</li>
+                        <li>五层产物：Token / 组件 / API / 容器 / DB</li>
+                        <li>插件化：新增平台 = 新增一个插件文件</li>
                     </ul>
                 `
             },
-            'V': {
+            validator: {
                 title: '🛡️ Validator — 四层推演引擎',
                 content: `
+                    <p><strong>职责：</strong>在内容进入生产链路前的分层安检。</p>
                     <ul>
-                        <li><strong>职责：</strong>内容进入生产链路前的分层安检</li>
-                        <li><strong>四层推演（短路策略）：</strong>
-                            <ul>
-                                <li>T1 语法：JSON 结构完整性 → <strong>BLOCK</strong></li>
-                                <li>T2 语义：令牌精确匹配、同义词黑名单 → <strong>BLOCK</strong></li>
-                                <li>T3 安全：禁止模式命中、人机边界越权 → <strong>BLOCK</strong></li>
-                                <li>T4 美感：文案长度、可读性 → <strong>WARN</strong>（不阻断）</li>
-                            </ul>
-                        </li>
-                        <li><strong>核心原则：</strong>阻断优于修正，不触发 LLM 自动重试</li>
+                        <li><strong>T1 语法：</strong>JSON 结构完整性、字段类型、必填项 → BLOCK</li>
+                        <li><strong>T2 语义：</strong>令牌精确匹配、同义词黑名单命中 → BLOCK</li>
+                        <li><strong>T3 安全：</strong>禁止模式命中、人机边界越权 → BLOCK</li>
+                        <li><strong>T4 美感：</strong>文案长度、信息密度、可读性 → WARN（不阻断）</li>
                     </ul>
+                    <p><strong>核心原则：</strong>阻断优于修正。校验失败不触发 LLM 自动重试，直接拦截并升级人工。</p>
                 `
             },
-            'RT': {
+            runtime: {
                 title: '🚀 Runtime — 运行时拦截',
                 content: `
+                    <p><strong>职责：</strong>将编译后的规则产物部署到生产环境，实现"运行时语义拦截"。</p>
                     <ul>
-                        <li><strong>职责：</strong>将编译产物部署到生产环境，现场执行拦截</li>
-                        <li><strong>三种守卫：</strong>
-                            <ul>
-                                <li>React HOC：<code>withIntentGuard(Component, intentConfig)</code> — 组件渲染前校验 Props</li>
-                                <li>API 中间件：<code>apiGuardMiddleware()</code> — 请求体校验 <code>human_confirmed</code></li>
-                                <li>LLM Tool Guard：<code>toolGuard(tools, policyStore)</code> — Function Calling 前拦截</li>
-                            </ul>
-                        </li>
-                        <li><strong>Actor 身份解析：</strong>human / ai / human_via_ai — 不同身份触发不同拦截矩阵</li>
+                        <li><strong>React HOC：</strong><code>withIntentGuard(Component, intentConfig)</code> — 组件渲染前校验 Props</li>
+                        <li><strong>API 中间件：</strong><code>apiGuardMiddleware()</code> — 请求体校验 <code>human_confirmed</code></li>
+                        <li><strong>LLM Tool Guard：</strong><code>toolGuard(tools, policyStore)</code> — Function Calling 前拦截</li>
                     </ul>
                 `
             },
-            'B': {
+            bridge: {
                 title: '👁️ Bridge — 观测桥接器',
                 content: `
+                    <p><strong>职责：</strong>连接运行时观测与控制平面，实现"观测 → 归因 → 约束 → 验证"的闭环。</p>
                     <ul>
-                        <li><strong>职责：</strong>连接运行时观测与控制平面，闭环反哺</li>
-                        <li><strong>数据流：</strong>采集 → 归一化 → 归因 → 自动 PR 修正</li>
-                        <li><strong>治理指标：</strong>
-                            <ul>
-                                <li>语义一致性得分：跨产品界面合规率（目标 ≥ 90%）</li>
-                                <li>规则拦截率：四层推演拦截的漂移占比（目标 ≥ 95%）</li>
-                                <li>人工升级比例：需人工介入的事件占比（目标递减至 < 5%）</li>
-                            </ul>
-                        </li>
+                        <li>采集：从 LoongSuite SemConv / OpenTelemetry 消费 Trace 数据</li>
+                        <li>归一化：将原始 Trace 映射为意图协议 ID</li>
+                        <li>归因：定位漂移根因（哪条契约规则失效）</li>
+                        <li>反哺：自动创建 Registry PR 收紧规则</li>
                     </ul>
+                    <p><strong>治理指标：</strong>语义一致性得分、规则拦截率、人工升级比例。</p>
                 `
             },
-            'L1': {
+            l1: {
                 title: '🟣 L1 Token 层 — Ant Design / Carbon',
                 content: `
-                    <ul>
-                        <li><strong>系统：</strong>Ant Design / Carbon Design System</li>
-                        <li><strong>注入规则：</strong>CSS 变量 + 语义注释（<<code>/* intent: system-fault */</code>）</li>
-                        <li><strong>验证设计原则：</strong><strong>正交穿透</strong> — 不修改 Ant Design 源码，Compiler 在编译时注入语义注释</li>
-                    </ul>
+                    <p><strong>治理方式：</strong>网格化覆盖，不替代，只注入。</p>
+                    <p>Schema-As-Code 不替代 Ant Design 的 Design Token，只在 Token 之上增加语义契约层。</p>
+                    <p><strong>注入后：</strong><code>--status-critical: #D32F2F /* intent: system-fault */</code></p>
+                    <p><strong>验证原则：</strong>正交穿透 — Ant Design 的 CSS 文件无需修改，Compiler 在编译时注入语义注释。</p>
                 `
             },
-            'L2': {
+            l2: {
                 title: '🟣 L2 组件层 — React / Vue / Angular',
                 content: `
-                    <ul>
-                        <li><strong>系统：</strong>React / Vue / Angular 组件库</li>
-                        <li><strong>注入规则：</strong>Props 类型约束 + ESLint 规则（<<code>type AlertLevel = 'P0'|'P1'|'P2'|'P3'</code>）</li>
-                        <li><strong>验证设计原则：</strong><strong>声明式</strong> — 定义意图契约后，组件 Props 自动收敛到约束类型</li>
-                    </ul>
+                    <p><strong>治理方式：</strong>Props 类型约束 + ESLint 规则。</p>
+                    <p>Compiler 生成 TypeScript 类型定义和 ESLint 规则，开发时自动校验。</p>
+                    <p><strong>注入后：</strong><code>type AlertLevel = 'P0' | 'P1' | 'P2' | 'P3'</code></p>
+                    <p><strong>验证原则：</strong>声明式 — 设计师定义意图契约后，组件 Props 自动收敛到约束类型。</p>
                 `
             },
-            'L3': {
+            l3: {
                 title: '🟣 L3 API 层 — OpenAPI / GraphQL',
                 content: `
-                    <ul>
-                        <li><strong>系统：</strong>OpenAPI / GraphQL 接口契约</li>
-                        <li><strong>注入规则：</strong>OpenAPI 扩展字段（<<code>x-intent-binding: destructive-action</code>）</li>
-                        <li><strong>验证设计原则：</strong><strong>阻断优于修正</strong> — API 网关直接拒绝非法请求，不进入业务逻辑</li>
-                    </ul>
+                    <p><strong>治理方式：</strong>OpenAPI 扩展字段 + 请求体验证。</p>
+                    <p>API 契约中注入意图绑定标记，网关层自动校验高危操作。</p>
+                    <p><strong>注入后：</strong><code>x-intent-binding: destructive-action</code></p>
+                    <p><strong>验证原则：</strong>阻断优于修正 — API 网关直接拒绝非法请求，不进入业务逻辑。</p>
                 `
             },
-            'L4': {
+            l4: {
                 title: '🟣 L4 容器层 — K8s / Envoy / Docker',
                 content: `
-                    <ul>
-                        <li><strong>系统：</strong>K8s / Envoy / Docker 服务网格</li>
-                        <li><strong>注入规则：</strong>OPA Policy / WASM（<<code>allow { input.human_confirmed == true }</code>）</li>
-                        <li><strong>验证设计原则：</strong><strong>版本锁定</strong> — OPA Policy 携带 schema_version_hash，运行时校验与 Registry 版本一致</li>
-                    </ul>
+                    <p><strong>治理方式：</strong>OPA Policy / WASM Sidecar。</p>
+                    <p>在容器入口部署策略引擎，运行时拦截越权语义调用。</p>
+                    <p><strong>注入后：</strong>OPA Policy <code>allow { input.human_confirmed == true }</code></p>
+                    <p><strong>验证原则：</strong>版本锁定 — OPA Policy 携带 <code>schema_version_hash</code>，运行时校验与 Registry 版本一致。</p>
                 `
             },
-            'L5': {
+            l5: {
                 title: '🟣 L5 DB / LLM 层 — 数据持久化 / 模型调用',
                 content: `
-                    <ul>
-                        <li><strong>系统：</strong>MySQL / PostgreSQL / GPT</li>
-                        <li><strong>注入规则：</strong>DDL 注释 + CHECK 约束（<<code>COMMENT 'intent: status.critical'</code>）</li>
-                        <li><strong>LLM 层注入：</strong>Prompt system 前缀注入语义令牌白名单 — <code>"必须使用 status.critical，禁止'严重'替代"</code></li>
-                    </ul>
+                    <p><strong>治理方式：</strong>DDL 注释 + 字段约束 + LLM Prompt 注入。</p>
+                    <p>数据库层软约束标记语义来源，LLM 层硬约束注入 Prompt 前缀。</p>
+                    <p><strong>注入后：</strong><code>COMMENT 'intent: status.critical'</code></p>
+                    <p><strong>LLM 注入：</strong>Prompt system 前缀：<code>"你必须使用 status.critical 语义令牌，禁止使用'严重'替代"</code></p>
                 `
             }
         };
@@ -349,85 +314,6 @@ graph TB
                 panel.classList.add('show');
                 panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-        }
-
-        mermaid.initialize({
-            startOnLoad: true,
-            theme: 'base',
-            themeVariables: {
-                primaryColor: '#e3f2fd',
-                primaryTextColor: '#1565c0',
-                primaryBorderColor: '#1565c0',
-                lineColor: '#999',
-                secondaryColor: '#fff3e0',
-                tertiaryColor: '#f3e5f5'
-            }
-        });
-
-        // Mermaid 渲染完成后绑定点击事件
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                bindNodeClicks();
-            }, 500);
-        });
-
-        function bindNodeClicks() {
-            const nodeMap = {
-                'intent-schema-compiler': 'CP_NODE',
-                'Registry': 'R',
-                'Compiler': 'C',
-                'Validator': 'V',
-                'Runtime': 'RT',
-                'Bridge': 'B',
-                'Token': 'L1',
-                '组件': 'L2',
-                'API': 'L3',
-                '容器': 'L4',
-                'DB': 'L5'
-            };
-
-            document.querySelectorAll('.node').forEach(node => {
-                node.style.cursor = 'pointer';
-                node.addEventListener('click', () => {
-                    const text = node.textContent || '';
-                    for (const [keyword, key] of Object.entries(nodeMap)) {
-                        if (text.includes(keyword)) {
-                            showDetail(key);
-                            return;
-                        }
-                    }
-                });
-            });
-        }
-
-        function playFlow() {
-            const nodes = ['R', 'C', 'V', 'RT', 'B'];
-            const nodeTexts = ['Registry', 'Compiler', 'Validator', 'Runtime', 'Bridge'];
-            
-            nodeTexts.forEach((text, i) => {
-                setTimeout(() => {
-                    const els = document.querySelectorAll('.node');
-                    els.forEach(el => {
-                        if (el.textContent.includes(text)) {
-                            el.style.filter = 'brightness(1.3)';
-                            el.style.transform = 'scale(1.08)';
-                            el.style.transition = 'all 0.4s ease';
-                            setTimeout(() => {
-                                el.style.filter = '';
-                                el.style.transform = '';
-                            }, 700);
-                        }
-                    });
-                }, i * 500);
-            });
-        }
-
-        function resetFlow() {
-            document.querySelectorAll('.node').forEach(el => {
-                el.style.filter = '';
-                el.style.transform = '';
-            });
-            document.getElementById('detail-panel').classList.remove('show');
         }
     </script>
 </body>

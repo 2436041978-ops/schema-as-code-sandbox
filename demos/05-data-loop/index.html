@@ -3,579 +3,610 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>05 数据流动闭环 | Schema-As-Code 沙盘</title>
+    <title>05 数据流动闭环 — 流式数据图</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --cp-bg: #e3f2fd;
-            --dp-orange: #ef6c00;
-            --dp-bg: #fff3e0;
-            --infra-purple: #6a1b9a;
-            --infra-bg: #f3e5f5;
+            --cp: #1565c0;
+            --dp: #ef6c00;
+            --infra: #6a1b9a;
             --success: #4caf50;
             --error: #d32f2f;
-            --loop: #9c27b0;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --radius: 8px;
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --text: #e2e8f0;
+            --text-dim: #94a3b8;
+            --line-idle: #334155;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
             background: var(--bg);
             color: var(--text);
-            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
+
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
-            color: white;
-            padding: 24px 32px;
-        }
-        .header a.back {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 13px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-        .header a.back:hover { color: white; }
-        .header h1 { font-size: 20px; margin-bottom: 6px; }
-        .header p { font-size: 13px; opacity: 0.8; }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 32px;
+            padding: 20px 32px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* 沙盘画布 */
-        .canvas {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 40px;
-            position: relative;
-            min-height: 700px;
-            overflow: hidden;
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
         }
 
-        /* 控制平面 */
-        .cp-zone {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .cp-box {
-            display: inline-block;
-            background: var(--cp-bg);
-            border: 2px solid var(--cp-blue);
-            border-radius: var(--radius);
-            padding: 16px 40px;
-            position: relative;
-        }
-        .cp-box .title {
-            font-size: 15px;
-            font-weight: bold;
-            color: var(--cp-blue);
-        }
-        .cp-box .meta {
-            font-size: 11px;
-            color: var(--text-secondary);
+        .header .subtitle {
+            font-size: 12px;
+            color: var(--text-dim);
             margin-top: 4px;
         }
 
-        /* 数据流箭头 */
-        .flow-arrow {
-            text-align: center;
-            margin: 12px 0;
-            font-size: 12px;
-            color: var(--text-secondary);
-            position: relative;
-        }
-        .flow-arrow .line {
-            width: 2px;
-            height: 30px;
-            background: var(--dp-orange);
-            margin: 0 auto;
-            position: relative;
-        }
-        .flow-arrow .line::after {
-            content: '▼';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: var(--dp-orange);
-            font-size: 12px;
-        }
-        .flow-arrow.up .line {
-            background: var(--success);
-        }
-        .flow-arrow.up .line::after {
-            content: '▲';
-            color: var(--success);
-            bottom: auto;
-            top: -10px;
-        }
-        .flow-arrow.loop .line {
-            background: var(--loop);
-        }
-        .flow-arrow.loop .line::after {
-            content: '↻';
-            color: var(--loop);
-        }
-        .flow-label {
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        /* 数据平面 */
-        .dp-zone {
-            margin-bottom: 30px;
-        }
-        .dp-title {
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--dp-orange);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 16px;
-        }
-        .dp-row {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .dp-node {
-            background: var(--dp-bg);
-            border: 2px solid var(--dp-orange);
-            border-radius: var(--radius);
-            padding: 14px;
-            width: 140px;
-            text-align: center;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .dp-node.active {
-            background: #ffe0b2;
-            box-shadow: 0 0 16px rgba(239, 108, 0, 0.3);
-            transform: scale(1.05);
-        }
-        .dp-node .icon { font-size: 22px; margin-bottom: 4px; }
-        .dp-node .name { font-size: 12px; font-weight: bold; color: var(--dp-orange); }
-        .dp-node .desc { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
-
-        /* 规则下渗 */
-        .penetration-zone {
-            margin-bottom: 30px;
-        }
-        .pen-title {
-            text-align: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--dp-orange);
-            margin-bottom: 16px;
-        }
-        .infra-row {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .infra-node {
-            background: var(--infra-bg);
-            border: 2px solid var(--infra-purple);
-            border-radius: var(--radius);
-            padding: 12px;
-            width: 120px;
-            text-align: center;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .infra-node.active {
-            background: #e1bee7;
-            box-shadow: 0 0 16px rgba(106, 25, 154, 0.3);
-            transform: scale(1.08);
-        }
-        .infra-node .layer { font-size: 11px; font-weight: bold; color: var(--infra-purple); }
-        .infra-node .system { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
-
-        /* 闭环回指 */
-        .loop-back {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #f3e5f5;
-            border: 2px solid var(--loop);
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: 12px;
-            color: var(--loop);
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-        .loop-back.show { opacity: 1; }
-
-        /* 控制面板 */
-        .control-panel {
-            margin-top: 24px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
-        }
-        .control-panel h2 {
-            font-size: 16px;
-            margin-bottom: 12px;
-        }
-        .buttons {
+        .controls {
             display: flex;
             gap: 10px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
         }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: var(--radius);
+
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #475569;
+            background: var(--panel);
+            color: var(--text);
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.2s;
         }
-        .btn-play { background: var(--success); color: white; }
-        .btn-play:hover { background: #388e3c; }
-        .btn-reset { background: var(--text-secondary); color: white; }
-        .btn-reset:hover { background: #444; }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .log-panel {
-            background: #1a1a2e;
-            border-radius: var(--radius);
-            padding: 12px;
-            max-height: 220px;
-            overflow-y: auto;
+        .btn:hover {
+            background: #334155;
         }
-        .log-title {
-            color: #666;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 4px;
+
+        .btn.active {
+            background: var(--cp);
+            border-color: var(--cp);
         }
-        .log-content {
-            font-family: "SF Mono", Monaco, monospace;
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            padding: 12px 32px;
             font-size: 12px;
-            line-height: 1.8;
+            color: var(--text-dim);
+            border-bottom: 1px solid #334155;
         }
-        .log-line {
-            color: #a6e22e;
-            padding-left: 10px;
-            border-left: 2px solid transparent;
-            margin: 2px 0;
-        }
-        .log-line.ready { color: #66d9ef; }
-        .log-line.process { color: #fd971f; }
-        .log-line.success { color: #a6e22e; border-left-color: var(--success); }
-        .log-line.highlight { color: #e6db74; }
 
-        /* 粒子动画 */
-        .particle {
-            position: absolute;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--dp-orange);
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.8s ease-in-out;
         }
-        .particle.show { opacity: 1; }
 
-        footer {
-            text-align: center;
-            padding: 24px;
-            color: var(--text-secondary);
+        .dot.yaml { background: #60a5fa; }
+        .dot.artifact { background: #fb923c; }
+        .dot.event { background: #4ade80; }
+
+        /* 画布区域 */
+        .canvas {
+            position: relative;
+            width: 100%;
+            height: calc(100vh - 140px);
+            overflow: hidden;
+        }
+
+        /* SVG 连线层 */
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        path.pipe {
+            fill: none;
+            stroke: var(--line-idle);
+            stroke-width: 2;
+        }
+
+        /* 粒子 */
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            z-index: 5;
+            box-shadow: 0 0 6px currentColor;
+            opacity: 0;
+        }
+
+        .particle.yaml {
+            background: #60a5fa;
+            color: #60a5fa;
+        }
+
+        .particle.artifact {
+            background: #fb923c;
+            color: #fb923c;
+        }
+
+        .particle.event {
+            background: #4ade80;
+            color: #4ade80;
+        }
+
+        /* 节点 */
+        .node {
+            position: absolute;
+            width: 140px;
+            background: var(--panel);
+            border: 2px solid #475569;
+            border-radius: 10px;
+            padding: 14px;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .node:hover {
+            transform: scale(1.05);
+            border-color: var(--text-dim);
+        }
+
+        .node.active {
+            border-color: var(--cp);
+            box-shadow: 0 0 20px rgba(21, 101, 192, 0.3);
+        }
+
+        .node.processing {
+            animation: nodePulse 1s infinite;
+        }
+
+        @keyframes nodePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(21, 101, 192, 0.4); }
+            50% { box-shadow: 0 0 0 10px rgba(21, 101, 192, 0); }
+        }
+
+        .node .status-light {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #475569;
+            transition: background 0.3s;
+        }
+
+        .node .status-light.on {
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+        }
+
+        .node .status-light.processing {
+            background: #fbbf24;
+            animation: blink 0.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .node .icon {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        .node .title {
             font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .node .desc {
+            font-size: 10px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        /* 节点位置 */
+        .node-cp { top: 5%; left: 50%; transform: translateX(-50%); border-color: var(--cp); }
+        .node-registry { top: 20%; left: 20%; }
+        .node-compiler { top: 20%; left: 50%; transform: translateX(-50%); }
+        .node-validator { top: 20%; left: 80%; transform: translateX(-100%); }
+        .node-runtime { top: 50%; left: 50%; transform: translateX(-50%); }
+        .node-bridge { top: 80%; left: 50%; transform: translateX(-50%); }
+        .node-l1 { top: 50%; left: 10%; }
+        .node-l2 { top: 50%; left: 25%; }
+        .node-l3 { top: 50%; left: 75%; }
+        .node-l4 { top: 50%; left: 90%; transform: translateX(-100%); }
+        .node-l5 { top: 65%; left: 50%; transform: translateX(-50%); }
+
+        /* 标签 */
+        .flow-label {
+            position: absolute;
+            font-size: 11px;
+            color: var(--text-dim);
+            background: var(--bg);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid #334155;
+            z-index: 8;
+            white-space: nowrap;
+        }
+
+        /* 信息面板 */
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            width: 320px;
+            background: var(--panel);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 16px;
+            z-index: 20;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .info-panel h4 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .info-panel .log-line {
+            padding: 4px 0;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+            margin: 2px 0;
+        }
+
+        .info-panel .log-line.yaml { border-left-color: #60a5fa; color: #60a5fa; }
+        .info-panel .log-line.artifact { border-left-color: #fb923c; color: #fb923c; }
+        .info-panel .log-line.event { border-left-color: #4ade80; color: #4ade80; }
+
+        /* 循环指示 */
+        .loop-badge {
+            position: absolute;
+            top: 5%;
+            right: 5%;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .loop-badge.show {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <a class="back" href="../../">← 返回沙盘首页</a>
-        <h1>♻️ 05 数据流动闭环</h1>
-        <p>控制平面 → 数据平面 → 基础设施 → 观测反哺 → 自动修宪的完整闭环动画</p>
-    </div>
-
-    <div class="container">
-        <div class="canvas" id="canvas">
-
-            <!-- 闭环回指 -->
-            <div class="loop-back" id="loop-back">↻ 闭环：Bridge → 自动 PR → 控制平面</div>
-
-            <!-- 控制平面 -->
-            <div class="cp-zone">
-                <div class="cp-box" id="cp-box">
-                    <div class="title">🔷 intent-schema-compiler</div>
-                    <div class="meta">控制平面 YAML 意图协议 v1.1.0</div>
-                </div>
-            </div>
-
-            <!-- 箭头：声明式同步 -->
-            <div class="flow-arrow">
-                <div class="flow-label" style="color: var(--dp-orange);">声明式同步（GitOps）</div>
-                <div class="line"></div>
-            </div>
-
-            <!-- 数据平面 -->
-            <div class="dp-zone">
-                <div class="dp-title">🔶 数据平面（Data Plane）</div>
-                <div class="dp-row">
-                    <div class="dp-node" id="dp-registry">
-                        <div class="icon">📋</div>
-                        <div class="name">Registry</div>
-                        <div class="desc">版本管理 + 影响面</div>
-                    </div>
-                    <div class="dp-node" id="dp-compiler">
-                        <div class="icon">⚙️</div>
-                        <div class="name">Compiler</div>
-                        <div class="desc">YAML → 产物</div>
-                    </div>
-                    <div class="dp-node" id="dp-validator">
-                        <div class="icon">🛡️</div>
-                        <div class="name">Validator</div>
-                        <div class="desc">四层推演</div>
-                    </div>
-                    <div class="dp-node" id="dp-runtime">
-                        <div class="icon">🚀</div>
-                        <div class="name">Runtime</div>
-                        <div class="desc">运行时拦截</div>
-                    </div>
-                    <div class="dp-node" id="dp-bridge">
-                        <div class="icon">👁️</div>
-                        <div class="name">Bridge</div>
-                        <div class="desc">观测 + 反哺</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 箭头：规则下渗 -->
-            <div class="flow-arrow">
-                <div class="flow-label" style="color: var(--dp-orange);">规则下渗（编译产物分发）</div>
-                <div class="line"></div>
-            </div>
-
-            <!-- 基础设施层 -->
-            <div class="penetration-zone">
-                <div class="infra-row">
-                    <div class="infra-node" id="infra-l1">
-                        <div class="layer">L1 Token</div>
-                        <div class="system">Ant Design</div>
-                    </div>
-                    <div class="infra-node" id="infra-l2">
-                        <div class="layer">L2 组件</div>
-                        <div class="system">React</div>
-                    </div>
-                    <div class="infra-node" id="infra-l3">
-                        <div class="layer">L3 API</div>
-                        <div class="system">OpenAPI</div>
-                    </div>
-                    <div class="infra-node" id="infra-l4">
-                        <div class="layer">L4 容器</div>
-                        <div class="system">K8s</div>
-                    </div>
-                    <div class="infra-node" id="infra-l5">
-                        <div class="layer">L5 DB</div>
-                        <div class="system">MySQL</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 箭头：观测上采 -->
-            <div class="flow-arrow up">
-                <div class="line"></div>
-                <div class="flow-label" style="color: var(--success);">观测上采（漂移事件反哺）</div>
-            </div>
-
-            <!-- 箭头：闭环 -->
-            <div class="flow-arrow loop">
-                <div class="line"></div>
-                <div class="flow-label" style="color: var(--loop);">闭环反哺（自动 PR 修宪）</div>
-            </div>
-
+        <div>
+            <h1>05 数据流动闭环 — 流式数据图</h1>
+            <div class="subtitle">三种介质流动：意图协议（蓝）→ 规则产物（橙）→ 观测事件（绿）</div>
         </div>
-
-        <div class="control-panel">
-            <h2>▶️ 演示控制</h2>
-            <div class="buttons">
-                <button class="btn-play" onclick="demo.start()" id="btn-start">启动完整闭环</button>
-                <button class="btn-reset" onclick="demo.reset()" id="btn-reset">重置</button>
-            </div>
-            <div class="log-panel">
-                <div class="log-title">执行日志</div>
-                <div class="log-content" id="log-content">
-                    <div class="log-line ready">就绪。点击"启动完整闭环"观看数据流动。</div>
-                </div>
-            </div>
+        <div class="controls">
+            <button class="btn active" onclick="flow.start()" id="btn-play">▶ 播放</button>
+            <button class="btn" onclick="flow.pause()" id="btn-pause">⏸ 暂停</button>
+            <button class="btn" onclick="flow.step()" id="btn-step">⏭ 单步</button>
+            <button class="btn" onclick="flow.reset()" id="btn-reset">↺ 重置</button>
         </div>
     </div>
 
-    <footer>
-        Schema-As-Code 联邦自治架构 · 数据流动闭环演示
-    </footer>
+    <div class="legend">
+        <div class="legend-item"><div class="dot yaml"></div> 意图协议（YAML 声明）</div>
+        <div class="legend-item"><div class="dot artifact"></div> 规则产物（编译输出）</div>
+        <div class="legend-item"><div class="dot event"></div> 观测事件（拦截/漂移日志）</div>
+    </div>
+
+    <div class="canvas" id="canvas">
+        <svg id="svg">
+            <!-- 连线由 JS 动态生成 -->
+        </svg>
+
+        <!-- 节点 -->
+        <div class="node node-cp" id="n-cp">
+            <div class="status-light" id="s-cp"></div>
+            <div class="icon">🔷</div>
+            <div class="title">控制平面</div>
+            <div class="desc">intent-schema-compiler<br>YAML 意图协议</div>
+        </div>
+
+        <div class="node node-registry" id="n-registry">
+            <div class="status-light" id="s-registry"></div>
+            <div class="icon">📋</div>
+            <div class="title">Registry</div>
+            <div class="desc">语义注册表<br>版本管理</div>
+        </div>
+
+        <div class="node node-compiler" id="n-compiler">
+            <div class="status-light" id="s-compiler"></div>
+            <div class="icon">⚙️</div>
+            <div class="title">Compiler</div>
+            <div class="desc">契约编译器<br>YAML → 产物</div>
+        </div>
+
+        <div class="node node-validator" id="n-validator">
+            <div class="status-light" id="s-validator"></div>
+            <div class="icon">🛡️</div>
+            <div class="title">Validator</div>
+            <div class="desc">四层推演<br>语法/语义/安全</div>
+        </div>
+
+        <div class="node node-runtime" id="n-runtime">
+            <div class="status-light" id="s-runtime"></div>
+            <div class="icon">🚀</div>
+            <div class="title">Runtime</div>
+            <div class="desc">运行时拦截<br>HOC / 中间件</div>
+        </div>
+
+        <div class="node node-bridge" id="n-bridge">
+            <div class="status-light" id="s-bridge"></div>
+            <div class="icon">👁️</div>
+            <div class="title">Bridge</div>
+            <div class="desc">观测桥接器<br>反哺 PR</div>
+        </div>
+
+        <!-- 基础设施层 -->
+        <div class="node node-l1" id="n-l1">
+            <div class="status-light" id="s-l1"></div>
+            <div class="icon">🎨</div>
+            <div class="title">L1 Token</div>
+            <div class="desc">Ant Design<br>CSS 变量</div>
+        </div>
+
+        <div class="node node-l2" id="n-l2">
+            <div class="status-light" id="s-l2"></div>
+            <div class="icon">⚛️</div>
+            <div class="title">L2 组件</div>
+            <div class="desc">React / Vue<br>Props 约束</div>
+        </div>
+
+        <div class="node node-l3" id="n-l3">
+            <div class="status-light" id="s-l3"></div>
+            <div class="icon">🔌</div>
+            <div class="title">L3 API</div>
+            <div class="desc">OpenAPI<br>扩展字段</div>
+        </div>
+
+        <div class="node node-l4" id="n-l4">
+            <div class="status-light" id="s-l4"></div>
+            <div class="icon">🐳</div>
+            <div class="title">L4 容器</div>
+            <div class="desc">K8s / Envoy<br>OPA Policy</div>
+        </div>
+
+        <div class="node node-l5" id="n-l5">
+            <div class="status-light" id="s-l5"></div>
+            <div class="icon">🗄️</div>
+            <div class="title">L5 DB / LLM</div>
+            <div class="desc">DDL 注释<br>Prompt 注入</div>
+        </div>
+
+        <!-- 流动标签 -->
+        <div class="flow-label" style="top: 12%; left: 35%;">声明式同步（GitOps）</div>
+        <div class="flow-label" style="top: 35%; left: 50%; transform: translateX(-50%);">规则下渗</div>
+        <div class="flow-label" style="top: 72%; left: 50%; transform: translateX(-50%);">观测上采</div>
+
+        <!-- 闭环完成标志 -->
+        <div class="loop-badge" id="loop-badge">♻️ 闭环完成：Bridge → 自动 PR → 控制平面</div>
+
+        <!-- 信息面板 -->
+        <div class="info-panel" id="info-panel">
+            <h4>执行日志</h4>
+            <div id="logs">
+                <div class="log-line" style="color: var(--text-dim);">就绪。点击播放开始演示。</div>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const demo = {
+        const flow = {
             steps: [
-                {
-                    id: 'cp',
-                    name: '控制平面',
-                    action: () => {
-                        document.getElementById('cp-box').style.boxShadow = '0 0 20px rgba(21, 101, 192, 0.4)';
-                        return '控制平面：intent-schema-compiler 发布 v1.1.0，语义令牌 "status.critical" 新增同义词防火墙';
-                    },
-                    cleanup: () => {
-                        document.getElementById('cp-box').style.boxShadow = 'none';
-                    }
-                },
-                {
-                    id: 'registry',
-                    name: 'Registry',
-                    action: () => {
-                        document.getElementById('dp-registry').classList.add('active');
-                        return 'Registry：检测到 v1.1.0 Breaking Change，影响面分析 → 3 个产品、12 个组件需同步';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'compiler',
-                    name: 'Compiler',
-                    action: () => {
-                        document.getElementById('dp-compiler').classList.add('active');
-                        return 'Compiler：编译为五层产物 — TS 类型 / ESLint 规则 / OpenAPI 扩展 / OPA Policy / DDL 注释';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'validator',
-                    name: 'Validator',
-                    action: () => {
-                        document.getElementById('dp-validator').classList.add('active');
-                        return 'Validator：四层推演 — 语法 ✓ 语义 ✓ 安全 ✓ 美感 ✓（全部通过，无阻断）';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'runtime',
-                    name: 'Runtime',
-                    action: () => {
-                        document.getElementById('dp-runtime').classList.add('active');
-                        return 'Runtime：部署守卫 — React HOC(12) / API 中间件(3) / LLM Tool Guard(2)';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'infra',
-                    name: '规则下渗',
-                    action: () => {
-                        const layers = ['infra-l1', 'infra-l2', 'infra-l3', 'infra-l4', 'infra-l5'];
-                        layers.forEach((id, i) => {
-                            setTimeout(() => document.getElementById(id).classList.add('active'), i * 200);
-                        });
-                        return '规则下渗：产物分发到 L1-L5 — Token 语义注释 / 组件 Props 约束 / API 扩展字段 / OPA Policy / DDL 注释';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'bridge',
-                    name: 'Bridge',
-                    action: () => {
-                        document.getElementById('dp-bridge').classList.add('active');
-                        return 'Bridge：观测到 LLM 输出 "严重" 替代 "critical"，漂移事件采集';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'feedback',
-                    name: '观测上采',
-                    action: () => {
-                        const layers = ['infra-l5', 'infra-l4', 'infra-l3', 'infra-l2', 'infra-l1'];
-                        layers.forEach((id, i) => {
-                            setTimeout(() => document.getElementById(id).classList.remove('active'), i * 150);
-                        });
-                        return '观测上采：从 DB / 容器 / API / 组件 / Token 采集语义一致性指标';
-                    },
-                    cleanup: () => {}
-                },
-                {
-                    id: 'loop',
-                    name: '闭环反哺',
-                    action: () => {
-                        document.getElementById('loop-back').classList.add('show');
-                        document.querySelectorAll('.dp-node').forEach(n => n.classList.remove('active'));
-                        return '闭环完成：Bridge 归因 → 自动 PR 收紧 synonym-mapping.yaml → 合并到控制平面 → 下一周期';
-                    },
-                    cleanup: () => {
-                        setTimeout(() => {
-                            document.getElementById('loop-back').classList.remove('show');
-                        }, 3000);
-                    }
-                }
+                { from: 'n-cp', to: 'n-registry', type: 'yaml', msg: 'GitOps 推送：semantic-tokens.yaml 变更', duration: 1500 },
+                { from: 'n-registry', to: 'n-compiler', type: 'yaml', msg: 'Registry 触发：影响面分析完成，开始编译', duration: 1200 },
+                { from: 'n-compiler', to: 'n-validator', type: 'artifact', msg: 'Compiler 输出：TS 类型 + ESLint 规则 + OpenAPI 扩展', duration: 1200 },
+                { from: 'n-validator', to: 'n-runtime', type: 'artifact', msg: 'Validator 通过：四层推演无阻断，产物签名', duration: 1000 },
+                { from: 'n-runtime', to: 'n-l1', type: 'artifact', msg: 'Runtime 部署：Token 层注入 CSS 语义注释', duration: 800 },
+                { from: 'n-runtime', to: 'n-l2', type: 'artifact', msg: 'Runtime 部署：组件层注入 Props 类型约束', duration: 800 },
+                { from: 'n-runtime', to: 'n-l3', type: 'artifact', msg: 'Runtime 部署：API 层注入 x-intent-binding', duration: 800 },
+                { from: 'n-runtime', to: 'n-l4', type: 'artifact', msg: 'Runtime 部署：容器层注入 OPA Policy', duration: 800 },
+                { from: 'n-runtime', to: 'n-l5', type: 'artifact', msg: 'Runtime 部署：DB 层注入 DDL 注释 / LLM Prompt 前缀', duration: 800 },
+                { from: 'n-l5', to: 'n-bridge', type: 'event', msg: 'Bridge 采集：LLM 输出"严重"替代 status.critical（漂移事件）', duration: 1500 },
+                { from: 'n-l2', to: 'n-bridge', type: 'event', msg: 'Bridge 采集：组件层拦截日志（同义词黑名单命中）', duration: 1000 },
+                { from: 'n-bridge', to: 'n-cp', type: 'event', msg: '闭环反哺：自动创建 PR — 收紧 synonym-mapping.yaml', duration: 2000 }
             ],
-
-            isRunning: false,
-
-            log(msg, type = 'info') {
-                const panel = document.getElementById('log-content');
-                const line = document.createElement('div');
-                line.className = `log-line ${type}`;
-                line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-                panel.appendChild(line);
-                panel.scrollTop = panel.scrollHeight;
-            },
-
-            reset() {
-                this.isRunning = false;
-                document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
-                document.getElementById('loop-back').classList.remove('show');
-                document.getElementById('cp-box').style.boxShadow = 'none';
-                document.getElementById('log-content').innerHTML = '<div class="log-line ready">就绪。点击"启动完整闭环"观看数据流动。</div>';
-                document.getElementById('btn-start').disabled = false;
-            },
-
-            async start() {
-                if (this.isRunning) return;
-                this.isRunning = true;
+            
+            current: 0,
+            running: false,
+            particles: [],
+            
+            init() {
+                this.drawPipes();
                 this.reset();
-                this.log('🚀 启动数据流动闭环...', 'ready');
-                document.getElementById('btn-start').disabled = true;
-
-                for (let i = 0; i < this.steps.length; i++) {
-                    const step = this.steps[i];
-                    this.log(`▶️ [${step.name}] ${step.action()}`, 'process');
-                    await this.sleep(1400);
-                    this.log(`✅ [${step.name}] 完成`, 'success');
-                    if (step.cleanup) step.cleanup();
-                    if (i < this.steps.length - 1) await this.sleep(400);
-                }
-
-                this.log('🎉 闭环演示结束。控制平面 → 数据平面 → 基础设施 → 观测 → 反哺 → 控制平面。', 'highlight');
-                this.isRunning = false;
-                document.getElementById('btn-start').disabled = false;
             },
-
+            
+            drawPipes() {
+                const svg = document.getElementById('svg');
+                const canvas = document.getElementById('canvas');
+                const nodes = {};
+                
+                ['cp', 'registry', 'compiler', 'validator', 'runtime', 'bridge', 'l1', 'l2', 'l3', 'l4', 'l5'].forEach(id => {
+                    const el = document.getElementById('n-' + id);
+                    const rect = el.getBoundingClientRect();
+                    const cRect = canvas.getBoundingClientRect();
+                    nodes[id] = {
+                        x: rect.left + rect.width / 2 - cRect.left,
+                        y: rect.top + rect.height / 2 - cRect.top
+                    };
+                });
+                
+                // 定义所有路径
+                const paths = [
+                    ['cp', 'registry'], ['registry', 'compiler'], ['compiler', 'validator'],
+                    ['validator', 'runtime'], ['runtime', 'l1'], ['runtime', 'l2'],
+                    ['runtime', 'l3'], ['runtime', 'l4'], ['runtime', 'l5'],
+                    ['l5', 'bridge'], ['l2', 'bridge'], ['bridge', 'cp']
+                ];
+                
+                svg.innerHTML = paths.map(([a, b]) => {
+                    const n1 = nodes[a];
+                    const n2 = nodes[b];
+                    const midY = (n1.y + n2.y) / 2;
+                    const d = `M ${n1.x} ${n1.y} C ${n1.x} ${midY}, ${n2.x} ${midY}, ${n2.x} ${n2.y}`;
+                    return `<path class="pipe" d="${d}" id="pipe-${a}-${b}" />`;
+                }).join('');
+                
+                this.nodes = nodes;
+            },
+            
+            async start() {
+                if (this.running) return;
+                this.running = true;
+                document.getElementById('btn-play').classList.add('active');
+                document.getElementById('btn-pause').classList.remove('active');
+                
+                while (this.current < this.steps.length && this.running) {
+                    await this.executeStep(this.steps[this.current]);
+                    this.current++;
+                }
+                
+                if (this.current >= this.steps.length) {
+                    document.getElementById('loop-badge').classList.add('show');
+                    this.log('♻️ 闭环完成：Bridge → 自动 PR → 控制平面', 'event');
+                    setTimeout(() => this.reset(), 3000);
+                }
+            },
+            
+            pause() {
+                this.running = false;
+                document.getElementById('btn-play').classList.remove('active');
+                document.getElementById('btn-pause').classList.add('active');
+            },
+            
+            async step() {
+                if (this.current >= this.steps.length) {
+                    this.reset();
+                    return;
+                }
+                await this.executeStep(this.steps[this.current]);
+                this.current++;
+                if (this.current >= this.steps.length) {
+                    document.getElementById('loop-badge').classList.add('show');
+                }
+            },
+            
+            async executeStep(step) {
+                const fromEl = document.getElementById('n-' + step.from.replace('n-', ''));
+                const toEl = document.getElementById('n-' + step.to.replace('n-', ''));
+                const fromLight = document.getElementById('s-' + step.from.replace('n-', ''));
+                const toLight = document.getElementById('s-' + step.to.replace('n-', ''));
+                
+                // 源节点处理中
+                fromEl.classList.add('processing');
+                fromLight.classList.add('processing');
+                this.log(step.msg, step.type);
+                
+                // 创建粒子
+                const particle = document.createElement('div');
+                particle.className = `particle ${step.type}`;
+                document.getElementById('canvas').appendChild(particle);
+                
+                // 动画路径
+                const pipeId = `pipe-${step.from.replace('n-', '')}-${step.to.replace('n-', '')}`;
+                const pipe = document.getElementById(pipeId);
+                if (pipe) {
+                    const length = pipe.getTotalLength();
+                    const startTime = performance.now();
+                    
+                    await new Promise(resolve => {
+                        const animate = (now) => {
+                            const elapsed = now - startTime;
+                            const progress = Math.min(elapsed / step.duration, 1);
+                            const point = pipe.getPointAtLength(progress * length);
+                            
+                            particle.style.left = (point.x - 5) + 'px';
+                            particle.style.top = (point.y - 5) + 'px';
+                            particle.style.opacity = 1;
+                            
+                            if (progress < 1) {
+                                requestAnimationFrame(animate);
+                            } else {
+                                particle.style.opacity = 0;
+                                setTimeout(() => particle.remove(), 200);
+                                resolve();
+                            }
+                        };
+                        requestAnimationFrame(animate);
+                    });
+                }
+                
+                // 目标节点完成
+                fromEl.classList.remove('processing');
+                fromLight.classList.remove('processing');
+                toEl.classList.add('active');
+                toLight.classList.add('on');
+                
+                await this.sleep(300);
+            },
+            
+            reset() {
+                this.running = false;
+                this.current = 0;
+                document.querySelectorAll('.particle').forEach(p => p.remove());
+                document.querySelectorAll('.node').forEach(n => n.classList.remove('active', 'processing'));
+                document.querySelectorAll('.status-light').forEach(s => s.classList.remove('on', 'processing'));
+                document.getElementById('loop-badge').classList.remove('show');
+                document.getElementById('logs').innerHTML = '<div class="log-line" style="color: var(--text-dim);">就绪。点击播放开始演示。</div>';
+                document.getElementById('btn-play').classList.remove('active');
+                document.getElementById('btn-pause').classList.remove('active');
+            },
+            
+            log(msg, type) {
+                const logs = document.getElementById('logs');
+                const line = document.createElement('div');
+                line.className = `log-line ${type || ''}`;
+                line.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
+                logs.appendChild(line);
+                logs.scrollTop = logs.scrollHeight;
+            },
+            
             sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
+                return new Promise(r => setTimeout(r, ms));
             }
         };
+
+        window.addEventListener('load', () => flow.init());
+        window.addEventListener('resize', () => {
+            flow.drawPipes();
+            flow.reset();
+        });
     </script>
 </body>
 </html>

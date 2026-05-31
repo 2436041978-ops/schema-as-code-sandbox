@@ -6,776 +6,1107 @@
     <title>01 双轴正交模型 — Schema-As-Code 联邦自治架构</title>
     <style>
         :root {
-            --cp: #1565c0;
-            --cp-bg: rgba(21, 101, 192, 0.08);
-            --dp: #ef6c00;
-            --dp-bg: rgba(239, 108, 0, 0.08);
-            --infra: #6a1b9a;
-            --infra-bg: rgba(106, 25, 154, 0.08);
-            --success: #4caf50;
-            --error: #d32f2f;
-            --bg: #0f0f1a;
-            --panel: #1a1a2e;
-            --border: #2a2a40;
-            --text: #e0e0e0;
-            --text-dim: #888;
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --border: #e8e8e8;
+            --text: #1a1a1a;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --cp: #2563eb;
+            --cp-light: #eff6ff;
+            --dp: #ea580c;
+            --dp-light: #fff7ed;
+            --infra: #7c3aed;
+            --infra-light: #f5f3ff;
+            --success: #16a34a;
+            --success-light: #f0fdf4;
+            --radius: 12px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 4px 6px rgba(0,0,0,0.02), 0 12px 24px rgba(0,0,0,0.08);
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background: var(--bg);
             color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            line-height: 1.6;
+            min-height: 100vh;
         }
 
-        /* 顶部 */
+        /* Header */
         .header {
-            padding: 12px 24px;
-            background: var(--panel);
+            background: var(--surface);
             border-bottom: 1px solid var(--border);
+            padding: 24px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+        }
+
+        .header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            flex-shrink: 0;
+            align-items: center;
         }
-        .header h1 { font-size: 16px; font-weight: 600; }
-        .header .subtitle { font-size: 12px; color: var(--text-dim); margin-left: 12px; }
-        .header .back {
-            color: var(--text-dim);
-            text-decoration: none;
+
+        .breadcrumb {
             font-size: 12px;
-            padding: 6px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-        .header .back:hover { color: var(--text); border-color: var(--cp); }
-
-        /* 主体 */
-        .main {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* 左侧联邦面板 */
-        .federal-panel {
-            width: 220px;
-            background: var(--panel);
-            border-right: 1px solid var(--border);
-            padding: 20px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-        .federal-panel h3 {
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: var(--text-dim);
+            color: var(--text-tertiary);
             margin-bottom: 4px;
         }
-        .role-card {
-            background: var(--bg);
-            border: 1px solid var(--border);
+
+        .breadcrumb a {
+            color: var(--text-tertiary);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--cp);
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
             border-radius: 8px;
-            padding: 14px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: var(--bg);
+            border-color: var(--text-tertiary);
+        }
+
+        .btn-primary {
+            background: var(--text);
+            color: white;
+            border-color: var(--text);
+        }
+
+        .btn-primary:hover {
+            background: #333;
+        }
+
+        /* Main Canvas */
+        .canvas {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 32px;
+            position: relative;
+        }
+
+        /* Axis Labels */
+        .axis-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 16px;
+        }
+
+        /* Control Plane */
+        .cp-zone {
+            margin-bottom: 48px;
+        }
+
+        .cp-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 32px;
+            box-shadow: var(--shadow);
             cursor: pointer;
             transition: all 0.3s;
+            max-width: 480px;
             position: relative;
             overflow: hidden;
         }
-        .role-card::before {
+
+        .cp-card::before {
             content: '';
             position: absolute;
             left: 0;
             top: 0;
             bottom: 0;
-            width: 3px;
-            transition: width 0.3s;
-        }
-        .role-card.committee::before { background: var(--cp); }
-        .role-card.steward::before { background: var(--dp); }
-        .role-card.engineer::before { background: var(--infra); }
-        .role-card:hover { transform: translateX(4px); }
-        .role-card:hover::before { width: 5px; }
-        .role-card .badge {
-            font-size: 10px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-        .role-card.committee .badge { color: var(--cp); }
-        .role-card.steward .badge { color: var(--dp); }
-        .role-card.engineer .badge { color: var(--infra); }
-        .role-card .title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-        .role-card .desc { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
-
-        /* 中央沙盘 */
-        .sandbox {
-            flex: 1;
-            position: relative;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
+            width: 4px;
+            background: var(--cp);
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        /* 层容器 */
-        .layer {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-        }
-        .layer-label {
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background: var(--bg);
-            padding: 2px 12px;
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-radius: 4px;
-        }
-        .layer-cp .layer-label { color: var(--cp); border: 1px solid var(--cp); }
-        .layer-dp .layer-label { color: var(--dp); border: 1px solid var(--dp); }
-        .layer-infra .layer-label { color: var(--infra); border: 1px solid var(--infra); }
-
-        /* 控制平面 */
-        .cp-box {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            padding: 16px;
-            background: var(--cp-bg);
-            border: 2px solid var(--cp);
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .cp-box:hover, .cp-box.active {
-            box-shadow: 0 0 30px rgba(21, 101, 192, 0.3);
-            transform: scale(1.02);
-        }
-        .cp-box .icon { font-size: 28px; }
-        .cp-box .info { text-align: left; }
-        .cp-box .name { font-size: 15px; font-weight: bold; color: var(--cp); }
-        .cp-box .meta { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-
-        /* 数据平面节点 */
-        .dp-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .dp-node {
-            background: var(--dp-bg);
-            border: 2px solid var(--dp);
-            border-radius: 10px;
-            padding: 14px;
-            width: 140px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .dp-node:hover { transform: translateY(-2px); }
-        .dp-node.active {
-            background: rgba(239, 108, 0, 0.2);
-            box-shadow: 0 0 20px rgba(239, 108, 0, 0.3);
-            transform: scale(1.05);
-        }
-        .dp-node .icon { font-size: 22px; margin-bottom: 6px; }
-        .dp-node .name { font-size: 13px; font-weight: bold; color: var(--dp); }
-        .dp-node .desc { font-size: 10px; color: var(--text-dim); margin-top: 4px; line-height: 1.4; }
-        .dp-arrow {
-            color: var(--dp);
-            font-size: 18px;
-            font-weight: bold;
+        .cp-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
         }
 
-        /* 基础设施层 */
-        .infra-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
+        .cp-card:hover::before {
+            opacity: 1;
         }
-        .infra-node {
-            background: var(--infra-bg);
-            border: 2px solid var(--infra);
-            border-radius: 10px;
-            padding: 14px;
-            width: 130px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-        }
-        .infra-node:hover { transform: translateY(-2px); }
-        .infra-node.active {
-            background: rgba(106, 25, 154, 0.25);
-            box-shadow: 0 0 20px rgba(106, 25, 154, 0.3);
-            transform: scale(1.05);
-        }
-        .infra-node .layer-name { font-size: 12px; font-weight: bold; color: var(--infra); }
-        .infra-node .system { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
-        .infra-node .injected {
-            display: none;
-            margin-top: 8px;
-            padding-top: 8px;
-            border-top: 1px dashed var(--infra);
-            font-size: 9px;
-            color: var(--success);
-            text-align: left;
-            line-height: 1.5;
-        }
-        .infra-node:hover .injected, .infra-node.active .injected { display: block; }
 
-        /* 流动箭头 */
-        .flow-section {
-            text-align: center;
-            padding: 8px 0;
-            position: relative;
+        .cp-card.active {
+            border-color: var(--cp);
+            box-shadow: 0 0 0 3px var(--cp-light), var(--shadow-lg);
         }
-        .flow-label {
-            font-size: 11px;
-            font-weight: bold;
-            letter-spacing: 1px;
+
+        .cp-card.active::before {
+            opacity: 1;
+        }
+
+        .cp-tag {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--cp);
+            background: var(--cp-light);
+            padding: 4px 10px;
             border-radius: 20px;
-            background: var(--bg);
-            border: 1px solid var(--border);
+            margin-bottom: 12px;
         }
-        .flow-label.down { color: var(--dp); border-color: var(--dp); }
-        .flow-label.up { color: var(--success); border-color: var(--success); }
-        .flow-label .arrow { font-size: 14px; }
 
-        /* 闭环指示 */
-        .loop-badge {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(76, 175, 80, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-            padding: 8px 16px;
-            border-radius: 20px;
+        .cp-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .cp-meta {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .cp-status {
+            margin-top: 12px;
             font-size: 12px;
-            font-weight: bold;
+            color: var(--success);
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        /* Data Plane */
+        .dp-zone {
+            margin-bottom: 48px;
+        }
+
+        .dp-grid {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+            flex-wrap: wrap;
+        }
+
+        .dp-node {
+            flex: 1;
+            min-width: 160px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            text-align: center;
+        }
+
+        .dp-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--dp);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .dp-node:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .dp-node:hover::before {
+            opacity: 1;
+        }
+
+        .dp-node.active {
+            border-color: var(--dp);
+            box-shadow: 0 0 0 3px var(--dp-light), var(--shadow-lg);
+        }
+
+        .dp-node.active::before {
+            opacity: 1;
+        }
+
+        .dp-node.processing {
+            animation: pulse-dp 2s infinite;
+        }
+
+        @keyframes pulse-dp {
+            0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.15); }
+            70% { box-shadow: 0 0 0 12px rgba(234, 88, 12, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+        }
+
+        .dp-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .dp-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .dp-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .dp-connector {
             display: flex;
             align-items: center;
-            gap: 8px;
-            opacity: 0;
-            transition: opacity 0.5s;
+            justify-content: center;
+            color: var(--text-tertiary);
+            font-size: 18px;
+            padding: 0 4px;
+            align-self: center;
         }
-        .loop-badge.show { opacity: 1; }
 
-        /* 控制按钮 */
-        .controls {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
+        /* Flow Labels */
+        .flow-label {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin: 16px 0;
             display: flex;
+            align-items: center;
+            justify-content: center;
             gap: 12px;
-            z-index: 100;
         }
-        .ctrl-btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
+
+        .flow-label .line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            max-width: 200px;
+        }
+
+        .flow-label strong {
+            color: var(--dp);
+            font-weight: 600;
+        }
+
+        /* Infrastructure */
+        .infra-zone {
+            margin-bottom: 48px;
+        }
+
+        .infra-grid {
+            display: flex;
+            gap: 16px;
+            align-items: stretch;
+        }
+
+        .infra-node {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            text-align: center;
+        }
+
+        .infra-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--infra);
+            opacity: 0;
+            transition: opacity 0.3s;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+
+        .infra-node:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .infra-node:hover::before {
+            opacity: 1;
+        }
+
+        .infra-node.active {
+            border-color: var(--infra);
+            box-shadow: 0 0 0 3px var(--infra-light), var(--shadow-lg);
+        }
+
+        .infra-node.active::before {
+            opacity: 1;
+        }
+
+        .infra-node.injected {
+            border-color: var(--success);
+            background: var(--success-light);
+        }
+
+        .infra-node.injected::before {
+            opacity: 1;
+            background: var(--success);
+        }
+
+        .infra-badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--infra);
+            margin-bottom: 8px;
+        }
+
+        .infra-name {
             font-size: 13px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            margin-bottom: 4px;
         }
-        .ctrl-btn.play { background: var(--success); color: white; }
-        .ctrl-btn.play:hover { background: #388e3c; }
-        .ctrl-btn.reset { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
-        .ctrl-btn.reset:hover { border-color: var(--text-dim); }
 
-        /* 详情弹窗 */
-        .modal-overlay {
+        .infra-system {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .infra-state {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+            min-height: 60px;
+        }
+
+        .infra-node.injected .infra-state {
+            color: var(--success);
+            border-top-color: var(--success);
+            border-top-style: solid;
+        }
+
+        /* Detail Panel */
+        .detail-panel {
             display: none;
             position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-overlay.show { display: flex; }
-        .modal {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 28px;
-            max-width: 520px;
-            width: 90%;
-            max-height: 80vh;
+            top: 0;
+            right: 0;
+            width: 480px;
+            max-width: 100%;
+            height: 100vh;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+            z-index: 200;
             overflow-y: auto;
+            animation: slideIn 0.3s ease;
         }
-        .modal h2 { font-size: 18px; margin-bottom: 16px; color: var(--cp); }
-        .modal p, .modal li { font-size: 13px; line-height: 1.7; color: var(--text-dim); margin-bottom: 8px; }
-        .modal ul { padding-left: 20px; margin: 12px 0; }
-        .modal strong { color: var(--text); }
-        .modal .close-btn {
-            margin-top: 16px;
-            text-align: right;
+
+        .detail-panel.show {
+            display: block;
         }
-        .modal .close-btn button {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 8px 20px;
-            border-radius: 6px;
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .detail-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+        }
+
+        .detail-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 20px;
             cursor: pointer;
+            color: var(--text-tertiary);
+            padding: 4px;
+            line-height: 1;
+        }
+
+        .detail-close:hover {
+            color: var(--text);
+        }
+
+        .detail-title {
+            font-size: 16px;
+            font-weight: 600;
+            padding-right: 32px;
+        }
+
+        .detail-body {
+            padding: 24px 28px;
+        }
+
+        .detail-section {
+            margin-bottom: 28px;
+        }
+
+        .detail-section h4 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+        }
+
+        .detail-section p,
+        .detail-section li {
             font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.7;
         }
-        .modal .close-btn button:hover { border-color: var(--cp); }
 
-        /* 动画 */
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 5px currentColor; }
-            50% { box-shadow: 0 0 20px currentColor; }
+        .detail-section ul {
+            padding-left: 20px;
         }
-        .pulsing { animation: pulse-glow 1.5s infinite; }
 
-        @media (max-width: 900px) {
-            .federal-panel { display: none; }
-            .dp-node, .infra-node { width: 100px; padding: 10px; }
+        .compare-box {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .compare-box .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .compare-box .before {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .compare-box .after {
+            font-size: 12px;
+            color: var(--text);
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            background: var(--success-light);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid var(--success);
+        }
+
+        .principle-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: var(--bg);
+            color: var(--text-secondary);
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .principle-tag.verified {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        /* Overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.2);
+            z-index: 150;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .dp-grid,
+            .infra-grid {
+                flex-direction: column;
+            }
+            .dp-connector {
+                transform: rotate(90deg);
+                padding: 8px 0;
+            }
+            .detail-panel {
+                width: 100%;
+            }
+            .header-inner {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div style="display:flex;align-items:center;">
-            <h1>01 双轴正交模型</h1>
-            <span class="subtitle">纵向基础设施 × 横向语义治理网格</span>
-        </div>
-        <a class="back" href="../../">← 返回沙盘首页</a>
-    </div>
-
-    <div class="main">
-        <!-- 左侧联邦自治面板 -->
-        <div class="federal-panel">
-            <h3>联邦自治三层</h3>
-            <div class="role-card committee" onclick="showRole('committee')">
-                <div class="badge">联邦层</div>
-                <div class="title">联邦治理委员会</div>
-                <div class="desc">制定元规则、审核 Breaking Change、维护不可变边界</div>
-            </div>
-            <div class="role-card steward" onclick="showRole('steward')">
-                <div class="badge">域级层</div>
-                <div class="title">Intent Steward</div>
-                <div class="desc">域级自治立法、沙盒测试、申请豁免、开发适配器</div>
-            </div>
-            <div class="role-card engineer" onclick="showRole('engineer')">
-                <div class="badge">业务层</div>
-                <div class="title">前端/设计/AI 工程师</div>
-                <div class="desc">零感知接入，只消费编译产物，不接触 YAML</div>
-            </div>
-
-            <div style="margin-top:auto;padding-top:20px;border-top:1px solid var(--border);">
-                <div style="font-size:11px;color:var(--text-dim);line-height:1.6;">
-                    <strong style="color:var(--text);">四大设计原则</strong><br><br>
-                    1. 声明式：定义"应该是什么"，系统自动收敛<br><br>
-                    2. 正交穿透：横向网格铺在纵向基础设施之上，不替代<br><br>
-                    3. 阻断优于修正：推演失败直接拦截，不触发 LLM 重试<br><br>
-                    4. 版本锁定：所有节点显式声明兼容 Registry 版本
+        <div class="header-inner">
+            <div>
+                <div class="breadcrumb">
+                    <a href="../../">← 沙盘首页</a> / 01 双轴正交模型
                 </div>
+                <h1>双轴正交模型</h1>
+                <div class="subtitle">纵向基础设施与横向语义治理网格的正交穿透</div>
             </div>
-        </div>
-
-        <!-- 中央沙盘 -->
-        <div class="sandbox">
-            <!-- 闭环徽章 -->
-            <div class="loop-badge" id="loop-badge">
-                ♻️ 闭环完成：Bridge → 自动 PR → 控制平面
+            <div class="header-actions">
+                <button class="btn" onclick="resetAll()">重置状态</button>
+                <button class="btn btn-primary" onclick="playFlow()">▶ 播放数据流</button>
             </div>
-
-            <!-- 控制平面 -->
-            <div class="layer layer-cp">
-                <div class="layer-label">控制平面（Control Plane）— 联邦宪法</div>
-                <div class="cp-box" id="cp-box" onclick="showDetail('cp')">
-                    <div class="icon">🔷</div>
-                    <div class="info">
-                        <div class="name">intent-schema-compiler</div>
-                        <div class="meta">语义层 / 治理层 / 执行层 · v0.1.0 · Git-Native</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 声明式同步 -->
-            <div class="flow-section">
-                <div class="flow-label down">
-                    <span class="arrow">▼</span> 声明式同步（GitOps） <span class="arrow">▼</span>
-                </div>
-            </div>
-
-            <!-- 数据平面 -->
-            <div class="layer layer-dp">
-                <div class="layer-label">数据平面（Data Plane）— 五模块执行拓扑</div>
-                <div class="dp-row">
-                    <div class="dp-node" id="node-r" onclick="showDetail('registry')">
-                        <div class="icon">📋</div>
-                        <div class="name">Registry</div>
-                        <div class="desc">版本管理<br>影响面分析</div>
-                    </div>
-                    <div class="dp-arrow">→</div>
-                    <div class="dp-node" id="node-c" onclick="showDetail('compiler')">
-                        <div class="icon">⚙️</div>
-                        <div class="name">Compiler</div>
-                        <div class="desc">契约编译<br>产物生成</div>
-                    </div>
-                    <div class="dp-arrow">→</div>
-                    <div class="dp-node" id="node-v" onclick="showDetail('validator')">
-                        <div class="icon">🛡️</div>
-                        <div class="name">Validator</div>
-                        <div class="desc">四层推演<br>安检拦截</div>
-                    </div>
-                    <div class="dp-arrow">→</div>
-                    <div class="dp-node" id="node-rt" onclick="showDetail('runtime')">
-                        <div class="icon">🚀</div>
-                        <div class="name">Runtime</div>
-                        <div class="desc">运行时拦截<br>HOC/中间件</div>
-                    </div>
-                    <div class="dp-arrow">→</div>
-                    <div class="dp-node" id="node-b" onclick="showDetail('bridge')">
-                        <div class="icon">👁️</div>
-                        <div class="name">Bridge</div>
-                        <div class="desc">观测闭环<br>反哺 PR</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 规则下渗 -->
-            <div class="flow-section">
-                <div class="flow-label down" id="flow-down">
-                    <span class="arrow">▼</span> 规则下渗（编译产物分发到五层） <span class="arrow">▼</span>
-                </div>
-            </div>
-
-            <!-- 基础设施层 -->
-            <div class="layer layer-infra">
-                <div class="layer-label">基础设施层（纵向生产链路）— 业务价值流动</div>
-                <div class="infra-row">
-                    <div class="infra-node" id="infra-l1" onclick="showDetail('l1')">
-                        <div class="layer-name">L1 Token</div>
-                        <div class="system">Ant Design / Carbon</div>
-                        <div class="injected">
-                            ✓ 语义注释注入<br>
-                            <code style="color:var(--success);">/* intent: system-fault */</code>
-                        </div>
-                    </div>
-                    <div class="infra-node" id="infra-l2" onclick="showDetail('l2')">
-                        <div class="layer-name">L2 组件</div>
-                        <div class="system">React / Vue</div>
-                        <div class="injected">
-                            ✓ Props 类型约束<br>
-                            <code style="color:var(--success);">type: AlertLevel</code>
-                        </div>
-                    </div>
-                    <div class="infra-node" id="infra-l3" onclick="showDetail('l3')">
-                        <div class="layer-name">L3 API</div>
-                        <div class="system">OpenAPI / GraphQL</div>
-                        <div class="injected">
-                            ✓ 扩展字段注入<br>
-                            <code style="color:var(--success);">x-intent-binding</code>
-                        </div>
-                    </div>
-                    <div class="infra-node" id="infra-l4" onclick="showDetail('l4')">
-                        <div class="layer-name">L4 容器</div>
-                        <div class="system">K8s / Envoy</div>
-                        <div class="injected">
-                            ✓ OPA Policy 注入<br>
-                            <code style="color:var(--success);">allow { ... }</code>
-                        </div>
-                    </div>
-                    <div class="infra-node" id="infra-l5" onclick="showDetail('l5')">
-                        <div class="layer-name">L5 DB / LLM</div>
-                        <div class="system">MySQL / GPT</div>
-                        <div class="injected">
-                            ✓ DDL 注释注入<br>
-                            <code style="color:var(--success);">COMMENT 'intent: ...'</code>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 观测上采 -->
-            <div class="flow-section">
-                <div class="flow-label up" id="flow-up" style="opacity:0;">
-                    <span class="arrow">▲</span> 观测上采（漂移事件反哺控制平面） <span class="arrow">▲</span>
-                </div>
-            </div>
-
-            <!-- 底部留白给控制按钮 -->
-            <div style="height:80px;flex-shrink:0;"></div>
         </div>
     </div>
 
-    <!-- 控制按钮 -->
-    <div class="controls">
-        <button class="ctrl-btn play" onclick="startLoop()">
-            ▶ 启动数据流动闭环
-        </button>
-        <button class="ctrl-btn reset" onclick="resetLoop()">
-            ↺ 重置
-        </button>
-    </div>
+    <div class="canvas">
 
-    <!-- 详情弹窗 -->
-    <div class="modal-overlay" id="modal" onclick="closeModal(event)">
-        <div class="modal" onclick="event.stopPropagation()">
-            <div id="modal-body"></div>
-            <div class="close-btn">
-                <button onclick="closeModal()">关闭</button>
+        <!-- 控制平面 -->
+        <div class="cp-zone">
+            <div class="axis-label" style="color: var(--cp);">🔷 横向轴起点 — 控制平面（Control Plane）</div>
+            <div class="cp-card" id="cp-card" onclick="showDetail('cp')">
+                <div class="cp-tag">🔷 联邦宪法</div>
+                <div class="cp-title">intent-schema-compiler</div>
+                <div class="cp-meta">语义层 / 治理层 / 执行层 — YAML 意图协议本体</div>
+                <div class="cp-status">● v0.1.0 已发布 | Git-Native | 引用闭环 | Diff 可见</div>
             </div>
         </div>
+
+        <!-- 数据平面 -->
+        <div class="dp-zone">
+            <div class="axis-label" style="color: var(--dp);">🔶 横向轴 — 数据平面（Data Plane）语义治理网格</div>
+            <div class="dp-grid">
+                <div class="dp-node" id="node-registry" onclick="showDetail('registry')">
+                    <div class="dp-icon">📋</div>
+                    <div class="dp-name">Registry</div>
+                    <div class="dp-desc">语义注册表<br>版本管理 + 影响面分析</div>
+                </div>
+                <div class="dp-connector">→</div>
+                <div class="dp-node" id="node-compiler" onclick="showDetail('compiler')">
+                    <div class="dp-icon">⚙️</div>
+                    <div class="dp-name">Compiler</div>
+                    <div class="dp-desc">契约编译器<br>YAML → 可执行产物</div>
+                </div>
+                <div class="dp-connector">→</div>
+                <div class="dp-node" id="node-validator" onclick="showDetail('validator')">
+                    <div class="dp-icon">🛡️</div>
+                    <div class="dp-name">Validator</div>
+                    <div class="dp-desc">四层推演引擎<br>语法/语义/安全/美感</div>
+                </div>
+                <div class="dp-connector">→</div>
+                <div class="dp-node" id="node-runtime" onclick="showDetail('runtime')">
+                    <div class="dp-icon">🚀</div>
+                    <div class="dp-name">Runtime</div>
+                    <div class="dp-desc">运行时拦截<br>HOC / 中间件 / Tool Guard</div>
+                </div>
+                <div class="dp-connector">→</div>
+                <div class="dp-node" id="node-bridge" onclick="showDetail('bridge')">
+                    <div class="dp-icon">👁️</div>
+                    <div class="dp-name">Bridge</div>
+                    <div class="dp-desc">观测桥接器<br>漂移归因 + 反哺 PR</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 规则下渗 -->
+        <div class="flow-label">
+            <span class="line"></span>
+            <strong>▼ 规则下渗</strong>：编译产物分发到基础设施五层
+            <span class="line"></span>
+        </div>
+
+        <!-- 基础设施层 -->
+        <div class="infra-zone">
+            <div class="axis-label" style="color: var(--infra);">🟣 纵向轴 — 基础设施层（现有系统，被网格注入）</div>
+            <div class="infra-grid">
+                <div class="infra-node" id="infra-l1" onclick="showDetail('l1')">
+                    <div class="infra-badge">L1</div>
+                    <div class="infra-name">Token 层</div>
+                    <div class="infra-system">Ant Design / Carbon</div>
+                    <div class="infra-state" id="state-l1">未注入：纯视觉属性</div>
+                </div>
+                <div class="infra-node" id="infra-l2" onclick="showDetail('l2')">
+                    <div class="infra-badge">L2</div>
+                    <div class="infra-name">组件层</div>
+                    <div class="infra-system">React / Vue / Angular</div>
+                    <div class="infra-state" id="state-l2">未注入：自由 Props</div>
+                </div>
+                <div class="infra-node" id="infra-l3" onclick="showDetail('l3')">
+                    <div class="infra-badge">L3</div>
+                    <div class="infra-name">API 层</div>
+                    <div class="infra-system">OpenAPI / GraphQL</div>
+                    <div class="infra-state" id="state-l3">未注入：无约束字段</div>
+                </div>
+                <div class="infra-node" id="infra-l4" onclick="showDetail('l4')">
+                    <div class="infra-badge">L4</div>
+                    <div class="infra-name">容器层</div>
+                    <div class="infra-system">K8s / Envoy / Docker</div>
+                    <div class="infra-state" id="state-l4">未注入：无策略拦截</div>
+                </div>
+                <div class="infra-node" id="infra-l5" onclick="showDetail('l5')">
+                    <div class="infra-badge">L5</div>
+                    <div class="infra-name">DB / LLM 层</div>
+                    <div class="infra-system">MySQL / PostgreSQL / GPT</div>
+                    <div class="infra-state" id="state-l5">未注入：无语义标记</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 观测上采 -->
+        <div class="flow-label">
+            <span class="line"></span>
+            <strong style="color: var(--success);">▲ 观测上采</strong>：漂移事件反哺控制平面
+            <span class="line"></span>
+        </div>
+
+        <!-- 闭环提示 -->
+        <div style="text-align: center; margin-top: 24px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--success-light); color: var(--success); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid var(--success);">
+                ♻️ 闭环：Bridge → 自动 PR → 控制平面 → 下一周期
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay" onclick="closeDetail()"></div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel" id="detail-panel">
+        <div class="detail-header">
+            <button class="detail-close" onclick="closeDetail()">×</button>
+            <div class="detail-title" id="detail-title">详情</div>
+        </div>
+        <div class="detail-body" id="detail-body"></div>
     </div>
 
     <script>
         const details = {
             cp: {
-                title: '🔷 控制平面（Control Plane）— intent-schema-compiler',
-                html: `
-                    <p><strong>定位：</strong>全局唯一语义事实源，设计意图的"联邦宪法"。</p>
-                    <ul>
-                        <li><strong>语义层：</strong>定义 <code>status.critical</code> 不仅是红色，还携带 LLM 约束与同义词防火墙</li>
-                        <li><strong>治理层：</strong>定义 <code>destructive-action</code> 的 <code>ai_prohibited</code> 与 <code>human_mandatory</code> 边界</li>
-                        <li><strong>执行层：</strong>场景测试（Happy Path + Edge Case）、编译思维链</li>
-                    </ul>
-                    <p><strong>关键属性：</strong>Git-Native、版本化、引用闭环、Diff 可见、不可变性标记。</p>
+                title: '🔷 控制平面（Control Plane）— 联邦宪法',
+                content: `
+                    <div class="detail-section">
+                        <h4>定位</h4>
+                        <p>全局唯一语义事实源，设计意图的"联邦宪法"。存储在 GitHub 仓库中，Git-Native、版本化、Diff 可见。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>三层结构</h4>
+                        <ul>
+                            <li><strong>语义层：</strong>语义令牌（status.critical）携带视觉映射 + LLM 约束 + 同义词防火墙</li>
+                            <li><strong>治理层：</strong>意图契约定义不可变边界（violation_action: block）、人机边界矩阵</li>
+                            <li><strong>执行层：</strong>场景测试（Happy Path + Edge Case）、编译思维链</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 声明式：YAML 定义即生效</div>
+                        <div class="principle-tag verified">✓ 版本锁定：immutable + SemVer</div>
+                    </div>
                 `
             },
             registry: {
                 title: '📋 Registry — 语义注册表',
-                html: `
-                    <p><strong>职责：</strong>管理语义 ID 全局唯一注册、版本化与兼容性分析。</p>
-                    <ul>
-                        <li>SemVer 版本管理：Breaking Change 自动冻结旧版本</li>
-                        <li>影响面分析：Git Diff → 自动定位下游需同步的产品与组件</li>
-                        <li>产品绑定：<code>bindings/product-a.yaml</code> 记录各域引用的意图契约</li>
-                    </ul>
+                content: `
+                    <div class="detail-section">
+                        <h4>职责</h4>
+                        <p>管理语义 ID 全局唯一注册、版本化与兼容性分析、跨产品绑定配置。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>核心能力</h4>
+                        <ul>
+                            <li>SemVer 版本管理：Breaking Change 自动冻结旧版本</li>
+                            <li>影响面分析：Git Diff → 自动定位下游需同步的产品与组件</li>
+                            <li>产品绑定：bindings/product-a.yaml 记录各域引用的意图契约</li>
+                        </ul>
+                    </div>
                 `
             },
             compiler: {
                 title: '⚙️ Compiler — 契约编译器',
-                html: `
-                    <p><strong>职责：</strong>将控制平面的 YAML 声明翻译为各层可消费的"规则产物"。</p>
-                    <ul>
-                        <li><strong>三阶段编译：</strong>意图加载 → 语义解析 → 约束推导 → 产物生成 → 场景验证 → 影响分析</li>
-                        <li><strong>插件化：</strong>新增平台支持 = 新增一个 100-200 行插件文件</li>
-                        <li><strong>五层产物：</strong>Token 层 CSS/TS、组件层 Props/ESLint、API 层 OpenAPI、容器层 OPA、DB 层 DDL</li>
-                    </ul>
+                content: `
+                    <div class="detail-section">
+                        <h4>职责</h4>
+                        <p>将控制平面的 YAML 声明翻译为各层可消费的"规则产物"。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>三阶段编译</h4>
+                        <ul>
+                            <li>Stage 0-1：意图加载 + 语义解析（构建语义依赖图）</li>
+                            <li>Stage 2-3：约束推导 + 产物生成（插件化输出）</li>
+                            <li>Stage 4-5：场景验证 + 影响分析</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <h4>注入前后对比</h4>
+                        <div class="compare-box">
+                            <div class="label">Before：纯 YAML 声明</div>
+                            <div class="before">status.critical:<br>  color: #D32F2F</div>
+                            <div class="label">After：编译为 L1 产物</div>
+                            <div class="after">--status-critical: #D32F2F<br>/* intent: system-fault */</div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 声明式：编译产物自动分发</div>
+                    </div>
                 `
             },
             validator: {
                 title: '🛡️ Validator — 四层推演引擎',
-                html: `
-                    <p><strong>职责：</strong>在内容进入生产链路前的分层安检。</p>
-                    <ul>
-                        <li><strong>T1 语法：</strong>JSON 结构完整性、字段类型、必填项 → <span style="color:var(--error)">BLOCK</span></li>
-                        <li><strong>T2 语义：</strong>令牌精确匹配、同义词黑名单命中 → <span style="color:var(--error)">BLOCK</span></li>
-                        <li><strong>T3 安全：</strong>禁止模式命中、人机边界越权 → <span style="color:var(--error)">BLOCK</span></li>
-                        <li><strong>T4 美感：</strong>文案长度、信息密度、可读性 → <span style="color:var(--success)">WARN</span>（不阻断）</li>
-                    </ul>
-                    <p><strong>核心原则：</strong><span style="color:var(--error)">阻断优于修正</span> — 校验失败不触发 LLM 自动重试，直接拦截并升级人工。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>职责</h4>
+                        <p>在内容（LLM 输出 / 组件 Props / API 响应）进入生产链路前的分层安检。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>四层推演（短路策略）</h4>
+                        <ul>
+                            <li><strong>T1 语法：</strong>JSON 结构完整性、字段类型、必填项 → BLOCK</li>
+                            <li><strong>T2 语义：</strong>令牌精确匹配、同义词黑名单命中 → BLOCK</li>
+                            <li><strong>T3 安全：</strong>禁止模式命中、人机边界越权 → BLOCK</li>
+                            <li><strong>T4 美感：</strong>文案长度、信息密度、可读性 → WARN（不阻断）</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 阻断优于修正：不触发 LLM 重试</div>
+                    </div>
                 `
             },
             runtime: {
                 title: '🚀 Runtime — 运行时拦截',
-                html: `
-                    <p><strong>职责：</strong>将编译后的规则产物部署到生产环境，实现"运行时语义拦截"。</p>
-                    <ul>
-                        <li><strong>React HOC：</strong><code>withIntentGuard(Component, intentConfig)</code> — 组件渲染前校验 Props</li>
-                        <li><strong>API 中间件：</strong><code>apiGuardMiddleware()</code> — 请求体校验 <code>human_confirmed</code></li>
-                        <li><strong>LLM Tool Guard：</strong><code>toolGuard(tools, policyStore)</code> — Function Calling 前拦截</li>
-                    </ul>
-                    <p><strong>Actor 身份解析：</strong><code>human</code> / <code>ai</code> / <code>human_via_ai</code> — 不同身份触发不同拦截矩阵。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>职责</h4>
+                        <p>将编译后的规则产物部署到生产环境，实现"运行时语义拦截"。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>三种守卫形态</h4>
+                        <ul>
+                            <li><strong>React HOC：</strong>withIntentGuard(Component, intentConfig) — 组件渲染前校验 Props</li>
+                            <li><strong>API 中间件：</strong>apiGuardMiddleware() — 请求体校验 human_confirmed</li>
+                            <li><strong>LLM Tool Guard：</strong>toolGuard(tools, policyStore) — Function Calling 前拦截</li>
+                        </ul>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 正交穿透：业务代码无感知</div>
+                    </div>
                 `
             },
             bridge: {
                 title: '👁️ Bridge — 观测桥接器',
-                html: `
-                    <p><strong>职责：</strong>连接运行时观测与控制平面，实现闭环。</p>
-                    <ul>
-                        <li><strong>采集：</strong>从 LoongSuite SemConv / OpenTelemetry 消费 Trace 数据</li>
-                        <li><strong>归一化：</strong>将原始 Trace 映射为意图协议 ID</li>
-                        <li><strong>归因：</strong>定位漂移根因（哪条契约规则失效）</li>
-                        <li><strong>反哺：</strong>自动创建 Registry PR 收紧规则</li>
-                    </ul>
-                    <p><strong>治理指标：</strong>语义一致性得分 ≥ 90%、规则拦截率 ≥ 95%、人工升级比例 < 5%。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>职责</h4>
+                        <p>连接运行时观测与控制平面，实现"观测 → 归因 → 约束 → 验证"的闭环。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>数据流</h4>
+                        <ol>
+                            <li>采集：从 LoongSuite SemConv / OpenTelemetry 消费 Trace 数据</li>
+                            <li>归一化：将原始 Trace 映射为意图协议 ID</li>
+                            <li>归因：定位漂移根因（哪条契约规则失效）</li>
+                            <li>反哺：自动创建 Registry PR 收紧规则</li>
+                        </ol>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 声明式：自动 PR 修宪</div>
+                    </div>
                 `
             },
             l1: {
                 title: '🟣 L1 Token 层 — Ant Design / Carbon',
-                html: `
-                    <p><strong>治理方式：</strong>网格化覆盖，不替代，只注入语义注释。</p>
-                    <ul>
-                        <li>传统 Token：<code>--color-danger: #D32F2F;</code>（仅色值，无语义）</li>
-                        <li>注入后：<code>--status-critical: #D32F2F; /* intent: system-fault */</code></li>
-                    </ul>
-                    <p><strong>验证原则：</strong>正交穿透 — Ant Design 的 CSS 文件无需修改，Compiler 在编译时注入语义注释。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>治理方式：网格化覆盖，不替代，只注入</h4>
+                        <p>Schema-As-Code 不替代 Ant Design 的 Design Token，只在 Token 之上增加语义契约层。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>注入前后对比</h4>
+                        <div class="compare-box">
+                            <div class="label">Before：纯视觉属性</div>
+                            <div class="before">--color-danger: #D32F2F;<br>（无语义，无约束）</div>
+                            <div class="label">After：语义契约注入</div>
+                            <div class="after">--status-critical: #D32F2F;<br>/* intent: system-fault */<<br>/* llm_constraint: "禁止建议自动修复" */</div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 正交穿透：Ant Design 文件无需修改</div>
+                        <div class="principle-tag verified">✓ 声明式：Compiler 编译时注入</div>
+                    </div>
                 `
             },
             l2: {
                 title: '🟣 L2 组件层 — React / Vue / Angular',
-                html: `
-                    <p><strong>治理方式：</strong>Props 类型约束 + ESLint 规则。</p>
-                    <ul>
-                        <li>传统组件：<code>type ButtonProps = { type?: 'primary' | 'danger' }</code></li>
-                        <li>注入后：<code>intentContract: 'destructive-action'; humanConfirmed?: boolean;</code></li>
-                    </ul>
-                    <p><strong>验证原则：</strong>声明式 — 设计师定义意图契约后，组件 Props 自动收敛到约束类型。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>治理方式：Props 类型约束 + ESLint 规则</h4>
+                        <p>Compiler 生成 TypeScript 类型定义和 ESLint 规则，开发时自动校验。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>注入前后对比</h4>
+                        <div class="compare-box">
+                            <div class="label">Before：自由 Props</div>
+                            <div class="before">type ButtonProps = {<br>  type?: 'primary' | 'danger'<br>}</div>
+                            <div class="label">After：语义契约约束</div>
+                            <div class="after">type DestructiveButtonProps = {<br>  intentContract: 'destructive-action';<<br>  humanConfirmed?: boolean;<br>  // ESLint: 禁止 type="primary"<br>}</div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 正交穿透：组件代码无感知</div>
+                        <div class="principle-tag verified">✓ 声明式：Props 自动收敛</div>
+                    </div>
                 `
             },
             l3: {
                 title: '🟣 L3 API 层 — OpenAPI / GraphQL',
-                html: `
-                    <p><strong>治理方式：</strong>OpenAPI 扩展字段 + 请求体验证。</p>
-                    <ul>
-                        <li>传统 API：<code>POST /api/destructive body: { action: string }</code></li>
-                        <li>注入后：<code>x-intent-binding: destructive-action; required: [human_confirmed]</code></li>
-                    </ul>
-                    <p><strong>验证原则：</strong>阻断优于修正 — API 网关直接拒绝非法请求，不进入业务逻辑。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>治理方式：OpenAPI 扩展字段 + 请求体验证</h4>
+                        <p>API 契约中注入意图绑定标记，网关层自动校验高危操作。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>注入前后对比</h4>
+                        <div class="compare-box">
+                            <div class="label">Before：无约束</div>
+                            <div class="before">POST /api/destructive<br>body: { action: string }</div>
+                            <div class="label">After：语义契约注入</div>
+                            <div class="after">x-intent-binding: destructive-action<br>required: [human_confirmed]<br>// 网关拦截：缺少 → 422</div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 阻断优于修正：网关直接拒绝</div>
+                        <div class="principle-tag verified">✓ 正交穿透：API 定义无侵入</div>
+                    </div>
                 `
             },
             l4: {
                 title: '🟣 L4 容器层 — K8s / Envoy / Docker',
-                html: `
-                    <p><strong>治理方式：</strong>OPA Policy / WASM Sidecar。</p>
-                    <ul>
-                        <li>传统容器：任意服务可调用 <code>/api/destructive</code></li>
-                        <li>注入后：OPA Policy <code>allow { input.human_confirmed == true }</code></li>
-                    </ul>
-                    <p><strong>验证原则：</strong>版本锁定 — OPA Policy 携带 <code>schema_version_hash</code>，运行时校验与 Registry 版本一致。</p>
+                content: `
+                    <div class="detail-section">
+                        <h4>治理方式：OPA Policy / WASM Sidecar</h4>
+                        <p>在容器入口部署策略引擎，运行时拦截越权语义调用。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>注入前后对比</h4>
+                        <div class="compare-box">
+                            <div class="label">Before：无策略</div>
+                            <div class="before">任意服务可调用 /api/destructive</div>
+                            <div class="label">After：语义契约注入</div>
+                            <div class="after">OPA Policy:<br>allow {<br>  input.intent_id == "destructive-action"<br>  input.human_confirmed == true<br>}</div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 版本锁定：Policy 携带 schema_version_hash</div>
+                        <div class="principle-tag verified">✓ 正交穿透：Sidecar 无侵入</div>
+                    </div>
                 `
             },
             l5: {
                 title: '🟣 L5 DB / LLM 层 — 数据持久化 / 模型调用',
-                html: `
-                    <p><strong>治理方式：</strong>DDL 注释 + 字段约束 + LLM Prompt 注入。</p>
-                    <ul>
-                        <li>传统 DB：<code>alert_level VARCHAR(10)</code>（无语义标记）</li>
-                        <li>注入后：<code>COMMENT 'intent: status.critical'; CHECK (alert_level IN ('P0','P1','P2','P3'))</code></li>
-                    </ul>
-                    <p><strong>LLM 注入：</strong>Prompt system 前缀：<code>"你必须使用 status.critical 语义令牌，禁止使用'严重'替代"</code></p>
+                content: `
+                    <div class="detail-section">
+                        <h4>治理方式：DDL 注释 + 字段约束 + LLM Prompt 注入</h4>
+                        <p>数据库层软约束标记语义来源，LLM 层硬约束注入 Prompt 前缀。</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>注入前后对比</h4>
+                        <div class="compare-box">
+                            <div class="label">Before：无标记</div>
+                            <div class="before">alert_level VARCHAR(10)<br>（无语义标记）</div>
+                            <div class="label">After：语义契约注入</div>
+                            <div class="after">alert_level VARCHAR(10)<br>COMMENT 'intent: status.critical'<br>CHECK (alert_level IN ('P0','P1','P2','P3'))</div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <h4>LLM 层注入</h4>
+                        <p>Prompt system 前缀注入：<code>"你必须使用 status.critical 语义令牌，禁止使用'严重'替代"</code></p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>验证设计原则</h4>
+                        <div class="principle-tag verified">✓ 声明式：Prompt 约束自动注入</div>
+                        <div class="principle-tag verified">✓ 阻断优于修正：LLM 输出安检</div>
+                    </div>
                 `
-            },
-            committee: {
-                title: '联邦层 — 联邦治理委员会',
-                html: `<p>制定元规则、审核 Breaking Change、维护不可变边界。定义"什么绝对不能变"。</p>`
-            },
-            steward: {
-                title: '域级层 — Intent Steward',
-                html: `<p>在沙盒域内自治立法、申请豁免、开发适配器。定义"我这个域怎么变"。</p>`
-            },
-            engineer: {
-                title: '业务层 — 前端/设计/AI 工程师',
-                html: `<p>零感知接入，只消费编译产物。定义"我怎么用"。</p>`
             }
         };
 
+        const infraStates = {
+            l1: { injected: '已注入：CSS 变量 + 语义注释 /* intent: system-fault */', normal: '未注入：纯视觉属性' },
+            l2: { injected: '已注入：Props 类型约束 + ESLint 规则', normal: '未注入：自由 Props' },
+            l3: { injected: '已注入：OpenAPI 扩展 x-intent-binding', normal: '未注入：无约束字段' },
+            l4: { injected: '已注入：OPA Policy / WASM Sidecar', normal: '未注入：无策略拦截' },
+            l5: { injected: '已注入：DDL 注释 + CHECK 约束 + Prompt 前缀', normal: '未注入：无语义标记' }
+        };
+
         function showDetail(key) {
-            const d = details[key];
-            if (!d) return;
-            document.getElementById('modal-body').innerHTML = `<h2>${d.title}</h2>${d.html || d}`;
-            document.getElementById('modal').classList.add('show');
-        }
+            const panel = document.getElementById('detail-panel');
+            const overlay = document.getElementById('overlay');
+            const body = document.getElementById('detail-body');
+            const title = document.getElementById('detail-title');
+            const data = details[key];
 
-        function showRole(key) { showDetail(key); }
+            if (data) {
+                title.textContent = data.title;
+                body.innerHTML = data.content;
+                panel.classList.add('show');
+                overlay.classList.add('show');
 
-        function closeModal(e) {
-            if (!e || e.target.id === 'modal') {
-                document.getElementById('modal').classList.remove('show');
+                // 高亮对应节点
+                if (key.startsWith('l')) {
+                    document.getElementById('infra-' + key).classList.add('active');
+                } else if (['registry', 'compiler', 'validator', 'runtime', 'bridge'].includes(key)) {
+                    document.getElementById('node-' + key).classList.add('active');
+                } else if (key === 'cp') {
+                    document.getElementById('cp-card').classList.add('active');
+                }
             }
         }
 
-        // 动画序列
-        const sequence = [
-            { id: 'cp-box', delay: 0, msg: 'GitOps 触发：控制平面 YAML 变更' },
-            { id: 'node-r', delay: 800, msg: 'Registry：版本化语义注册，分析影响面' },
-            { id: 'node-c', delay: 800, msg: 'Compiler：YAML → TS/ESLint/OpenAPI/OPA/DDL 产物' },
-            { id: 'node-v', delay: 800, msg: 'Validator：四层推演安检（语法→语义→安全→美感）' },
-            { id: 'node-rt', delay: 800, msg: 'Runtime：部署运行时守卫（HOC/中间件/Tool Guard）' },
-            { id: 'infra-l1', delay: 600, msg: '规则下渗 L1：Token 层注入语义注释' },
-            { id: 'infra-l2', delay: 400, msg: '规则下渗 L2：组件层注入 Props 约束' },
-            { id: 'infra-l3', delay: 400, msg: '规则下渗 L3：API 层注入扩展字段' },
-            { id: 'infra-l4', delay: 400, msg: '规则下渗 L4：容器层注入 OPA Policy' },
-            { id: 'infra-l5', delay: 400, msg: '规则下渗 L5：DB 层注入 DDL 注释 + LLM Prompt 注入' },
-            { id: 'node-b', delay: 800, msg: 'Bridge：采集运行时漂移事件' },
-            { id: 'flow-up', delay: 600, msg: '观测上采：从 DB/LLM → 容器 → API → 组件 → Token' },
-            { id: 'loop', delay: 800, msg: '闭环完成：Bridge 归因 → 自动 PR → 控制平面' }
-        ];
+        function closeDetail() {
+            document.getElementById('detail-panel').classList.remove('show');
+            document.getElementById('overlay').classList.remove('show');
+            document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+        }
 
-        let running = false;
+        async function playFlow() {
+            resetAll();
 
-        async function startLoop() {
-            if (running) return;
-            running = true;
-            resetLoop();
+            const sequence = [
+                { id: 'cp-card', delay: 600, type: 'cp' },
+                { id: 'node-registry', delay: 500, type: 'dp' },
+                { id: 'node-compiler', delay: 500, type: 'dp' },
+                { id: 'node-validator', delay: 500, type: 'dp' },
+                { id: 'node-runtime', delay: 500, type: 'dp' }
+            ];
 
+            // 1. 控制平面 → 数据平面依次激活
             for (const step of sequence) {
                 const el = document.getElementById(step.id);
-                if (!el) continue;
-
-                if (step.id === 'flow-up') {
-                    el.style.opacity = '1';
-                    el.style.transition = 'opacity 0.5s';
-                } else if (step.id === 'loop') {
-                    document.getElementById('loop-badge').classList.add('show');
-                } else {
-                    el.classList.add('active');
-                    if (step.id.startsWith('infra-')) {
-                        el.classList.add('pulsing');
-                    }
-                }
-
+                el.classList.add('processing');
                 await sleep(step.delay);
+                el.classList.remove('processing');
+                el.classList.add('active');
             }
 
-            // 自动重置
-            await sleep(2000);
-            resetLoop();
-            running = false;
+            // 2. 规则下渗到基础设施
+            const layers = ['l1', 'l2', 'l3', 'l4', 'l5'];
+            for (const layer of layers) {
+                const el = document.getElementById('infra-' + layer);
+                el.classList.add('injected');
+                document.getElementById('state-' + layer).textContent = infraStates[layer].injected;
+                await sleep(400);
+            }
+
+            // 3. Bridge 激活
+            const bridge = document.getElementById('node-bridge');
+            bridge.classList.add('processing');
+            await sleep(800);
+            bridge.classList.remove('processing');
+            bridge.classList.add('active');
+
+            // 4. 观测上采（闪烁提示）
+            await sleep(600);
+            for (let i = layers.length - 1; i >= 0; i--) {
+                const el = document.getElementById('infra-' + layers[i]);
+                el.style.boxShadow = '0 0 0 3px rgba(22, 163, 74, 0.3)';
+                await sleep(200);
+                el.style.boxShadow = '';
+            }
+
+            // 5. 完成
+            await sleep(500);
+            document.querySelector('.flow-label:last-of-type + div div').style.transform = 'scale(1.05)';
+            await sleep(300);
+            document.querySelector('.flow-label:last-of-type + div div').style.transform = 'scale(1)';
         }
 
-        function resetLoop() {
-            document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.pulsing').forEach(el => el.classList.remove('pulsing'));
-            document.getElementById('loop-badge').classList.remove('show');
-            document.getElementById('flow-up').style.opacity = '0';
-            running = false;
+        function resetAll() {
+            document.querySelectorAll('.active, .injected, .processing').forEach(el => {
+                el.classList.remove('active', 'injected', 'processing');
+            });
+            document.querySelectorAll('.infra-state').forEach((el, i) => {
+                const key = 'l' + (i + 1);
+                el.textContent = infraStates[key].normal;
+            });
+            document.querySelectorAll('.infra-node').forEach(el => {
+                el.style.boxShadow = '';
+            });
         }
 
         function sleep(ms) {
-            return new Promise(r => setTimeout(r, ms));
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
+
+        // 键盘支持
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeDetail();
+        });
     </script>
 </body>
 </html>

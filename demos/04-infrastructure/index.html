@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>04 基础设施层 — 五层穿透与网格化覆盖</title>
+    <style>
+        :root {
+            --infra-purple: #6a1b9a;
+            --infra-light: #f3e5f5;
+            --grid-orange: #ef6c00;
+            --grid-bg: #fff3e0;
+            --before-gray: #f5f5f5;
+            --after-green: #e8f5e9;
+            --success: #4caf50;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+            --border: #e0e6ed;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6a1b9a 0%, #8e24aa 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 22px; margin-bottom: 8px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* 正交穿透指示线 */
+        .penetration-indicator {
+            position: relative;
+            margin: 24px 0;
+            padding: 12px 20px;
+            background: var(--grid-bg);
+            border: 2px solid var(--grid-orange);
+            border-radius: var(--radius);
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--grid-orange);
+        }
+
+        .penetration-indicator::before,
+        .penetration-indicator::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            width: 2px;
+            height: 24px;
+            background: var(--grid-orange);
+            transform: translateX(-50%);
+        }
+
+        .penetration-indicator::before { top: -24px; }
+        .penetration-indicator::after { bottom: -24px; }
+
+        /* 五层穿透容器 */
+        .layers {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: relative;
+        }
+
+        /* 横向网格贯穿线 */
+        .layers::before {
+            content: "";
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(to bottom, var(--grid-orange), var(--infra-purple));
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .layer-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .layer-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            transform: translateX(4px);
+        }
+
+        .layer-card.injected {
+            border-left: 4px solid var(--success);
+        }
+
+        .layer-card.not-injected {
+            border-left: 4px solid #ccc;
+        }
+
+        .layer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .layer-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .layer-badge {
+            background: var(--infra-purple);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .layer-name {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .layer-system {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .layer-status {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .layer-status.injected {
+            background: var(--after-green);
+            color: var(--success);
+        }
+
+        .layer-status.not-injected {
+            background: var(--before-gray);
+            color: var(--text-secondary);
+        }
+
+        /* 前后对比 */
+        .compare {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .compare-box {
+            padding: 16px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            font-family: "SF Mono", Monaco, monospace;
+            line-height: 1.6;
+        }
+
+        .compare-box.before {
+            background: var(--before-gray);
+            border: 1px solid #ddd;
+            color: var(--text-secondary);
+        }
+
+        .compare-box.after {
+            background: var(--after-green);
+            border: 1px solid var(--success);
+            color: var(--text);
+            display: none;
+        }
+
+        .layer-card.injected .compare-box.after {
+            display: block;
+        }
+
+        .compare-label {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-family: sans-serif;
+        }
+
+        .compare-box.before .compare-label { color: #999; }
+        .compare-box.after .compare-label { color: var(--success); }
+
+        /* 展开详情 */
+        .detail-panel {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .layer-card.expanded .detail-panel {
+            display: block;
+        }
+
+        .detail-panel h4 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .detail-panel pre {
+            background: #1a1a2e;
+            color: #a6e22e;
+            padding: 16px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .detail-panel .meta {
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: var(--infra-light);
+            padding: 12px;
+            border-radius: var(--radius);
+            border-left: 3px solid var(--infra-purple);
+        }
+
+        /* 控制按钮 */
+        .controls {
+            text-align: center;
+            margin: 32px 0;
+            padding: 24px;
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .controls button {
+            padding: 12px 32px;
+            margin: 0 8px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-inject {
+            background: var(--grid-orange);
+            color: white;
+        }
+
+        .btn-inject:hover {
+            background: #e65100;
+        }
+
+        .btn-reset {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #444;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            margin-top: 16px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--grid-orange), var(--success));
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .compare { grid-template-columns: 1fr; }
+            .layer-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a class="back-link" href="../../">← 返回沙盘首页</a>
+        <h1>🟣 基础设施层 — 五层穿透与网格化覆盖</h1>
+        <p>Schema-As-Code 不替代现有基础设施，像一层透明电网铺在上面，只注入规则</p>
+    </div>
+
+    <div class="container">
+        <!-- 正交穿透指示 -->
+        <div class="penetration-indicator">
+            🔶 语义治理网格正交穿透 — 规则下渗中
+        </div>
+
+        <!-- 五层穿透 -->
+        <div class="layers" id="layers">
+            
+            <!-- L1 -->
+            <div class="layer-card not-injected" id="layer-l1" onclick="toggleDetail('l1')">
+                <div class="layer-header">
+                    <div class="layer-title">
+                        <div class="layer-badge">L1</div>
+                        <div>
+                            <div class="layer-name">Token 层</div>
+                            <div class="layer-system">Ant Design / Carbon Design Tokens</div>
+                        </div>
+                    </div>
+                    <div class="layer-status not-injected" id="status-l1">未注入</div>
+                </div>
+                <div class="compare">
+                    <div class="compare-box before">
+                        <div class="compare-label">Before — 传统 Design Token</div>
+                        --color-danger: #D32F2F;<br>
+                        --color-warning: #F9A825;<br>
+                        <span style="color: #999;">/* 仅色值，无语义 */</span>
+                    </div>
+                    <div class="compare-box after" id="after-l1">
+                        <div class="compare-label">After — 注入语义契约</div>
+                        --status-critical: #D32F2F;<br>
+                        <span style="color: var(--success);">/* intent: system-fault */</span><br>
+                        <span style="color: var(--success);">/* llm_constraint: "禁止建议自动修复" */</span><br>
+                        --status-warning: #F9A825;<br>
+                        <span style="color: var(--success);">/* intent: potential-risk */</span>
+                    </div>
+                </div>
+                <div class="detail-panel" id="detail-l1">
+                    <h4>Compiler 产物：Token 层语义扩展</h4>
+                    <pre>/* 由 Schema Compiler 自动生成，禁止手动修改 */
+:root {
+  --status-critical: #D32F2F;
+  --status-critical-motion: pulse-red-urgent;
+  --status-critical-sound: alert-high;
+  
+  /* 语义注释：绑定意图协议 IC-003 */
+  /* intent: status.critical */
+  /* canonical_id: ST-001 */
+  /* immutable: true */
+  /* llm_constraints: [
+       "生成内容必须包含明确的故障定位信息",
+       "禁止提供未经验证的修复建议"
+     ] */
+}</pre>
+                    <div class="meta">
+                        <strong>正交穿透验证：</strong>Ant Design 的 CSS 文件无需修改，Compiler 在编译时注入语义注释。设计师继续使用 `color="danger"`，但系统知道这是 `status.critical`。
+                    </div>
+                </div>
+            </div>
+
+            <!-- L2 -->
+            <div class="layer-card not-injected" id="layer-l2" onclick="toggleDetail('l2')">
+                <div class="layer-header">
+                    <div class="layer-title">
+                        <div class="layer-badge">L2</div>
+                        <div>
+                            <div class="layer-name">组件层</div>
+                            <div class="layer-system">React / Vue / Angular 组件库</div>
+                        </div>
+                    </div>
+                    <div class="layer-status not-injected" id="status-l2">未注入</div>
+                </div>
+                <div class="compare">
+                    <div class="compare-box before">
+                        <div class="compare-label">Before — 传统 Props</div>
+                        type ButtonProps = {<br>
+                        &nbsp;&nbsp;type?: 'primary' \| 'danger';<<br>
+                        &nbsp;&nbsp;onClick?: () => void;<br>
+                        }<<br>
+                        <span style="color: #999;">/* 无意图绑定，无约束 */</span>
+                    </div>
+                    <div class="compare-box after" id="after-l2">
+                        <div class="compare-label">After — 注入语义契约</div>
+                        type DestructiveButtonProps = {<br>
+                        &nbsp;&nbsp;intentContract: 'destructive-action';<<br>
+                        &nbsp;&nbsp;humanConfirmed?: boolean;<br>
+                        &nbsp;&nbsp;// ESLint: 禁止 type="primary"<br>
+                        &nbsp;&nbsp;// 必须包含 ConfirmModal 子组件<br>
+                        }
+                    </div>
+                </div>
+                <div class="detail-panel" id="detail-l2">
+                    <h4>Compiler 产物：组件层类型约束 + ESLint 规则</h4>
+                    <pre>// intent-types.ts — 由 Schema Compiler 自动生成
+export interface DestructiveActionIntent {
+  intentId: 'destructive-action';
+  semanticDomain: 'transactional';
+  safetyBoundary: {
+    ruleRef: 'rules/safety/destructive.yaml';
+    violationAction: 'block';
+  };
+}
+
+// ESLint 规则产物
+{
+  "rules": {
+    "intent/destructive-action-guard": ["error", {
+      "requiredChildren": ["ConfirmModal"],
+      "prohibitedProps": { "type": "primary" },
+      "appliesTo": ["Button", "Action"]
+    }]
+  }
+}</pre>
+                    <div class="meta">
+                        <strong>正交穿透验证：</strong>React 组件代码不改逻辑，只加一层 `withIntentGuard` HOC。开发者在 IDE 中写 `<Button>` 时，ESLint 自动提示"此场景下禁止 type=primary"。
+                    </div>
+                </div>
+            </div>
+
+            <!-- L3 -->
+            <div class="layer-card not-injected" id="layer-l3" onclick="toggleDetail('l3')">
+                <div class="layer-header">
+                    <div class="layer-title">
+                        <div class="layer-badge">L3</div>
+                        <div>
+                            <div class="layer-name">API 层</div>
+                            <div class="layer-system">OpenAPI / GraphQL / REST</div>
+                        </div>
+                    </div>
+                    <div class="layer-status not-injected" id="status-l3">未注入</div>
+                </div>
+                <div class="compare">
+                    <div class="compare-box before">
+                        <div class="compare-label">Before — 传统 API 契约</div>
+                        POST /api/destructive<br>
+                        body: {<br>
+                        &nbsp;&nbsp;action: string;<br>
+                        &nbsp;&nbsp;targetId: string;<br>
+                        }<<br>
+                        <span style="color: #999;">/* 无身份校验，无确认标记 */</span>
+                    </div>
+                    <div class="compare-box after" id="after-l3">
+                        <div class="compare-label">After — 注入语义契约</div>
+                        x-intent-binding: destructive-action<br>
+                        POST /api/destructive<br>
+                        required: [human_confirmed]<br>
+                        // 网关拦截：缺少 human_confirmed → 422
+                    </div>
+                </div>
+                <div class="detail-panel" id="detail-l3">
+                    <h4>Compiler 产物：API 层 OpenAPI 扩展</h4>
+                    <pre>openapi: 3.0.0
+paths:
+  /api/v1/destructive:
+    post:
+      x-intent-binding: destructive-action
+      x-schema-version: "v1.1.0"
+      requestBody:
+        required:
+          - human_confirmed    # 由契约编译生成的强制字段
+        properties:
+          human_confirmed:
+            type: boolean
+            description: "人机边界：高危操作必须人工确认"
+          actor_type:
+            type: string
+            enum: ["human", "ai", "human_via_ai"]
+            description: "执行者身份，AI 直接调用将 403"
+      responses:
+        403:
+          description: "AI 越权或缺少人工确认"
+        422:
+          description: "未通过意图协议校验"</pre>
+                    <div class="meta">
+                        <strong>正交穿透验证：</strong>API 网关（如 Kong、AWS API Gateway）消费 OpenAPI 扩展字段，无需修改后端业务代码。非法请求在网关层直接 422/403，不进入 Controller。
+                    </div>
+                </div>
+            </div>
+
+            <!-- L4 -->
+            <div class="layer-card not-injected" id="layer-l4" onclick="toggleDetail('l4')">
+                <div class="layer-header">
+                    <div class="layer-title">
+                        <div class="layer-badge">L4</div>
+                        <div>
+                            <div class="layer-name">容器层</div>
+                            <div class="layer-system">K8s / Envoy / Docker / Istio</div>
+                        </div>
+                    </div>
+                    <div class="layer-status not-injected" id="status-l4">未注入</div>
+                </div>
+                <div class="compare">
+                    <div class="compare-box before">
+                        <div class="compare-label">Before — 传统容器策略</div>
+                        allow: true<br>
+                        <span style="color: #999;">/* 服务间通信无语义校验 */</span>
+                    </div>
+                    <div class="compare-box after" id="after-l4">
+                        <div class="compare-label">After — 注入语义契约</div>
+                        OPA Policy:<br>
+                        allow {<br>
+                        &nbsp;&nbsp;input.intent_id == "destructive-action"<br>
+                        &nbsp;&nbsp;input.human_confirmed == true<br>
+                        &nbsp;&nbsp;input.actor_type == "human"<br>
+                        }
+                    </div>
+                </div>
+                <div class="detail-panel" id="detail-l4">
+                    <h4>Compiler 产物：容器层 OPA Policy / WASM</h4>
+                    <pre>package intent.governance
+
+default allow = false
+
+# 规则由 Schema Compiler 从 human-ai-boundary.yaml 编译生成
+allow {
+  input.intent_id == "destructive-action"
+  input.human_confirmed == true
+  input.actor_type == "human"
+}
+
+deny_reason = "AI prohibited from executing destructive actions" {
+  input.intent_id == "destructive-action"
+  input.actor_type == "ai"
+}
+
+# 版本校验：拒绝未知版本的意图协议
+allow {
+  input.schema_version == "v1.1.0"
+}</pre>
+                    <div class="meta">
+                        <strong>正交穿透验证：</strong>Envoy Sidecar 或 OPA Gatekeeper 加载 Rego 策略文件。容器间通信时自动校验意图协议版本和 Actor 身份，业务 Pod 无感知。
+                    </div>
+                </div>
+            </div>
+
+            <!-- L5 -->
+            <div class="layer-card not-injected" id="layer-l5" onclick="toggleDetail('l5')">
+                <div class="layer-header">
+                    <div class="layer-title">
+                        <div class="layer-badge">L5</div>
+                        <div>
+                            <div class="layer-name">DB / LLM 层</div>
+                            <div class="layer-system">MySQL / PostgreSQL / GPT-4 / Claude</div>
+                        </div>
+                    </div>
+                    <div class="layer-status not-injected" id="status-l5">未注入</div>
+                </div>
+                <div class="compare">
+                    <div class="compare-box before">
+                        <div class="compare-label">Before — 传统数据层</div>
+                        alert_level VARCHAR(10)<br>
+                        <span style="color: #999;">/* 无语义标记，无约束 */</span>
+                    </div>
+                    <div class="compare-box after" id="after-l5">
+                        <div class="compare-label">After — 注入语义契约</div>
+                        alert_level VARCHAR(10)<br>
+                        COMMENT 'intent: status.critical'<br>
+                        CHECK (alert_level IN ('P0','P1','P2','P3'))<<br>
+                        // LLM Prompt 前缀注入语义约束
+                    </div>
+                </div>
+                <div class="detail-panel" id="detail-l5">
+                    <h4>Compiler 产物：数据库层 DDL + LLM Prompt 约束</h4>
+                    <pre>-- 由 Schema Compiler 自动生成，随 Schema 版本更新
+ALTER TABLE alerts 
+  MODIFY COLUMN alert_level VARCHAR(10) 
+  COMMENT 'intent: status.critical | canonical_id: ST-001 | version: v1.1.0';
+
+-- 语义约束检查（软约束，运行时由应用层强制执行）
+-- CHECK (alert_level IN ('P0','P1','P2','P3')) 
+
+-- LLM Prompt 前缀注入（由 Runtime 在调用前自动附加）
+/*
+  [SYSTEM CONSTRAINT]
+  你必须使用 status.critical 语义令牌描述系统故障状态。
+  禁止使用'严重'/'紧急'/'危急'等自然语言同义词替代。
+  生成内容必须包含明确的故障定位信息。
+  禁止提供未经验证的修复建议。
+  必须附带人工升级路径。
+*/</pre>
+                    <div class="meta">
+                        <strong>正交穿透验证：</strong>数据库表结构不改字段类型，只加 COMMENT 和 CHECK。LLM 的 Prompt 由 Runtime 自动注入约束前缀，AI 工程师无需手动维护 Prompt。
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 控制面板 -->
+        <div class="controls">
+            <button class="btn-inject" onclick="startInjection()">▶ 播放规则下渗动画</button>
+            <button class="btn-reset" onclick="resetLayers()">↺ 重置</button>
+            <div class="progress-bar" id="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        Schema-As-Code 联邦自治架构 · 基础设施层五层穿透演示 · 
+        <a href="https://github.com/2436041978-ops/intent-schema-compiler" style="color: var(--infra-purple);">控制平面</a> · 
+        <a href="https://github.com/2436041978-ops/intent-governance-mesh" style="color: var(--grid-orange);">数据平面</a>
+    </footer>
+
+    <script>
+        const layers = ['l1', 'l2', 'l3', 'l4', 'l5'];
+        let currentLayer = 0;
+
+        function toggleDetail(id) {
+            const card = document.getElementById(`layer-${id}`);
+            card.classList.toggle('expanded');
+        }
+
+        async function startInjection() {
+            resetLayers();
+            const progressBar = document.getElementById('progress-bar');
+            const progressFill = document.getElementById('progress-fill');
+            progressBar.classList.add('active');
+            
+            for (let i = 0; i < layers.length; i++) {
+                const id = layers[i];
+                const card = document.getElementById(`layer-${id}`);
+                const status = document.getElementById(`status-${id}`);
+                
+                // 更新进度条
+                progressFill.style.width = `${((i) / layers.length) * 100}%`;
+                
+                // 模拟编译延迟
+                await sleep(600);
+                
+                // 注入状态变更
+                card.classList.remove('not-injected');
+                card.classList.add('injected');
+                status.textContent = '已注入';
+                status.classList.remove('not-injected');
+                status.classList.add('injected');
+                
+                // 自动展开详情
+                card.classList.add('expanded');
+                
+                // 滚动到当前层
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+                await sleep(800);
+            }
+            
+            progressFill.style.width = '100%';
+            await sleep(500);
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+            
+            // 全部完成后显示闭环提示
+            alert('规则下渗完成！五层基础设施已全部注入语义契约。点击任意层查看详细产物。');
+        }
+
+        function resetLayers() {
+            currentLayer = 0;
+            document.getElementById('progress-fill').style.width = '0%';
+            document.getElementById('progress-bar').classList.remove('active');
+            
+            layers.forEach(id => {
+                const card = document.getElementById(`layer-${id}`);
+                const status = document.getElementById(`status-${id}`);
+                
+                card.classList.remove('injected', 'expanded');
+                card.classList.add('not-injected');
+                status.textContent = '未注入';
+                status.classList.remove('injected');
+                status.classList.add('not-injected');
+            });
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+
+</body>
+</html>

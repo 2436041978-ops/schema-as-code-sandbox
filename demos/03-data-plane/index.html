@@ -583,7 +583,7 @@
             { node: 'infra-l2', name: 'L2 组件层', msg: '✅ React HOC 注入完成：withIntentGuard(Component, intentConfig)', type: 'success' },
             { node: 'infra-l3', name: 'L3 API 层', msg: '✅ OpenAPI 扩展字段注入：x-intent-binding: destructive-action', type: 'success' },
             { node: 'infra-l4', name: 'L4 容器层', msg: '✅ OPA Policy 注入：allow { input.human_confirmed == true }', type: 'success' },
-            { node: 'infra-l5', name: 'L5 DB/LLM', msg: '✅ DDL 注释注入：COMMENT 'intent: status.critical'', type: 'success' },
+            { node: 'infra-l5', name: 'L5 DB/LLM', msg: `✅ DDL 注释注入：COMMENT 'intent: status.critical'`, type: 'success' },
             { node: 'node-bridge', name: 'Bridge', msg: '👁️ 采集运行时漂移事件（同义词替代 / 置信度波动 / 安全越界）', type: 'process' },
             { node: 'node-bridge', name: '观测上采', msg: '⬆️ 从 DB/LLM/容器/API/组件 采集语义一致性指标', type: 'info' },
             { node: 'control-plane', name: '闭环反哺', msg: '♻️ 自动创建 Registry PR：收紧"严重"同义词规则 → 人工审批 → 下一周期', type: 'highlight' }

@@ -6,39 +6,57 @@
     <title>01 双轴正交模型 — Schema-As-Code 联邦自治架构</title>
     <style>
         :root {
-            --bg: #fafafa;
-            --surface: #ffffff;
-            --border: #e8e8e8;
-            --text: #1a1a1a;
-            --text-secondary: #666666;
-            --text-tertiary: #999999;
-            --cp: #2563eb;
-            --cp-light: #eff6ff;
-            --dp: #ea580c;
-            --dp-light: #fff7ed;
-            --infra: #7c3aed;
-            --infra-light: #f5f3ff;
-            --success: #16a34a;
-            --success-light: #f0fdf4;
-            --radius: 12px;
-            --shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
-            --shadow-lg: 0 4px 6px rgba(0,0,0,0.02), 0 12px 24px rgba(0,0,0,0.08);
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-f-xxl: 32px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1200px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
             min-height: 100vh;
         }
 
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+
+        h1 { font-size: var(--sa-f-xxl); }
+        h2 { font-size: var(--sa-f-xl); }
+        h3 { font-size: var(--sa-f-lg); }
+        h4 { font-size: var(--sa-f-base); }
+
         /* Header */
         .header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
+            background: var(--sa-c-surface);
+            border-bottom: 1px solid var(--sa-c-border);
             padding: 24px 32px;
             position: sticky;
             top: 0;
@@ -47,7 +65,7 @@
         }
 
         .header-inner {
-            max-width: 1200px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -55,29 +73,29 @@
         }
 
         .breadcrumb {
-            font-size: 12px;
-            color: var(--text-tertiary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-bottom: 4px;
         }
 
         .breadcrumb a {
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             text-decoration: none;
         }
 
         .breadcrumb a:hover {
-            color: var(--cp);
+            color: var(--sa-c-navy);
         }
 
         h1 {
-            font-size: 18px;
+            font-size: var(--sa-f-xl);
             font-weight: 600;
-            letter-spacing: -0.3px;
+            letter-spacing: -0.02em;
         }
 
         .subtitle {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-top: 2px;
         }
 
@@ -86,36 +104,41 @@
             gap: 12px;
         }
 
-        .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            border: 1px solid var(--border);
-            background: var(--surface);
-            color: var(--text);
-            transition: all 0.2s;
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-base);
             font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
-        .btn:hover {
-            background: var(--bg);
-            border-color: var(--text-tertiary);
-        }
+        .sa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .btn-primary {
-            background: var(--text);
+        .sa-btn--primary {
+            background: var(--sa-c-navy);
             color: white;
-            border-color: var(--text);
         }
 
-        .btn-primary:hover {
-            background: #333;
+        .sa-btn--primary:hover:not(:disabled) { background: var(--sa-c-navy-light); }
+
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
         }
+
+        .sa-btn--ghost:hover:not(:disabled) { background: var(--sa-c-bg); color: var(--sa-c-text); }
 
         /* Main Canvas */
         .canvas {
-            max-width: 1200px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
             padding: 40px 32px;
             position: relative;
@@ -127,7 +150,7 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             margin-bottom: 16px;
         }
 
@@ -137,13 +160,13 @@
         }
 
         .cp-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px 32px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--sa-shadow);
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             max-width: 480px;
             position: relative;
             overflow: hidden;
@@ -156,13 +179,13 @@
             top: 0;
             bottom: 0;
             width: 4px;
-            background: var(--cp);
+            background: var(--sa-c-navy);
             opacity: 0;
             transition: opacity 0.3s;
         }
 
         .cp-card:hover {
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--sa-shadow-hover);
             transform: translateY(-2px);
         }
 
@@ -171,43 +194,49 @@
         }
 
         .cp-card.active {
-            border-color: var(--cp);
-            box-shadow: 0 0 0 3px var(--cp-light), var(--shadow-lg);
+            border-color: var(--sa-c-navy);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08), var(--sa-shadow-hover);
         }
 
         .cp-card.active::before {
             opacity: 1;
         }
 
-        .cp-tag {
+        .sa-tag {
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            padding: 2px 10px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            color: var(--cp);
-            background: var(--cp-light);
-            padding: 4px 10px;
-            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             margin-bottom: 12px;
         }
 
+        .sa-tag--cp {
+            background: #E8F0FE;
+            color: var(--sa-c-navy);
+        }
+
         .cp-title {
-            font-size: 16px;
+            font-size: var(--sa-f-lg);
             font-weight: 600;
             margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
         .cp-meta {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
         }
 
         .cp-status {
             margin-top: 12px;
-            font-size: 12px;
-            color: var(--success);
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: var(--sa-f-sm);
+            color: #059669;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
         }
 
         /* Data Plane */
@@ -225,12 +254,12 @@
         .dp-node {
             flex: 1;
             min-width: 160px;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             text-align: center;
         }
@@ -242,14 +271,14 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: var(--dp);
+            background: var(--sa-c-amber);
             opacity: 0;
             transition: opacity 0.3s;
-            border-radius: var(--radius) var(--radius) 0 0;
+            border-radius: var(--sa-r) var(--sa-r) 0 0;
         }
 
         .dp-node:hover {
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--sa-shadow-hover);
             transform: translateY(-2px);
         }
 
@@ -258,8 +287,8 @@
         }
 
         .dp-node.active {
-            border-color: var(--dp);
-            box-shadow: 0 0 0 3px var(--dp-light), var(--shadow-lg);
+            border-color: var(--sa-c-amber);
+            box-shadow: 0 0 0 3px var(--sa-c-amber-light), var(--sa-shadow-hover);
         }
 
         .dp-node.active::before {
@@ -271,9 +300,9 @@
         }
 
         @keyframes pulse-dp {
-            0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.15); }
-            70% { box-shadow: 0 0 0 12px rgba(234, 88, 12, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.15); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 107, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
         }
 
         .dp-icon {
@@ -282,14 +311,15 @@
         }
 
         .dp-name {
-            font-size: 14px;
+            font-size: var(--sa-f-base);
             font-weight: 600;
             margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
         .dp-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             line-height: 1.5;
         }
 
@@ -297,17 +327,22 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             font-size: 18px;
             padding: 0 4px;
             align-self: center;
         }
 
+        .sa-tag--dp {
+            background: var(--sa-c-amber-light);
+            color: var(--sa-c-amber);
+        }
+
         /* Flow Labels */
         .flow-label {
             text-align: center;
-            font-size: 12px;
-            color: var(--text-tertiary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin: 16px 0;
             display: flex;
             align-items: center;
@@ -318,12 +353,12 @@
         .flow-label .line {
             flex: 1;
             height: 1px;
-            background: var(--border);
+            background: var(--sa-c-border);
             max-width: 200px;
         }
 
         .flow-label strong {
-            color: var(--dp);
+            color: var(--sa-c-amber);
             font-weight: 600;
         }
 
@@ -340,12 +375,12 @@
 
         .infra-node {
             flex: 1;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             position: relative;
             text-align: center;
         }
@@ -357,14 +392,14 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: var(--infra);
+            background: var(--sa-c-navy-light);
             opacity: 0;
             transition: opacity 0.3s;
-            border-radius: var(--radius) var(--radius) 0 0;
+            border-radius: var(--sa-r) var(--sa-r) 0 0;
         }
 
         .infra-node:hover {
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--sa-shadow-hover);
             transform: translateY(-2px);
         }
 
@@ -373,8 +408,8 @@
         }
 
         .infra-node.active {
-            border-color: var(--infra);
-            box-shadow: 0 0 0 3px var(--infra-light), var(--shadow-lg);
+            border-color: var(--sa-c-navy-light);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08), var(--sa-shadow-hover);
         }
 
         .infra-node.active::before {
@@ -382,45 +417,46 @@
         }
 
         .infra-node.injected {
-            border-color: var(--success);
-            background: var(--success-light);
+            border-color: var(--sa-c-teal);
+            background: var(--sa-c-teal-light);
         }
 
         .infra-node.injected::before {
             opacity: 1;
-            background: var(--success);
+            background: var(--sa-c-teal);
         }
 
         .infra-badge {
             font-size: 11px;
             font-weight: 600;
-            color: var(--infra);
+            color: var(--sa-c-navy-light);
             margin-bottom: 8px;
         }
 
         .infra-name {
-            font-size: 13px;
+            font-size: var(--sa-f-base);
             font-weight: 600;
             margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
         .infra-system {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-bottom: 10px;
         }
 
         .infra-state {
             font-size: 11px;
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             padding-top: 10px;
-            border-top: 1px dashed var(--border);
+            border-top: 1px dashed var(--sa-c-border);
             min-height: 60px;
         }
 
         .infra-node.injected .infra-state {
-            color: var(--success);
-            border-top-color: var(--success);
+            color: #059669;
+            border-top-color: var(--sa-c-teal);
             border-top-style: solid;
         }
 
@@ -433,9 +469,9 @@
             width: 480px;
             max-width: 100%;
             height: 100vh;
-            background: var(--surface);
-            border-left: 1px solid var(--border);
-            box-shadow: -8px 0 32px rgba(0,0,0,0.08);
+            background: var(--sa-c-surface);
+            border-left: 1px solid var(--sa-c-border);
+            box-shadow: -8px 0 32px rgba(10, 37, 64, 0.08);
             z-index: 200;
             overflow-y: auto;
             animation: slideIn 0.3s ease;
@@ -452,7 +488,7 @@
 
         .detail-header {
             padding: 24px 28px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--sa-c-border);
             position: sticky;
             top: 0;
             background: rgba(255,255,255,0.95);
@@ -465,19 +501,20 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             padding: 4px;
             line-height: 1;
         }
 
         .detail-close:hover {
-            color: var(--text);
+            color: var(--sa-c-text);
         }
 
         .detail-title {
-            font-size: 16px;
+            font-size: var(--sa-f-lg);
             font-weight: 600;
             padding-right: 32px;
+            letter-spacing: -0.02em;
         }
 
         .detail-body {
@@ -493,14 +530,14 @@
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             margin-bottom: 12px;
         }
 
         .detail-section p,
         .detail-section li {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             line-height: 1.7;
         }
 
@@ -509,7 +546,7 @@
         }
 
         .compare-box {
-            background: var(--bg);
+            background: var(--sa-c-bg);
             border-radius: 8px;
             padding: 16px;
             margin-top: 12px;
@@ -518,49 +555,49 @@
         .compare-box .label {
             font-size: 11px;
             font-weight: 600;
-            color: var(--text-tertiary);
+            color: var(--sa-c-muted);
             margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .compare-box .before {
-            font-size: 12px;
-            color: var(--text-tertiary);
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
             background: white;
             padding: 12px;
             border-radius: 6px;
-            border: 1px solid var(--border);
+            border: 1px solid var(--sa-c-border);
             margin-bottom: 12px;
         }
 
         .compare-box .after {
-            font-size: 12px;
-            color: var(--text);
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            background: var(--success-light);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-text);
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            background: var(--sa-c-teal-light);
             padding: 12px;
             border-radius: 6px;
-            border: 1px solid var(--success);
+            border: 1px solid var(--sa-c-teal);
         }
 
         .principle-tag {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            font-size: 12px;
+            font-size: var(--sa-f-sm);
             padding: 6px 12px;
             border-radius: 20px;
-            background: var(--bg);
-            color: var(--text-secondary);
+            background: var(--sa-c-bg);
+            color: var(--sa-c-muted);
             margin-right: 8px;
             margin-bottom: 8px;
         }
 
         .principle-tag.verified {
-            background: var(--success-light);
-            color: var(--success);
+            background: var(--sa-c-teal-light);
+            color: #059669;
         }
 
         /* Overlay */
@@ -571,7 +608,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.2);
+            background: rgba(10, 37, 64, 0.2);
             z-index: 150;
         }
 
@@ -598,7 +635,22 @@
                 align-items: flex-start;
             }
         }
+
+        /* Loop badge */
+        .loop-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--sa-c-teal-light);
+            color: #059669;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: var(--sa-f-sm);
+            font-weight: 600;
+            border: 1px solid var(--sa-c-teal);
+        }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -612,8 +664,8 @@
                 <div class="subtitle">纵向基础设施与横向语义治理网格的正交穿透</div>
             </div>
             <div class="header-actions">
-                <button class="btn" onclick="resetAll()">重置状态</button>
-                <button class="btn btn-primary" onclick="playFlow()">▶ 播放数据流</button>
+                <button class="sa-btn sa-btn--ghost" onclick="resetAll()">重置状态</button>
+                <button class="sa-btn sa-btn--primary" onclick="playFlow()">▶ 播放数据流</button>
             </div>
         </div>
     </div>
@@ -622,9 +674,9 @@
 
         <!-- 控制平面 -->
         <div class="cp-zone">
-            <div class="axis-label" style="color: var(--cp);">🔷 横向轴起点 — 控制平面（Control Plane）</div>
+            <div class="axis-label" style="color: var(--sa-c-navy);">🔷 横向轴起点 — 控制平面（Control Plane）</div>
             <div class="cp-card" id="cp-card" onclick="showDetail('cp')">
-                <div class="cp-tag">🔷 联邦宪法</div>
+                <div class="sa-tag sa-tag--cp">🔷 联邦宪法</div>
                 <div class="cp-title">intent-schema-compiler</div>
                 <div class="cp-meta">语义层 / 治理层 / 执行层 — YAML 意图协议本体</div>
                 <div class="cp-status">● v0.1.0 已发布 | Git-Native | 引用闭环 | Diff 可见</div>
@@ -633,7 +685,7 @@
 
         <!-- 数据平面 -->
         <div class="dp-zone">
-            <div class="axis-label" style="color: var(--dp);">🔶 横向轴 — 数据平面（Data Plane）语义治理网格</div>
+            <div class="axis-label" style="color: var(--sa-c-amber);">🔶 横向轴 — 数据平面（Data Plane）语义治理网格</div>
             <div class="dp-grid">
                 <div class="dp-node" id="node-registry" onclick="showDetail('registry')">
                     <div class="dp-icon">📋</div>
@@ -676,7 +728,7 @@
 
         <!-- 基础设施层 -->
         <div class="infra-zone">
-            <div class="axis-label" style="color: var(--infra);">🟣 纵向轴 — 基础设施层（现有系统，被网格注入）</div>
+            <div class="axis-label" style="color: var(--sa-c-navy-light);">🟣 纵向轴 — 基础设施层（现有系统，被网格注入）</div>
             <div class="infra-grid">
                 <div class="infra-node" id="infra-l1" onclick="showDetail('l1')">
                     <div class="infra-badge">L1</div>
@@ -714,13 +766,13 @@
         <!-- 观测上采 -->
         <div class="flow-label">
             <span class="line"></span>
-            <strong style="color: var(--success);">▲ 观测上采</strong>：漂移事件反哺控制平面
+            <strong style="color: #059669;">▲ 观测上采</strong>：漂移事件反哺控制平面
             <span class="line"></span>
         </div>
 
         <!-- 闭环提示 -->
         <div style="text-align: center; margin-top: 24px;">
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--success-light); color: var(--success); padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1px solid var(--success);">
+            <div class="loop-badge">
                 ♻️ 闭环：Bridge → 自动 PR → 控制平面 → 下一周期
             </div>
         </div>
@@ -888,7 +940,7 @@
                             <div class="label">Before：纯视觉属性</div>
                             <div class="before">--color-danger: #D32F2F;<br>（无语义，无约束）</div>
                             <div class="label">After：语义契约注入</div>
-                            <div class="after">--status-critical: #D32F2F;<br>/* intent: system-fault */<<br>/* llm_constraint: "禁止建议自动修复" */</div>
+                            <div class="after">--status-critical: #D32F2F;<br>/* intent: system-fault */<br>/* llm_constraint: "禁止建议自动修复" */</div>
                         </div>
                     </div>
                     <div class="detail-section">
@@ -911,7 +963,7 @@
                             <div class="label">Before：自由 Props</div>
                             <div class="before">type ButtonProps = {<br>  type?: 'primary' | 'danger'<br>}</div>
                             <div class="label">After：语义契约约束</div>
-                            <div class="after">type DestructiveButtonProps = {<br>  intentContract: 'destructive-action';<<br>  humanConfirmed?: boolean;<br>  // ESLint: 禁止 type="primary"<br>}</div>
+                            <div class="after">type DestructiveButtonProps = {<br>  intentContract: 'destructive-action';<br>  humanConfirmed?: boolean;<br>  // ESLint: 禁止 type="primary"<br>}</div>
                         </div>
                     </div>
                     <div class="detail-section">
@@ -1017,7 +1069,6 @@
                 panel.classList.add('show');
                 overlay.classList.add('show');
 
-                // 高亮对应节点
                 if (key.startsWith('l')) {
                     document.getElementById('infra-' + key).classList.add('active');
                 } else if (['registry', 'compiler', 'validator', 'runtime', 'bridge'].includes(key)) {
@@ -1045,7 +1096,6 @@
                 { id: 'node-runtime', delay: 500, type: 'dp' }
             ];
 
-            // 1. 控制平面 → 数据平面依次激活
             for (const step of sequence) {
                 const el = document.getElementById(step.id);
                 el.classList.add('processing');
@@ -1054,7 +1104,6 @@
                 el.classList.add('active');
             }
 
-            // 2. 规则下渗到基础设施
             const layers = ['l1', 'l2', 'l3', 'l4', 'l5'];
             for (const layer of layers) {
                 const el = document.getElementById('infra-' + layer);
@@ -1063,23 +1112,20 @@
                 await sleep(400);
             }
 
-            // 3. Bridge 激活
             const bridge = document.getElementById('node-bridge');
             bridge.classList.add('processing');
             await sleep(800);
             bridge.classList.remove('processing');
             bridge.classList.add('active');
 
-            // 4. 观测上采（闪烁提示）
             await sleep(600);
             for (let i = layers.length - 1; i >= 0; i--) {
                 const el = document.getElementById('infra-' + layers[i]);
-                el.style.boxShadow = '0 0 0 3px rgba(22, 163, 74, 0.3)';
+                el.style.boxShadow = '0 0 0 3px rgba(0, 212, 170, 0.3)';
                 await sleep(200);
                 el.style.boxShadow = '';
             }
 
-            // 5. 完成
             await sleep(500);
             document.querySelector('.flow-label:last-of-type + div div').style.transform = 'scale(1.05)';
             await sleep(300);
@@ -1103,7 +1149,6 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // 键盘支持
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') closeDetail();
         });

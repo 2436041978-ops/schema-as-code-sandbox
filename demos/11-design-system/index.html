@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11 与设计系统的关系 — Schema-As-Code 向上延伸</title>
+    <style>
+        :root {
+            --cp-blue: #1565c0;
+            --dp-orange: #ef6c00;
+            --infra-purple: #6a1b9a;
+            --success: #4caf50;
+            --error: #d32f2f;
+            --warn: #ff9800;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #e0e6ed;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .back:hover { color: var(--cp-blue); }
+        
+        h1 {
+            font-size: 22px;
+            color: var(--infra-purple);
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        /* 核心命题卡片 */
+        .proposition {
+            background: linear-gradient(135deg, #f3e5f5 0%, #e8f5e9 100%);
+            border: 2px solid var(--infra-purple);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .proposition .icon {
+            font-size: 36px;
+            flex-shrink: 0;
+        }
+        .proposition .text {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--infra-purple);
+        }
+        .proposition .sub {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: normal;
+            margin-top: 4px;
+        }
+        
+        /* 切换开关 */
+        .toggle-bar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .toggle-btn {
+            padding: 10px 24px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toggle-btn:hover {
+            border-color: var(--cp-blue);
+        }
+        .toggle-btn.active {
+            border-color: var(--infra-purple);
+            background: #f3e5f5;
+            color: var(--infra-purple);
+            font-weight: bold;
+        }
+        
+        /* 对比区域 */
+        .compare-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .compare-panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+        .compare-panel .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+        .compare-panel .panel-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .compare-panel.traditional .panel-title { color: var(--text-secondary); }
+        .compare-panel.semantic .panel-title { color: var(--infra-purple); }
+        
+        /* Token 展示 */
+        .token-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .token-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius);
+            background: #fafafa;
+            border: 1px solid var(--border);
+        }
+        .token-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            flex-shrink: 0;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .token-info {
+            flex: 1;
+        }
+        .token-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .token-value {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+        .token-meta {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+        .token-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .token-badge.semantic {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+        .token-badge.none {
+            background: #f5f5f5;
+            color: #999;
+        }
+        
+        /* 组件预览区 */
+        .preview-area {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .preview-area h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* 模拟组件 */
+        .mock-app {
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .mock-app-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+        .alert-card {
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        .alert-card.critical {
+            background: #ffebee;
+            border: 2px solid #d32f2f;
+        }
+        .alert-card.warning {
+            background: #fff8e1;
+            border: 2px solid #f9a825;
+        }
+        .alert-card.info {
+            background: #e3f2fd;
+            border: 2px solid #1565c0;
+        }
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .alert-badge {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            color: white;
+        }
+        .alert-badge.critical { background: #d32f2f; }
+        .alert-badge.warning { background: #f9a825; color: #333; }
+        .alert-badge.info { background: #1565c0; }
+        .alert-text {
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .alert-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .btn {
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: #1565c0;
+            color: white;
+        }
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+        
+        /* 语义层叠加展示 */
+        .semantic-overlay {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: #f3e5f5;
+            border: 1px dashed var(--infra-purple);
+            border-radius: var(--radius);
+            font-size: 12px;
+        }
+        .semantic-overlay.show {
+            display: block;
+        }
+        .semantic-overlay .overlay-title {
+            font-weight: bold;
+            color: var(--infra-purple);
+            margin-bottom: 8px;
+        }
+        .semantic-overlay .overlay-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+            color: var(--text-secondary);
+        }
+        .semantic-overlay .overlay-item::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        /* 底部说明 */
+        .explanation {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+        .explanation h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .explanation-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .exp-card {
+            padding: 16px;
+            background: #fafafa;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        .exp-card h4 {
+            font-size: 13px;
+            color: var(--infra-purple);
+            margin-bottom: 8px;
+        }
+        .exp-card p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .compare-area { grid-template-columns: 1fr; }
+            .explanation-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back" href="../../">← 返回沙盘首页</a>
+        
+        <h1>与设计系统的关系：向上延伸，而非替代</h1>
+        <p class="subtitle">Schema-As-Code 在 Ant Design / Carbon 的 Design Token 之上，增加语义契约层</p>
+        
+        <div class="proposition">
+            <div class="icon">🎯</div>
+            <div>
+                <div class="text">核心命题：Schema-As-Code 不替代设计系统，而是向上延伸其确定性治理</div>
+                <div class="sub">设计系统解决"组件长什么样"，Schema-As-Code 解决"这个组件在什么场景下应该怎么用、不能怎么用"</div>
+            </div>
+        </div>
+        
+        <!-- 切换开关 -->
+        <div class="toggle-bar">
+            <button class="toggle-btn active" id="btn-traditional" onclick="setMode('traditional')">
+                📦 传统设计系统（仅 Token）
+            </button>
+            <button class="toggle-btn" id="btn-semantic" onclick="setMode('semantic')">
+                🔮 Schema-As-Code 叠加（Token + 语义契约）
+            </button>
+        </div>
+        
+        <!-- 对比区域：Token 定义 -->
+        <div class="compare-area">
+            <div class="compare-panel traditional">
+                <div class="panel-header">
+                    <span style="font-size: 20px;">📦</span>
+                    <div class="panel-title">传统 Design Token</div>
+                </div>
+                <div class="token-list">
+                    <div class="token-item">
+                        <div class="token-swatch" style="background: #D32F2F;"></div>
+                        <div class="token-info">
+                            <div class="token-name">--color-danger</div>
+                            <div class="token-value">#D32F2F</div>
+                            <div class="token-meta">仅色值，无场景语义</div>
+                        </div>
+                        <div class="token-badge none">无语义</div>
+                    </div>
+                    <div class="token-item">
+                        <div class="token-swatch" style="background: #F9A825;"></div>
+                        <div class="token-info">
+                            <div class="token-name">--color-warning</div>
+                            <div class="token-value">#F9A825</div>
+                            <div class="token-meta">仅色值，无场景语义</div>
+                        </div>
+                        <div class="token-badge none">无语义</div>
+                    </div>
+                    <div class="token-item">
+                        <div class="token-swatch" style="background: #1565C0;"></div>
+                        <div class="token-info">
+                            <div class="token-name">--color-info</div>
+                            <div class="token-value">#1565C0</div>
+                            <div class="token-meta">仅色值，无场景语义</div>
+                        </div>
+                        <div class="token-badge none">无语义</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="compare-panel semantic">
+                <div class="panel-header">
+                    <span style="font-size: 20px;">🔮</span>
+                    <div class="panel-title">Schema-As-Code 语义令牌</div>
+                </div>
+                <div class="token-list">
+                    <div class="token-item">
+                        <div class="token-swatch" style="background: #D32F2F;"></div>
+                        <div class="token-info">
+                            <div class="token-name">status.critical</div>
+                            <div class="token-value">#D32F2F + 语义契约</div>
+                            <div class="token-meta">系统级故障，需立即响应</div>
+                        </div>
+                        <div class="token-badge semantic">语义化</div>
+                    </div>
+                    <div class="token-item">
+                        <div class="token-swatch" style="background: #F9A825;"></div>
+                        <div class="token-info">
+                            <div class="token-name">status.warning</div>
+                            <div class="token-value">#F9A825 + 语义契约</div>
+                            <div class="token-meta">潜在风险，需关注</div>
+                        </div>
+                        <div class="token-badge semantic">语义化</div>
+                    </div>
+                    <div class="token-item">
+                        <div class="token-swatch" style="background: #1565C0;"></div>
+                        <div class="token-info">
+                            <div class="token-name">status.info</div>
+                            <div class="token-value">#1565C0 + 语义契约</div>
+                            <div class="token-meta">一般状态，正常显示</div>
+                        </div>
+                        <div class="token-badge semantic">语义化</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 组件预览区 -->
+        <div class="preview-area">
+            <h3>🖥️ 界面渲染对比：同一个告警场景</h3>
+            
+            <div class="mock-app">
+                <div class="mock-app-title">系统监控面板</div>
+                
+                <div class="alert-card critical" id="alert-critical">
+                    <div class="alert-header">
+                        <span class="alert-badge critical" id="badge-critical">P0</span>
+                        <span style="font-size: 12px; color: #666;">刚刚</span>
+                    </div>
+                    <div class="alert-text" id="text-critical">
+                        CPU 使用率超过阈值，导致服务响应延迟
+                    </div>
+                    <div class="alert-actions" id="actions-critical">
+                        <button class="btn btn-danger" id="btn-repair">立即修复</button>
+                        <button class="btn btn-secondary">查看详情</button>
+                    </div>
+                    <div class="semantic-overlay" id="overlay-critical">
+                        <div class="overlay-title">🔒 Schema-As-Code 语义契约叠加</div>
+                        <div class="overlay-item">语义令牌：status.critical（系统级故障）</div>
+                        <div class="overlay-item">LLM 约束：禁止建议自动修复</div>
+                        <div class="overlay-item">人机边界：必须人工确认后才能执行</div>
+                        <div class="overlay-item">同义词防火墙："严重"必须映射为 status.critical</div>
+                    </div>
+                </div>
+                
+                <div class="alert-card warning" id="alert-warning">
+                    <div class="alert-header">
+                        <span class="alert-badge warning" id="badge-warning">P1</span>
+                        <span style="font-size: 12px; color: #666;">5分钟前</span>
+                    </div>
+                    <div class="alert-text" id="text-warning">
+                        内存使用率接近阈值，建议关注
+                    </div>
+                    <div class="alert-actions" id="actions-warning">
+                        <button class="btn btn-primary">查看指标</button>
+                    </div>
+                    <div class="semantic-overlay" id="overlay-warning">
+                        <div class="overlay-title">🔒 Schema-As-Code 语义契约叠加</div>
+                        <div class="overlay-item">语义令牌：status.warning（潜在风险）</div>
+                        <div class="overlay-item">LLM 约束：必须说明风险等级和影响面</div>
+                        <div class="overlay-item">可读性约束：文案长度 10-200 字符</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部说明 -->
+        <div class="explanation">
+            <h3>📐 三层关系详解</h3>
+            <div class="explanation-grid">
+                <div class="exp-card">
+                    <h4>1. 视觉层（设计系统）</h4>
+                    <p>Ant Design / Carbon 负责颜色、间距、圆角、字体等视觉属性。Schema-As-Code 不修改这些。</p>
+                </div>
+                <div class="exp-card">
+                    <h4>2. 语义层（Schema-As-Code）</h4>
+                    <p>在 Token 之上定义业务语义：status.critical = 系统故障 + 必须人工确认 + 禁止自动修复。</p>
+                </div>
+                <div class="exp-card">
+                    <h4>3. 执行层（编译产物）</h4>
+                    <p>Compiler 将语义契约编译为 ESLint 规则、TS 类型、Prompt 约束，自动注入到设计系统消费端。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setMode(mode) {
+            const btnTrad = document.getElementById('btn-traditional');
+            const btnSem = document.getElementById('btn-semantic');
+            
+            if (mode === 'traditional') {
+                btnTrad.classList.add('active');
+                btnSem.classList.remove('active');
+                
+                // 隐藏语义叠加层
+                document.querySelectorAll('.semantic-overlay').forEach(el => el.classList.remove('show'));
+                
+                // 恢复传统按钮状态
+                document.getElementById('btn-repair').disabled = false;
+                document.getElementById('btn-repair').textContent = '立即修复';
+                document.getElementById('btn-repair').style.opacity = '1';
+                
+                // 修改文案为自然语言（模拟无约束时的 LLM 输出）
+                document.getElementById('badge-critical').textContent = '严重';
+                document.getElementById('text-critical').textContent = 'CPU 使用率超过阈值，建议自动修复';
+                
+            } else {
+                btnSem.classList.add('active');
+                btnTrad.classList.remove('active');
+                
+                // 显示语义叠加层
+                document.querySelectorAll('.semantic-overlay').forEach(el => el.classList.add('show'));
+                
+                // 应用语义约束：高危操作必须人工确认
+                document.getElementById('btn-repair').disabled = true;
+                document.getElementById('btn-repair').textContent = '需人工确认';
+                document.getElementById('btn-repair').style.opacity = '0.5';
+                
+                // 修正文案为语义令牌（模拟约束后的 LLM 输出）
+                document.getElementById('badge-critical').textContent = 'P0';
+                document.getElementById('text-critical').textContent = 'CPU 使用率超过阈值，导致服务响应延迟。根因：数据库连接池耗尽。建议人工排查。';
+            }
+        }
+    </script>
+</body>
+</html>

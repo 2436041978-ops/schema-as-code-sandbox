@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>06 四大设计原则 — 交互验证</title>
+    <style>
+        :root {
+            --cp-blue: #1565c0;
+            --cp-bg: #e3f2fd;
+            --dp-orange: #ef6c00;
+            --dp-bg: #fff3e0;
+            --success: #4caf50;
+            --error: #d32f2f;
+            --warn: #ff9800;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+            --border: #e0e6ed;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .header h1 { font-size: 22px; margin-bottom: 8px; }
+        .header p { font-size: 14px; opacity: 0.8; }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* 原则导航卡片 */
+        .principle-nav {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .principle-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .principle-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .principle-card.active {
+            border-color: var(--cp-blue);
+            background: var(--cp-bg);
+        }
+
+        .principle-card .number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--cp-blue);
+            margin-bottom: 4px;
+        }
+
+        .principle-card h3 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .principle-card p {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 演示区域 */
+        .demo-stage {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px;
+            min-height: 400px;
+            display: none;
+        }
+
+        .demo-stage.active {
+            display: block;
+        }
+
+        .demo-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .demo-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* 对比布局 */
+        .compare-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .side {
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            position: relative;
+        }
+
+        .side.bad {
+            border-color: #ffcdd2;
+        }
+
+        .side.good {
+            border-color: #c8e6c9;
+        }
+
+        .side-label {
+            position: absolute;
+            top: -12px;
+            left: 16px;
+            background: white;
+            padding: 0 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .side.bad .side-label { color: var(--error); }
+        .side.good .side-label { color: var(--success); }
+
+        .side-content {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            min-height: 200px;
+        }
+
+        .side-content .file {
+            margin-bottom: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            background: #f5f5f5;
+            transition: all 0.3s;
+        }
+
+        .side-content .file.error {
+            background: #ffebee;
+            border-left: 3px solid var(--error);
+        }
+
+        .side-content .file.success {
+            background: #e8f5e9;
+            border-left: 3px solid var(--success);
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 24px;
+            margin: 0 8px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn-play {
+            background: var(--cp-blue);
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: #0d47a1;
+        }
+
+        .btn-reset {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #444;
+        }
+
+        /* 动画元素 */
+        .yaml-badge {
+            display: inline-block;
+            background: var(--cp-bg);
+            color: var(--cp-blue);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+
+        .arrow-down {
+            text-align: center;
+            font-size: 20px;
+            color: var(--text-secondary);
+            margin: 8px 0;
+        }
+
+        .pulse-ring {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--error);
+            animation: pulse-red 2s infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+        }
+
+        .block-shield {
+            text-align: center;
+            padding: 40px;
+            background: #ffebee;
+            border: 2px solid var(--error);
+            border-radius: var(--radius);
+        }
+
+        .block-shield h3 {
+            color: var(--error);
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .version-mismatch {
+            background: #fff3e0;
+            border: 2px solid var(--warn);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .version-mismatch h4 {
+            color: var(--warn);
+            margin-bottom: 8px;
+        }
+
+        .hash-row {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 12px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .hash-box {
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+
+        .hash-box.expected {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .hash-box.actual {
+            background: #ffebee;
+            color: var(--error);
+        }
+
+        .result-text {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 14px;
+            font-weight: bold;
+            min-height: 24px;
+        }
+
+        .result-text.success { color: var(--success); }
+        .result-text.error { color: var(--error); }
+
+        /* 正交穿透可视化 */
+        .ortho-viz {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .vertical-lane {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 60px;
+            transform: translateX(-50%);
+            background: linear-gradient(to bottom, #f3e5f5, #e1bee7);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .v-node {
+            width: 44px;
+            height: 44px;
+            background: white;
+            border: 2px solid #6a1b9a;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #6a1b9a;
+            z-index: 2;
+        }
+
+        .horizontal-beam {
+            position: absolute;
+            left: 10%;
+            right: 10%;
+            height: 4px;
+            background: var(--dp-orange);
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 1;
+        }
+
+        .horizontal-beam.show {
+            opacity: 0.6;
+        }
+
+        .inject-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--dp-orange);
+            border-radius: 50%;
+            opacity: 0;
+            transition: all 0.5s;
+            z-index: 3;
+        }
+
+        .inject-dot.show {
+            opacity: 1;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .principle-nav { grid-template-columns: 1fr; }
+            .compare-layout { grid-template-columns: 1fr; }
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a class="back-link" href="../../">← 返回沙盘首页</a>
+        <h1>🔐 四大设计原则 — 交互验证</h1>
+        <p>点击任意原则卡片，验证 Schema-As-Code 的核心设计哲学</p>
+    </div>
+
+    <div class="container">
+        <!-- 原则导航 -->
+        <div class="principle-nav">
+            <div class="principle-card active" onclick="showDemo(1)" id="nav-1">
+                <div class="number">01</div>
+                <h3>声明式</h3>
+                <p>只需说"应该是什么"，系统自动收敛</p>
+            </div>
+            <div class="principle-card" onclick="showDemo(2)" id="nav-2">
+                <div class="number">02</div>
+                <h3>正交穿透</h3>
+                <p>横向网格与纵向业务链路正交，业务代码无感知</p>
+            </div>
+            <div class="principle-card" onclick="showDemo(3)" id="nav-3">
+                <div class="number">03</div>
+                <h3>阻断优于修正</h3>
+                <p>推演失败直接拦截，不触发 LLM 重试引入漂移</p>
+            </div>
+            <div class="principle-card" onclick="showDemo(4)" id="nav-4">
+                <div class="number">04</div>
+                <h3>版本锁定</h3>
+                <p>所有节点显式声明兼容版本，禁止隐式使用 latest</p>
+            </div>
+        </div>
+
+        <!-- DEMO 1: 声明式 -->
+        <div class="demo-stage active" id="demo-1">
+            <div class="demo-title">01 声明式（Declarative）</div>
+            <div class="demo-desc">对比：命令式"逐个改文件" vs 声明式"改 1 个 YAML，自动扩散"</div>
+            
+            <div class="compare-layout">
+                <div class="side bad">
+                    <div class="side-label">❌ 命令式（Imperative）</div>
+                    <div class="side-content" id="imperative-side">
+                        <div class="file" id="f1">📄 src/components/Button.tsx<br>修改 type="danger" → 手动检查</div>
+                        <div class="file" id="f2">📄 src/panels/AlertCard.tsx<br>修改 alert_level 枚举 → 人工核对</div>
+                        <div class="file" id="f3">📄 api/openapi.yaml<br>添加 x-intent-binding → 口头同步</div>
+                        <div class="file" id="f4">📄 k8s/policy.rego<br>更新 OPA 规则 → 容易遗漏</div>
+                        <div class="file" id="f5">📄 db/migration.sql<br>添加 COMMENT → 版本对不上</div>
+                    </div>
+                </div>
+                <div class="side good">
+                    <div class="side-label">✅ 声明式（Declarative）</div>
+                    <div class="side-content" id="declarative-side">
+                        <div class="file" style="background: var(--cp-bg); border-left: 3px solid var(--cp-blue);">
+                            <span class="yaml-badge">YAML</span>
+                            intent-schema-compiler/semantic-tokens.yaml<br>
+                            <span style="color: var(--cp-blue);">status.critical: { color: #D32F2F, immutable: true }</span>
+                        </div>
+                        <div class="arrow-down">▼</div>
+                        <div class="file" id="d1">✅ Compiler 自动分发到 5 层</div>
+                        <div class="file" id="d2" style="display:none;">✅ L1 Token 层：CSS 变量注入</div>
+                        <div class="file" id="d3" style="display:none;">✅ L2 组件层：Props 类型约束</div>
+                        <div class="file" id="d4" style="display:none;">✅ L3 API 层：OpenAPI 扩展</div>
+                        <div class="file" id="d5" style="display:none;">✅ L4 容器层：OPA Policy</div>
+                        <div class="file" id="d6" style="display:none;">✅ L5 DB 层：DDL 注释</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn-play" onclick="runDeclarative()">▶ 播放自动收敛动画</button>
+                <button class="btn-reset" onclick="resetDeclarative()">↺ 重置</button>
+            </div>
+            <div class="result-text" id="result-1"></div>
+        </div>
+
+        <!-- DEMO 2: 正交穿透 -->
+        <div class="demo-stage" id="demo-2">
+            <div class="demo-title">02 正交穿透（Orthogonal Penetration）</div>
+            <div class="demo-desc">横向治理网格铺在纵向业务链路上，不替代、不侵入、只注入</div>
+            
+            <div class="ortho-viz" id="ortho-viz">
+                <div class="vertical-lane">
+                    <div class="v-node">Token</div>
+                    <div class="v-node">组件</div>
+                    <div class="v-node">API</div>
+                    <div class="v-node">容器</div>
+                    <div class="v-node">DB</div>
+                </div>
+                <div class="horizontal-beam" id="beam" style="top: 50%;"></div>
+                <div class="inject-dot" id="dot1" style="left: 48%; top: 10%;"></div>
+                <div class="inject-dot" id="dot2" style="left: 48%; top: 30%;"></div>
+                <div class="inject-dot" id="dot3" style="left: 48%; top: 50%;"></div>
+                <div class="inject-dot" id="dot4" style="left: 48%; top: 70%;"></div>
+                <div class="inject-dot" id="dot5" style="left: 48%; top: 90%;"></div>
+            </div>
+            
+            <div class="compare-layout">
+                <div class="side bad">
+                    <div class="side-label">❌ 侵入式改造</div>
+                    <div class="side-content">
+                        <div class="file">修改 Ant Design 源码<br>→ 升级冲突，无法维护</div>
+                        <div class="file">重写 React 组件逻辑<br>→ 业务代码耦合治理逻辑</div>
+                        <div class="file">替换 API Gateway<br>→ 迁移成本极高</div>
+                    </div>
+                </div>
+                <div class="side good">
+                    <div class="side-label">✅ 正交穿透</div>
+                    <div class="side-content">
+                        <div class="file" style="background: #e8f5e9;">Ant Design 不动<br>→ Compiler 注入 Token 注释</div>
+                        <div class="file" style="background: #e8f5e9;">React 组件不动<br>→ HOC 包裹，Props 自动校验</div>
+                        <div class="file" style="background: #e8f5e9;">API Gateway 不动<br>→ 中间件拦截，业务无感知</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn-play" onclick="runOrthogonal()">▶ 播放正交穿透动画</button>
+                <button class="btn-reset" onclick="resetOrthogonal()">↺ 重置</button>
+            </div>
+            <div class="result-text" id="result-2"></div>
+        </div>
+
+        <!-- DEMO 3: 阻断优于修正 -->
+        <div class="demo-stage" id="demo-3">
+            <div class="demo-title">03 阻断优于修正（Block over Retry）</div>
+            <div class="demo-desc">LLM 输出漂移时：自动重试引入概率漂移，直接拦截保证确定性</div>
+            
+            <div class="compare-layout">
+                <div class="side bad">
+                    <div class="side-label">❌ 自动重试（Retry）</div>
+                    <div class="side-content" id="retry-side">
+                        <div class="file">🤖 LLM 输出：<code>alert_level: "严重"</code></div>
+                        <div class="file" id="r1" style="display:none;">❌ 第 1 次重试：<code>alert_level: "危急"</code>（更糟）</div>
+                        <div class="file" id="r2" style="display:none;">❌ 第 2 次重试：<code>alert_level: "紧急"</code>（继续漂移）</div>
+                        <div class="file" id="r3" style="display:none;">❌ 第 3 次重试：<code>alert_level: "重大"</code>（映射到 warning！）</div>
+                        <div class="file" id="r4" style="display:none;">💥 最终输出：语义完全偏离，用户看到"重大"却以为是 critical</div>
+                    </div>
+                </div>
+                <div class="side good">
+                    <div class="side-label">✅ 直接阻断（Block）</div>
+                    <div class="side-content" id="block-side">
+                        <div class="file">🤖 LLM 输出：<code>alert_level: "严重"</code></div>
+                        <div class="arrow-down">▼</div>
+                        <div class="file" id="b1" style="display:none;">🛡️ Validator 语义推演：<code>"严重" 不在枚举 [P0,P1,P2,P3]</code></div>
+                        <div class="file" id="b2" style="display:none;">🛡️ 命中同义词黑名单：confidence=0.95</div>
+                        <div id="b3" style="display:none;">
+                            <div class="block-shield">
+                                <h3>🚫 BLOCK</h3>
+                                <p>语义推演失败</p>
+                                <p style="font-size: 12px; color: #666;">自动升级人工审核</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn-play" onclick="runBlock()">▶ 播放阻断 vs 重试对比</button>
+                <button class="btn-reset" onclick="resetBlock()">↺ 重置</button>
+            </div>
+            <div class="result-text" id="result-3"></div>
+        </div>
+
+        <!-- DEMO 4: 版本锁定 -->
+        <div class="demo-stage" id="demo-4">
+            <div class="demo-title">04 版本锁定（Version Lock）</div>
+            <div class="demo-desc">所有节点显式声明兼容版本，禁止隐式使用 latest</div>
+            
+            <div class="compare-layout">
+                <div class="side bad">
+                    <div class="side-label">❌ 隐式 latest（危险）</div>
+                    <div class="side-content" id="latest-side">
+                        <div class="file">Registry 发布：v1.2.0（收紧同义词规则）</div>
+                        <div class="file" id="l1" style="display:none;">Runtime 加载：<code>schema_version: "latest"</code></div>
+                        <div class="file" id="l2" style="display:none;">⚠️ 凌晨 2 点自动升级</div>
+                        <div class="file" id="l3" style="display:none;">💥 生产环境：旧规则产物 + 新 YAML 定义 → 不匹配</div>
+                        <div class="file" id="l4" style="display:none;">🔥 结果：拦截逻辑失效，高危操作直通</div>
+                    </div>
+                </div>
+                <div class="side good">
+                    <div class="side-label">✅ 显式版本锁定（安全）</div>
+                    <div class="side-content" id="lock-side">
+                        <div class="file">Registry 发布：v1.2.0</div>
+                        <div class="file" id="v1" style="display:none;">Runtime 启动校验：<br>expected_hash: <code>a3f7b2...</code><br>actual_hash: <code>a3f7b2...</code></div>
+                        <div class="version-mismatch" id="v2" style="display:none; margin-top: 12px;">
+                            <h4>⚠️ 版本不匹配告警</h4>
+                            <p>Runtime 声明 v1.1.0，Registry 最新为 v1.2.0</p>
+                            <div class="hash-row">
+                                <div class="hash-box expected">期望: v1.1.0</div>
+                                <div class="hash-box actual">实际: v1.2.0</div>
+                            </div>
+                            <p style="margin-top: 8px; font-size: 12px;">自动降级：进入 escalate 模式，人工确认后升级</p>
+                        </div>
+                        <div class="file" id="v3" style="display:none; background: #e8f5e9; border-left: 3px solid var(--success);">
+                            ✅ 产物哈希一致，规则生效<br>
+                            ✅ 版本不匹配时拒绝启动，不静默失败
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn-play" onclick="runVersion()">▶ 播放版本锁定验证</button>
+                <button class="btn-reset" onclick="resetVersion()">↺ 重置</button>
+            </div>
+            <div class="result-text" id="result-4"></div>
+        </div>
+
+    </div>
+
+    <footer>
+        Schema-As-Code 联邦自治架构 · 四大设计原则交互验证 · 
+        <a href="https://github.com/2436041978-ops/intent-schema-compiler" style="color: var(--cp-blue);">控制平面</a>
+    </footer>
+
+    <script>
+        function showDemo(n) {
+            document.querySelectorAll('.principle-card').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.demo-stage').forEach(d => d.classList.remove('active'));
+            document.getElementById(`nav-${n}`).classList.add('active');
+            document.getElementById(`demo-${n}`).classList.add('active');
+        }
+
+        // DEMO 1: 声明式
+        async function runDeclarative() {
+            resetDeclarative();
+            const files = ['f1','f2','f3','f4','f5'];
+            const outputs = ['d2','d3','d4','d5','d6'];
+            
+            // 命令式：逐个文件变红（人工改，容易错）
+            for (let f of files) {
+                document.getElementById(f).classList.add('error');
+                await sleep(400);
+            }
+            
+            await sleep(500);
+            
+            // 声明式：YAML 改一处，全部自动绿
+            document.getElementById('d1').style.background = '#e8f5e9';
+            document.getElementById('d1').style.borderLeft = '3px solid var(--success)';
+            
+            for (let o of outputs) {
+                document.getElementById(o).style.display = 'block';
+                await sleep(300);
+            }
+            
+            document.getElementById('result-1').textContent = '✅ 声明式：改 1 个 YAML → 5 层自动收敛。命令式：改 5 个文件 → 遗漏 3 处。';
+            document.getElementById('result-1').className = 'result-text success';
+        }
+
+        function resetDeclarative() {
+            ['f1','f2','f3','f4','f5'].forEach(id => {
+                document.getElementById(id).classList.remove('error');
+            });
+            ['d2','d3','d4','d5','d6'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            document.getElementById('d1').style.background = '';
+            document.getElementById('d1').style.borderLeft = '';
+            document.getElementById('result-1').textContent = '';
+        }
+
+        // DEMO 2: 正交穿透
+        async function runOrthogonal() {
+            resetOrthogonal();
+            document.getElementById('beam').classList.add('show');
+            await sleep(500);
+            
+            const dots = ['dot1','dot2','dot3','dot4','dot5'];
+            for (let d of dots) {
+                document.getElementById(d).classList.add('show');
+                await sleep(400);
+            }
+            
+            document.getElementById('result-2').textContent = '✅ 正交穿透完成：横向网格注入 5 个纵向节点，业务代码零修改。';
+            document.getElementById('result-2').className = 'result-text success';
+        }
+
+        function resetOrthogonal() {
+            document.getElementById('beam').classList.remove('show');
+            ['dot1','dot2','dot3','dot4','dot5'].forEach(id => {
+                document.getElementById(id).classList.remove('show');
+            });
+            document.getElementById('result-2').textContent = '';
+        }
+
+        // DEMO 3: 阻断优于修正
+        async function runBlock() {
+            resetBlock();
+            
+            // 重试侧：越来越糟
+            await sleep(500);
+            document.getElementById('r1').style.display = 'block';
+            await sleep(600);
+            document.getElementById('r2').style.display = 'block';
+            await sleep(600);
+            document.getElementById('r3').style.display = 'block';
+            await sleep(600);
+            document.getElementById('r4').style.display = 'block';
+            
+            await sleep(800);
+            
+            // 阻断侧：直接拦截
+            document.getElementById('b1').style.display = 'block';
+            await sleep(600);
+            document.getElementById('b2').style.display = 'block';
+            await sleep(600);
+            document.getElementById('b3').style.display = 'block';
+            
+            document.getElementById('result-3').textContent = '✅ 阻断：1 次推演，0 漂移，升级人工。❌ 重试：3 次漂移，语义完全偏离。';
+            document.getElementById('result-3').className = 'result-text success';
+        }
+
+        function resetBlock() {
+            ['r1','r2','r3','r4'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            ['b1','b2','b3'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            document.getElementById('result-3').textContent = '';
+        }
+
+        // DEMO 4: 版本锁定
+        async function runVersion() {
+            resetVersion();
+            
+            // latest 侧：灾难
+            await sleep(500);
+            document.getElementById('l1').style.display = 'block';
+            await sleep(500);
+            document.getElementById('l2').style.display = 'block';
+            await sleep(500);
+            document.getElementById('l3').style.display = 'block';
+            await sleep(500);
+            document.getElementById('l4').style.display = 'block';
+            
+            await sleep(800);
+            
+            // 锁定侧：安全告警
+            document.getElementById('v1').style.display = 'block';
+            await sleep(600);
+            document.getElementById('v2').style.display = 'block';
+            await sleep(800);
+            document.getElementById('v3').style.display = 'block';
+            
+            document.getElementById('result-4').textContent = '✅ 版本锁定：哈希不匹配时拒绝启动。❌ 隐式 latest：凌晨自动升级导致生产事故。';
+            document.getElementById('result-4').className = 'result-text success';
+        }
+
+        function resetVersion() {
+            ['l1','l2','l3','l4'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            ['v1','v2','v3'].forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            document.getElementById('result-4').textContent = '';
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+
+</body>
+</html>

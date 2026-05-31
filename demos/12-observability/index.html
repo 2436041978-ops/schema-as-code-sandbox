@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>12 与可观测平台的关系 — LoongSuite × Schema-As-Code</title>
+    <style>
+        :root {
+            --runtime: #1565c0;
+            --runtime-bg: #e3f2fd;
+            --design: #ef6c00;
+            --design-bg: #fff3e0;
+            --success: #4caf50;
+            --error: #d32f2f;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #e0e6ed;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .back {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+        }
+        h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        /* 阶段互补对比 */
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .comp-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .comp-card.runtime {
+            border-left: 4px solid var(--runtime);
+        }
+        .comp-card.design {
+            border-left: 4px solid var(--design);
+        }
+        .comp-card h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .comp-card.runtime h3 { color: var(--runtime); }
+        .comp-card.design h3 { color: var(--design); }
+        .comp-card ul {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding-left: 18px;
+        }
+        .comp-card li {
+            margin-bottom: 6px;
+        }
+
+        /* 闭环演示区 */
+        .loop-demo {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .loop-demo h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        /* 场景选择 */
+        .scenario-select {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .scenario-select select {
+            padding: 8px 16px;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 步骤流 */
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .step {
+            display: none;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            background: #fafafa;
+        }
+        .step.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .step-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        .step-badge.runtime { background: var(--runtime); }
+        .step-badge.design { background: var(--design); }
+        .step-badge.bridge { background: var(--success); }
+        .step-title {
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .step-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+        .step-content code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: var(--text);
+        }
+
+        /* Trace 可视化 */
+        .trace-visual {
+            background: #1a1a2e;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: #a6e22e;
+        }
+        .trace-line {
+            padding: 4px 0;
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+        }
+        .trace-line.error {
+            border-left-color: var(--error);
+            color: #f92672;
+        }
+        .trace-line.warn {
+            border-left-color: #ff9800;
+            color: #fd971f;
+        }
+
+        /* PR 模拟 */
+        .pr-box {
+            background: #e8f5e9;
+            border: 1px solid var(--success);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 12px;
+        }
+        .pr-box .pr-title {
+            color: var(--success);
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        /* 规则对比 */
+        .rule-diff {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 12px 0;
+        }
+        .rule-diff .before, .rule-diff .after {
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .rule-diff .before {
+            background: #f5f5f5;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .rule-diff .after {
+            background: #e8f5e9;
+            border: 1px solid var(--success);
+            color: var(--text);
+        }
+        .rule-diff .label {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        .rule-diff .before .label { color: var(--text-secondary); }
+        .rule-diff .after .label { color: var(--success); }
+
+        /* 控制按钮 */
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .controls button {
+            padding: 10px 24px;
+            margin: 0 8px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-play {
+            background: var(--success);
+            color: white;
+        }
+        .btn-play:hover {
+            background: #388e3c;
+        }
+        .btn-reset {
+            background: var(--text-secondary);
+            color: white;
+        }
+        .btn-reset:hover {
+            background: #444;
+        }
+
+        /* 价值公式 */
+        .value-formula {
+            background: linear-gradient(135deg, #e3f2fd 0%, #fff3e0 100%);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .value-formula strong {
+            color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .comparison { grid-template-columns: 1fr; }
+            .rule-diff { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back" href="../../">← 返回沙盘首页</a>
+        <h1>12 与可观测平台的关系</h1>
+        <div class="subtitle">LoongSuite GenAI SemConv × Schema-As-Code：运行时观测与设计时约束的阶段互补与闭环咬合</div>
+
+        <!-- 阶段互补对比 -->
+        <div class="comparison">
+            <div class="comp-card runtime">
+                <h3>🔵 运行时观测（LoongSuite）</h3>
+                <ul>
+                    <li><strong>时机：</strong>漂移发生后（事后）</li>
+                    <li><strong>问题：</strong>"漂移发生了吗？"</li>
+                    <li><strong>手段：</strong>采集、追踪、分析</li>
+                    <li><strong>产出：</strong>Trace / Metric / Log</li>
+                    <li><strong>消费方：</strong>SRE、运维、算法工程师</li>
+                </ul>
+            </div>
+            <div class="comp-card design">
+                <h3>🔶 设计时约束（Schema-As-Code）</h3>
+                <ul>
+                    <li><strong>时机：</strong>漂移发生前（事前）</li>
+                    <li><strong>问题：</strong>"漂移应该被允许吗？"</li>
+                    <li><strong>手段：</strong>约束、校验、拦截</li>
+                    <li><strong>产出：</strong>Intent Protocol / Constraint Artifact</li>
+                    <li><strong>消费方：</strong>设计师、前端、AI 工程师</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 闭环演示 -->
+        <div class="loop-demo">
+            <h2>♻️ 闭环咬合演示：从观测到约束</h2>
+            
+            <div class="scenario-select">
+                <select id="scenario" onchange="resetLoop()">
+                    <option value="temperature">场景：temperature 过高导致同义词漂移</option>
+                    <option value="prompt">场景：Prompt 约束缺失导致安全越界</option>
+                </select>
+            </div>
+
+            <div class="steps" id="steps">
+                <!-- Step 1: 运行时观测 -->
+                <div class="step active" id="step-1">
+                    <div class="step-header">
+                        <div class="step-badge runtime">1</div>
+                        <div class="step-title">运行时观测：LoongSuite 采集异常 Trace</div>
+                    </div>
+                    <div class="step-content">
+                        <p>当 LLM <code>temperature > 0.8</code> 时，同义词替代概率显著上升。LoongSuite SemConv 的 Token 级观测捕获到异常。</p>
+                        <div class="trace-visual" id="trace-1">
+                            <div class="trace-line">[Entry Span] invoke_skill: alert_card_generation</div>
+                            <div class="trace-line">[Step Span] ReAct iteration #3</div>
+                            <div class="trace-line warn">[Token] per_token_time: 45ms (baseline 20ms)</div>
+                            <div class="trace-line error">[Drift] alert_level: "严重" → synonym substitution detected</div>
+                            <div class="trace-line error">[Drift] confidence: 0.95 → temperature correlation: 0.87</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: 归因引擎 -->
+                <div class="step" id="step-2">
+                    <div class="step-header">
+                        <div class="step-badge bridge">2</div>
+                        <div class="step-title">归因引擎：Bridge 定位根因</div>
+                    </div>
+                    <div class="step-content">
+                        <p>Bridge 消费 LoongSuite 的 Trace 数据，语义归一化后定位到控制平面的具体规则。</p>
+                        <div class="trace-visual" style="color: #fd971f;">
+                            <div class="trace-line">[Normalizer] mapping: "严重" → status.critical (failed)</div>
+                            <div class="trace-line">[RootCause] synonym-mapping.yaml: "严重" confidence_threshold: 0.95</div>
+                            <div class="trace-line">[RootCause] LLM config: temperature=0.9, top_p=0.95</div>
+                            <div class="trace-line">[Impact] 3 products affected, 12 components impacted</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: 自动反哺 PR -->
+                <div class="step" id="step-3">
+                    <div class="step-header">
+                        <div class="step-badge bridge">3</div>
+                        <div class="step-title">自动反哺：Bridge 创建 Registry PR</div>
+                    </div>
+                    <div class="step-content">
+                        <p>归因结果自动转化为控制平面的规则收紧补丁，提交 PR 等待联邦委员会审批。</p>
+                        <div class="pr-box">
+                            <div class="pr-title">🤖 [Auto] 收紧"严重"同义词规则 + 降低 LLM temperature 阈值</div>
+                            <div>文件: <code>schema/v1.1.0/semantic/synonym-mapping.yaml</code></div>
+                            <div>变更: confidence_threshold 0.95 → 0.85</div>
+                            <div>新增: llm_config.max_temperature: 0.8</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: 设计时更新 -->
+                <div class="step" id="step-4">
+                    <div class="step-header">
+                        <div class="step-badge design">4</div>
+                        <div class="step-title">设计时更新：Compiler 重新编译</div>
+                    </div>
+                    <div class="step-content">
+                        <p>PR Merge 后，Compiler 自动重新编译约束产物，分发到五层基础设施。</p>
+                        <div class="rule-diff">
+                            <div class="before">
+                                <div class="label">编译前 (v1.0.0)</div>
+                                <div>synonym: "严重"</div>
+                                <div>  threshold: 0.95</div>
+                                <div>  action: warn</div>
+                            </div>
+                            <div class="after">
+                                <div class="label">编译后 (v1.1.0)</div>
+                                <div>synonym: "严重"</div>
+                                <div>  threshold: 0.85</div>
+                                <div>  action: block</div>
+                                <div>  llm_max_temp: 0.8</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: 下一周期验证 -->
+                <div class="step" id="step-5">
+                    <div class="step-header">
+                        <div class="step-badge runtime">5</div>
+                        <div class="step-title">下一周期验证：观测闭环效果</div>
+                    </div>
+                    <div class="step-content">
+                        <p>新规则生效后，下一运行周期中 Validator 的拦截率提升，Bridge 的漂移告警下降。</p>
+                        <div class="trace-visual" style="color: #a6e22e;">
+                            <div class="trace-line">[Metric] semantic_consistency_score: 78% → 94%</div>
+                            <div class="trace-line">[Metric] rule_interception_rate: 62% → 97%</div>
+                            <div class="trace-line">[Metric] human_escalation_ratio: 35% → 8%</div>
+                            <div class="trace-line success">[Alert] synonym_drift: RESOLVED</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-play" onclick="nextStep()">下一步 →</button>
+                <button class="btn-reset" onclick="resetLoop()">↺ 重置</button>
+            </div>
+        </div>
+
+        <!-- 价值公式 -->
+        <div class="value-formula">
+            <strong>价值公式：</strong>运行时观测成本 + 设计时约束成本 < 漂移修复成本 + 舆情处理成本<br>
+            <span style="font-size: 12px; color: var(--text-secondary);">LoongSuite 回答"漂移发生了吗"，Schema-As-Code 回答"漂移应该被允许吗"。两者咬合，才是完整的语义治理。</span>
+        </div>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+            }
+            if (currentStep === totalSteps) {
+                document.querySelector('.btn-play').textContent = '✅ 闭环完成';
+                document.querySelector('.btn-play').disabled = true;
+            }
+        }
+
+        function resetLoop() {
+            for (let i = 1; i <= totalSteps; i++) {
+                document.getElementById(`step-${i}`).classList.remove('active');
+            }
+            currentStep = 1;
+            document.getElementById('step-1').classList.add('active');
+            document.querySelector('.btn-play').textContent = '下一步 →';
+            document.querySelector('.btn-play').disabled = false;
+            
+            // 根据场景切换 Trace 内容
+            const scenario = document.getElementById('scenario').value;
+            const trace1 = document.getElementById('trace-1');
+            if (scenario === 'prompt') {
+                trace1.innerHTML = `
+                    <div class="trace-line">[Entry Span] invoke_skill: payment_flow</div>
+                    <div class="trace-line">[Step Span] tool_call: execute_payment</div>
+                    <div class="trace-line error">[Security] human_confirmed: null (missing)</div>
+                    <div class="trace-line error">[Drift] action_type: "automated" → AI prohibited pattern hit</div>
+                    <div class="trace-line warn">[Prompt] system constraint: missing destructive-action prefix</div>
+                `;
+            } else {
+                trace1.innerHTML = `
+                    <div class="trace-line">[Entry Span] invoke_skill: alert_card_generation</div>
+                    <div class="trace-line">[Step Span] ReAct iteration #3</div>
+                    <div class="trace-line warn">[Token] per_token_time: 45ms (baseline 20ms)</div>
+                    <div class="trace-line error">[Drift] alert_level: "严重" → synonym substitution detected</div>
+                    <div class="trace-line error">[Drift] confidence: 0.95 → temperature correlation: 0.87</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

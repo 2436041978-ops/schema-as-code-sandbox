@@ -6,34 +6,50 @@
     <title>07 三层治理角色 — 联邦自治权限金字塔</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --cp-bg: #e3f2fd;
-            --dp-orange: #ef6c00;
-            --dp-bg: #fff3e0;
-            --infra-purple: #6a1b9a;
-            --infra-bg: #f3e5f5;
-            --success: #4caf50;
-            --warn: #ff9800;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
-            --radius: 8px;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-f-xxl: 32px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1000px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
             min-height: 100vh;
         }
 
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            background: var(--sa-c-navy);
             color: white;
             padding: 24px 32px;
             position: relative;
@@ -42,7 +58,7 @@
         .back {
             color: rgba(255,255,255,0.7);
             text-decoration: none;
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -53,34 +69,36 @@
         .back:hover { color: white; }
 
         .header h1 {
-            font-size: 20px;
+            font-size: var(--sa-f-xl);
             font-weight: 600;
             margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             opacity: 0.8;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
             padding: 32px;
         }
 
         .intro {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
             margin-bottom: 32px;
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-base);
+            color: var(--sa-c-muted);
+            box-shadow: var(--sa-shadow);
         }
 
         .intro strong {
-            color: var(--text);
+            color: var(--sa-c-text);
         }
 
         /* 金字塔结构 */
@@ -93,33 +111,34 @@
 
         .pyramid-layer {
             width: 100%;
-            border-radius: var(--radius);
+            border-radius: var(--sa-r);
             padding: 24px;
             position: relative;
             transition: all 0.3s ease;
             cursor: pointer;
+            box-shadow: var(--sa-shadow);
         }
 
         .pyramid-layer:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            box-shadow: var(--sa-shadow-hover);
         }
 
         .pyramid-layer.federal {
-            background: var(--cp-bg);
-            border: 2px solid var(--cp-blue);
+            background: #E8F0FE;
+            border: 2px solid var(--sa-c-navy);
             max-width: 360px;
         }
 
         .pyramid-layer.domain {
-            background: var(--dp-bg);
-            border: 2px solid var(--dp-orange);
+            background: var(--sa-c-amber-light);
+            border: 2px solid var(--sa-c-amber);
             max-width: 560px;
         }
 
         .pyramid-layer.business {
-            background: var(--infra-bg);
-            border: 2px solid var(--infra-purple);
+            background: #E8F0FE;
+            border: 2px solid var(--sa-c-navy-light);
             max-width: 760px;
         }
 
@@ -138,26 +157,27 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
-            background: white;
+            background: var(--sa-c-surface);
             flex-shrink: 0;
         }
 
-        .federal .layer-icon { border: 2px solid var(--cp-blue); }
-        .domain .layer-icon { border: 2px solid var(--dp-orange); }
-        .business .layer-icon { border: 2px solid var(--infra-purple); }
+        .federal .layer-icon { border: 2px solid var(--sa-c-navy); }
+        .domain .layer-icon { border: 2px solid var(--sa-c-amber); }
+        .business .layer-icon { border: 2px solid var(--sa-c-navy-light); }
 
         .layer-title {
-            font-size: 16px;
-            font-weight: bold;
+            font-size: var(--sa-f-lg);
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
 
-        .federal .layer-title { color: var(--cp-blue); }
-        .domain .layer-title { color: var(--dp-orange); }
-        .business .layer-title { color: var(--infra-purple); }
+        .federal .layer-title { color: var(--sa-c-navy); }
+        .domain .layer-title { color: var(--sa-c-amber); }
+        .business .layer-title { color: var(--sa-c-navy-light); }
 
         .layer-subtitle {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-top: 2px;
         }
 
@@ -168,34 +188,35 @@
         }
 
         .role-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 16px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             position: relative;
         }
 
         .role-card:hover {
-            border-color: var(--cp-blue);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-color: var(--sa-c-navy);
+            box-shadow: var(--sa-shadow-hover);
         }
 
         .role-card.active {
-            border-color: var(--cp-blue);
-            box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.2);
+            border-color: var(--sa-c-navy);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08);
         }
 
         .role-name {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: var(--sa-f-base);
+            font-weight: 600;
             margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
         .role-desc {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             line-height: 1.5;
         }
 
@@ -203,35 +224,40 @@
             display: inline-block;
             margin-top: 8px;
             font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: var(--bg);
-            color: var(--text-secondary);
+            padding: 2px 10px;
+            border-radius: 20px;
+            background: var(--sa-c-bg);
+            color: var(--sa-c-muted);
+            font-weight: 600;
+            letter-spacing: 0.05em;
         }
 
         /* 连接箭头 */
         .pyramid-connector {
             text-align: center;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             font-size: 20px;
             padding: 4px 0;
         }
 
         .connector-label {
             font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             text-align: center;
             margin-bottom: 4px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
         /* 详情面板 */
         .detail-panel {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px;
             margin-top: 32px;
             display: none;
+            box-shadow: var(--sa-shadow);
         }
 
         .detail-panel.show {
@@ -250,11 +276,12 @@
             gap: 12px;
             margin-bottom: 20px;
             padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid var(--sa-c-border);
         }
 
         .detail-header h2 {
-            font-size: 18px;
+            font-size: var(--sa-f-lg);
+            letter-spacing: -0.02em;
         }
 
         .detail-section {
@@ -262,18 +289,19 @@
         }
 
         .detail-section h4 {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: 11px;
+            color: var(--sa-c-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
+            font-weight: 600;
         }
 
         .detail-section p,
         .detail-section li {
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             line-height: 1.7;
-            color: var(--text);
+            color: var(--sa-c-text);
         }
 
         .detail-section ul {
@@ -288,38 +316,41 @@
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: var(--sa-f-sm);
             margin: 4px 4px 4px 0;
-            background: var(--cp-bg);
-            color: var(--cp-blue);
-            border: 1px solid var(--cp-blue);
+            background: #E8F0FE;
+            color: var(--sa-c-navy);
+            border: 1px solid var(--sa-c-navy);
+            font-weight: 500;
         }
 
         .power-tag.restrict {
-            background: #ffebee;
-            color: var(--error);
-            border-color: var(--error);
+            background: var(--sa-c-rose-light);
+            color: var(--sa-c-rose);
+            border-color: var(--sa-c-rose);
         }
 
         .power-tag.allow {
-            background: #e8f5e9;
-            color: var(--success);
-            border-color: var(--success);
+            background: var(--sa-c-teal-light);
+            color: #059669;
+            border-color: var(--sa-c-teal);
         }
 
         .flow-demo {
-            background: var(--bg);
-            border-radius: var(--radius);
+            background: var(--sa-c-bg);
+            border-radius: var(--sa-r);
             padding: 20px;
             margin-top: 20px;
+            border: 1px solid var(--sa-c-border);
         }
 
         .flow-demo h4 {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: 11px;
+            color: var(--sa-c-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 16px;
+            font-weight: 600;
         }
 
         .flow-steps {
@@ -330,23 +361,25 @@
         }
 
         .flow-step {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 10px 16px;
-            font-size: 12px;
+            font-size: var(--sa-f-sm);
             text-align: center;
             min-width: 100px;
+            box-shadow: var(--sa-shadow);
         }
 
         .flow-step.active {
-            border-color: var(--success);
-            background: #e8f5e9;
-            font-weight: bold;
+            border-color: var(--sa-c-teal);
+            background: var(--sa-c-teal-light);
+            font-weight: 600;
+            color: #059669;
         }
 
         .flow-arrow {
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             font-size: 16px;
         }
 
@@ -355,32 +388,40 @@
             margin-top: 24px;
         }
 
-        .demo-controls button {
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             padding: 10px 24px;
             border: none;
-            border-radius: var(--radius);
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-base);
+            font-weight: 500;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            white-space: nowrap;
             margin: 0 8px;
         }
 
-        .btn-play {
-            background: var(--success);
+        .sa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .sa-btn--accent {
+            background: var(--sa-c-amber);
             color: white;
         }
 
-        .btn-play:hover {
-            background: #388e3c;
+        .sa-btn--accent:hover:not(:disabled) { filter: brightness(1.1); }
+
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
         }
 
-        .btn-reset {
-            background: var(--text-secondary);
-            color: white;
-        }
-
-        .btn-reset:hover {
-            background: #444;
+        .sa-btn--ghost:hover:not(:disabled) {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
         }
 
         /* 响应式 */
@@ -390,6 +431,7 @@
             .pyramid-layer { max-width: 100% !important; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -507,8 +549,8 @@
                 <div class="flow-step" id="step-5">业务工程师<br>自动消费</div>
             </div>
             <div class="demo-controls">
-                <button class="btn-play" onclick="playFlow()">播放规则流动</button>
-                <button class="btn-reset" onclick="resetFlow()">重置</button>
+                <button class="sa-btn sa-btn--accent" onclick="playFlow()">播放规则流动</button>
+                <button class="sa-btn sa-btn--ghost" onclick="resetFlow()">重置</button>
             </div>
         </div>
     </div>
@@ -687,62 +729,60 @@
 
         function showRole(roleKey, event) {
             event.stopPropagation();
-            
-            // 高亮当前卡片
+
             document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            
+
             const data = roleData[roleKey];
             const panel = document.getElementById('detail-panel');
             const content = document.getElementById('detail-content');
-            
+
             const powersHtml = data.powers.map(p => 
                 `<span class="power-tag ${p.type}">${p.type === 'allow' ? '✓' : '✗'} ${p.text}</span>`
             ).join('');
-            
+
             content.innerHTML = `
                 <div class="detail-header">
                     <div style="font-size: 28px;">${data.title.split(' ')[0]}</div>
                     <div>
                         <h2>${data.title.replace(/^[^\s]+\s/, '')}</h2>
-                        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${data.layer}</div>
+                        <div style="font-size: 13px; color: var(--sa-c-muted); margin-top: 4px;">${data.layer}</div>
                     </div>
                 </div>
-                
+
                 <div class="detail-section">
                     <h4>权力边界</h4>
                     <div>${powersHtml}</div>
                 </div>
-                
+
                 <div class="detail-section">
                     <h4>核心职责</h4>
                     <ul>${data.duties.map(d => `<li>${d}</li>`).join('')}</ul>
                 </div>
-                
+
                 <div class="detail-section">
                     <h4>典型动作</h4>
                     <ul>${data.actions.map(a => `<li>${a}</li>`).join('')}</ul>
                 </div>
             `;
-            
+
             panel.classList.add('show');
             panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function selectLayer(layer) {
-            // 点击层时的反馈，可扩展
             console.log('Selected layer:', layer);
         }
 
         async function playFlow() {
             resetFlow();
             const steps = ['step-1', 'step-2', 'step-3', 'step-4', 'step-5'];
-            
+
             for (let i = 0; i < steps.length; i++) {
                 document.getElementById(steps[i]).classList.add('active');
                 await sleep(800);
             }
-            
+
             await sleep(500);
             alert('规则流动完成：联邦基线 → 域级绑定 → 编译产物 → 业务自动消费');
         }

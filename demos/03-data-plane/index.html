@@ -3,490 +3,622 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>03 数据平面 — 执行层 | Schema-As-Code 沙盘</title>
+    <title>03 数据平面（Data Plane）—— 语义治理网格执行拓扑</title>
     <style>
         :root {
+            --cp-blue: #1565c0;
+            --cp-bg: #e3f2fd;
             --dp-orange: #ef6c00;
             --dp-bg: #fff3e0;
+            --infra-purple: #6a1b9a;
+            --infra-bg: #f3e5f5;
             --success: #4caf50;
             --error: #d32f2f;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
             --text: #1a1a2e;
             --text-secondary: #666;
+            --border: #e0e6ed;
             --radius: 8px;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
+            background: #f5f7fa;
             color: var(--text);
             line-height: 1.6;
+            /* 页面整体可滚动，日志面板不自建滚动条 */
+            overflow-x: hidden;
         }
-        .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
-            color: white;
-            padding: 24px 32px;
-        }
-        .header a.back {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            font-size: 13px;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-        .header a.back:hover { color: white; }
-        .header h1 { font-size: 20px; margin-bottom: 6px; }
-        .header p { font-size: 13px; opacity: 0.8; }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 24px 32px;
+            padding: 20px;
         }
-        .subtitle {
-            font-size: 12px;
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: white;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: var(--dp-orange);
+        }
+
+        header p {
             color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .repo-links {
+            margin-top: 12px;
+            font-size: 12px;
+        }
+
+        .repo-links a {
+            color: var(--cp-blue);
+            text-decoration: none;
+            margin: 0 8px;
+        }
+
+        /* 控制平面 */
+        .control-plane-zone {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .zone-label {
+            font-size: 12px;
+            font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
+        }
+
+        .cp-box {
+            display: inline-block;
+            background: var(--cp-bg);
+            border: 2px solid var(--cp-blue);
+            border-radius: var(--radius);
+            padding: 16px 32px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cp-box:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(21, 101, 192, 0.2);
+        }
+
+        .cp-box .title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--cp-blue);
+        }
+
+        .cp-box .meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .cp-box .status {
+            font-size: 11px;
+            color: var(--success);
+            margin-top: 6px;
+            font-family: monospace;
+        }
+
+        /* 数据平面节点 */
+        .data-plane-zone {
+            margin-bottom: 24px;
+        }
+
+        .data-plane-zone .zone-label {
+            color: var(--dp-orange);
             text-align: center;
         }
 
-        /* 五模块拓扑 */
-        .topology {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 32px;
-            margin-bottom: 24px;
-        }
         .node-row {
             display: flex;
             justify-content: center;
             align-items: stretch;
-            gap: 16px;
+            gap: 12px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
+
         .node {
             background: var(--dp-bg);
             border: 2px solid var(--dp-orange);
             border-radius: var(--radius);
-            padding: 20px;
-            width: 170px;
+            padding: 14px;
+            width: 150px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             position: relative;
         }
+
         .node:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(239, 108, 0, 0.15);
         }
+
         .node.active {
             background: #ffe0b2;
             box-shadow: 0 0 20px rgba(239, 108, 0, 0.4);
             transform: scale(1.05);
         }
+
         .node.processing {
             animation: pulse-node 1.5s infinite;
         }
+
         @keyframes pulse-node {
             0% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0.4); }
-            70% { box-shadow: 0 0 0 12px rgba(239, 108, 0, 0); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 108, 0, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0); }
         }
+
         .node .icon {
-            font-size: 28px;
-            margin-bottom: 8px;
-        }
-        .node .name {
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--dp-orange);
+            font-size: 24px;
             margin-bottom: 4px;
         }
-        .node .desc {
-            font-size: 11px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-        }
-        .connector {
-            display: flex;
-            align-items: center;
-            font-size: 20px;
-            color: var(--dp-orange);
+
+        .node .name {
+            font-size: 13px;
             font-weight: bold;
-        }
-        .branch-down {
-            text-align: center;
-            margin: 8px 0;
-            font-size: 20px;
             color: var(--dp-orange);
         }
 
-        /* 控制面板 */
-        .control-panel {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 24px;
+        .node .desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.4;
         }
-        .control-panel h2 {
-            font-size: 16px;
-            margin-bottom: 16px;
-        }
-        .buttons {
+
+        .node-connector {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            font-size: 18px;
+            color: var(--dp-orange);
+            font-weight: bold;
+        }
+
+        /* 流程箭头 */
+        .flow-arrow {
+            text-align: center;
+            padding: 8px 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .flow-arrow .arrow-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .flow-arrow .arrow-line {
+            font-size: 18px;
+        }
+
+        /* 基础设施层 */
+        .infra-zone {
             margin-bottom: 16px;
+        }
+
+        .infra-zone .zone-label {
+            color: var(--infra-purple);
+            text-align: center;
+        }
+
+        .infra-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 12px;
             flex-wrap: wrap;
         }
-        button {
-            padding: 10px 20px;
+
+        .infra-node {
+            background: var(--infra-bg);
+            border: 2px solid var(--infra-purple);
+            border-radius: var(--radius);
+            padding: 12px;
+            width: 130px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .infra-node.active {
+            background: #e1bee7;
+            box-shadow: 0 0 15px rgba(106, 25, 154, 0.3);
+            transform: scale(1.1);
+        }
+
+        .infra-node .layer {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--infra-purple);
+        }
+
+        .infra-node .system {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* 闭环 */
+        .loop-indicator {
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .loop-indicator span {
+            display: inline-block;
+            background: #e8f5e9;
+            border: 2px solid var(--success);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 12px;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* ===== 执行日志区域（自适应核心修改） ===== */
+        .demo-controls {
+            margin: 20px 0 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .demo-controls button {
+            padding: 8px 20px;
             border: none;
             border-radius: var(--radius);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.2s;
         }
+
         .btn-play {
             background: var(--success);
             color: white;
         }
-        .btn-play:hover { background: #388e3c; }
+
+        .btn-play:hover {
+            background: #388e3c;
+        }
+
         .btn-step {
-            background: var(--dp-orange);
+            background: var(--cp-blue);
             color: white;
         }
-        .btn-step:hover { background: #e65100; }
+
         .btn-reset {
             background: var(--text-secondary);
             color: white;
         }
-        .btn-reset:hover { background: #444; }
+
         button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        /* 日志面板 */
+        /* 日志面板：关键修改 —— 去掉固定高度和内部滚动 */
         .log-panel {
             background: #1a1a2e;
             border-radius: var(--radius);
-            padding: 16px;
-            max-height: 280px;
-            overflow-y: auto;
+            padding: 0;
+            /* 删除 max-height: 200px; */
+            /* 删除 overflow-y: auto; */
+            /* 让面板根据内容自然撑开 */
         }
-        .log-title {
-            color: #666;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 6px;
-        }
-        .log-content {
-            font-family: "SF Mono", Monaco, monospace;
+
+        .log-header {
+            background: #252540;
+            padding: 10px 16px;
+            border-radius: var(--radius) var(--radius) 0 0;
             font-size: 12px;
-            line-height: 1.8;
+            color: #888;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+
+        .log-content {
+            padding: 12px 16px 16px;
+            font-family: "SF Mono", Monaco, "Cascadia Code", "Fira Code", monospace;
+            font-size: 12px;
+            line-height: 2;
+            /* 内容全部可见，无内部滚动 */
+        }
+
         .log-line {
-            color: #a6e22e;
-            padding: 2px 0;
+            padding: 1px 0;
             border-left: 2px solid transparent;
-            padding-left: 10px;
+            padding-left: 8px;
             margin: 2px 0;
+            white-space: pre-wrap; /* 长行自动换行 */
+            word-break: break-word;
         }
+
         .log-line.ready { color: #66d9ef; }
         .log-line.info { color: #a6e22e; }
         .log-line.process { color: #fd971f; }
         .log-line.success { color: #a6e22e; border-left-color: var(--success); }
         .log-line.error { color: #f92672; border-left-color: var(--error); }
-        .log-line.highlight { color: #e6db74; background: rgba(230, 219, 116, 0.1); }
+        .log-line.highlight { color: #e6db74; background: rgba(230, 219, 116, 0.08); }
 
-        /* 数据流图例 */
-        .flow-legend {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-top: 20px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            flex-wrap: wrap;
-        }
-        .flow-legend span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        .dot.sync { background: var(--dp-orange); }
-        .dot.down { background: var(--success); }
-        .dot.up { background: #2196f3; }
-        .dot.loop { background: #9c27b0; }
-
+        /* Footer */
         footer {
             text-align: center;
-            padding: 24px;
+            padding: 20px;
             color: var(--text-secondary);
-            font-size: 13px;
+            font-size: 12px;
+            margin-top: 20px;
         }
+
+        footer a {
+            color: var(--cp-blue);
+            text-decoration: none;
+        }
+
+        /* 响应式 */
         @media (max-width: 768px) {
-            .node-row { flex-direction: column; align-items: center; }
-            .connector { transform: rotate(90deg); margin: 4px 0; }
+            .node-row,
+            .infra-row {
+                flex-wrap: wrap;
+            }
+            .node,
+            .infra-node {
+                width: 45%;
+            }
+            .node-connector {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <a class="back" href="../../">← 返回沙盘首页</a>
-        <h1>🔶 03 数据平面（Data Plane）— 执行层</h1>
-        <p>Registry → Compiler → Validator → Runtime → Bridge 五模块拓扑与执行动画</p>
-    </div>
-
     <div class="container">
-        <div class="subtitle">五模块执行拓扑 — 点击"启动完整闭环"观看数据流动</div>
+        <header>
+            <h1>🔶 数据平面（Data Plane）—— 语义治理网格</h1>
+            <p>将控制平面的 YAML 声明转化为可执行规则，并部署到业务链路</p>
+            <div class="repo-links">
+                <a href="https://github.com/2436041978-ops/intent-schema-compiler" target="_blank">← 控制平面</a>
+                <a href="https://github.com/2436041978-ops/intent-governance-mesh" target="_blank">intent-governance-mesh →</a>
+            </div>
+        </header>
 
-        <div class="topology">
+        <!-- 控制平面 -->
+        <div class="control-plane-zone">
+            <div class="zone-label" style="color: var(--cp-blue);">🔷 控制平面（Control Plane）— 联邦宪法</div>
+            <div class="cp-box" id="control-plane">
+                <div class="title">intent-schema-compiler</div>
+                <div class="meta">语义层 / 治理层 / 执行层</div>
+                <div class="status">● v0.1.0 已发布 | Git-Native | 引用闭环</div>
+            </div>
+        </div>
+
+        <!-- 声明式同步箭头 -->
+        <div class="flow-arrow">
+            <div class="arrow-label" style="color: var(--cp-blue);">声明式同步（GitOps）</div>
+            <div class="arrow-line">▼</div>
+        </div>
+
+        <!-- 数据平面五模块 -->
+        <div class="data-plane-zone">
+            <div class="zone-label">🔶 数据平面（Data Plane）— 五模块执行拓扑</div>
             <div class="node-row">
-                <div class="node" id="node-registry" data-name="Registry">
+                <div class="node" id="node-registry" onclick="showNodeInfo('Registry')">
                     <div class="icon">📋</div>
                     <div class="name">Registry</div>
                     <div class="desc">语义注册表<br>版本管理 + 影响面分析</div>
                 </div>
-                <div class="connector">→</div>
-                <div class="node" id="node-compiler" data-name="Compiler">
+                <div class="node-connector">→</div>
+                <div class="node" id="node-compiler" onclick="showNodeInfo('Compiler')">
                     <div class="icon">⚙️</div>
                     <div class="name">Compiler</div>
                     <div class="desc">契约编译器<br>YAML → 可执行产物</div>
                 </div>
-                <div class="connector">→</div>
-                <div class="node" id="node-validator" data-name="Validator">
+                <div class="node-connector">→</div>
+                <div class="node" id="node-validator" onclick="showNodeInfo('Validator')">
                     <div class="icon">🛡️</div>
                     <div class="name">Validator</div>
                     <div class="desc">四层推演引擎<br>语法/语义/安全/美感</div>
                 </div>
-                <div class="connector">→</div>
-                <div class="node" id="node-runtime" data-name="Runtime">
+                <div class="node-connector">→</div>
+                <div class="node" id="node-runtime" onclick="showNodeInfo('Runtime')">
                     <div class="icon">🚀</div>
                     <div class="name">Runtime</div>
                     <div class="desc">运行时拦截<br>HOC / 中间件 / Tool Guard</div>
                 </div>
-                <div class="connector">→</div>
-                <div class="node" id="node-bridge" data-name="Bridge">
+                <div class="node-connector">→</div>
+                <div class="node" id="node-bridge" onclick="showNodeInfo('Bridge')">
                     <div class="icon">👁️</div>
                     <div class="name">Bridge</div>
                     <div class="desc">观测桥接器<br>漂移归因 + 反哺 PR</div>
                 </div>
             </div>
+        </div>
 
-            <div class="flow-legend">
-                <span><span class="dot sync"></span> 声明式同步</span>
-                <span><span class="dot down"></span> 规则下渗</span>
-                <span><span class="dot up"></span> 观测上采</span>
-                <span><span class="dot loop"></span> 闭环反哺</span>
+        <!-- 规则下渗 -->
+        <div class="flow-arrow">
+            <div class="arrow-label" style="color: var(--dp-orange);">▼ 规则下渗（编译产物分发）</div>
+        </div>
+
+        <!-- 基础设施层 -->
+        <div class="infra-zone">
+            <div class="zone-label">🟣 基础设施层（纵向生产链路）— 业务价值流动</div>
+            <div class="infra-row">
+                <div class="infra-node" id="infra-l1">L1<br>Token<br><span style="font-size:10px;color:#666;">Ant Design</span></div>
+                <div class="infra-node" id="infra-l2">L2<br>组件<br><span style="font-size:10px;color:#666;">React/Vue</span></div>
+                <div class="infra-node" id="infra-l3">L3<br>API<br><span style="font-size:10px;color:#666;">OpenAPI</span></div>
+                <div class="infra-node" id="infra-l4">L4<br>容器<br><span style="font-size:10px;color:#666;">K8s/Envoy</span></div>
+                <div class="infra-node" id="infra-l5">L5<br>DB/LLM<br><span style="font-size:10px;color:#666;">MySQL/GPT</span></div>
             </div>
         </div>
 
-        <div class="control-panel">
-            <h2>▶️ 演示控制</h2>
-            <div class="buttons">
-                <button class="btn-play" onclick="demo.start()" id="btn-start">启动完整闭环</button>
-                <button class="btn-step" onclick="demo.step()" id="btn-step">单步执行</button>
-                <button class="btn-reset" onclick="demo.reset()" id="btn-reset">重置</button>
+        <!-- 观测上采 -->
+        <div class="flow-arrow">
+            <div class="arrow-label" style="color: var(--success);">▲ 观测上采（漂移事件反哺）</div>
+        </div>
+
+        <!-- 闭环 -->
+        <div class="loop-indicator">
+            <span>♻️ 闭环：Bridge → 自动 PR → 控制平面</span>
+        </div>
+
+        <!-- 演示控制 -->
+        <div class="demo-controls">
+            <button class="btn-play" onclick="startDemo()" id="btn-start">▶ 启动完整闭环</button>
+            <button class="btn-step" onclick="stepDemo()" id="btn-step">⏸ 单步执行</button>
+            <button class="btn-reset" onclick="resetDemo()" id="btn-reset">↺ 重置</button>
+        </div>
+
+        <!-- ===== 执行日志（自适应 — 全部展开，无需滚动） ===== -->
+        <div class="log-panel">
+            <div class="log-header">
+                ▶️ 执行日志（自适应 — 全部展开，无需滚动）
             </div>
-            <div class="log-panel">
-                <div class="log-title">执行日志</div>
-                <div class="log-content" id="log-content">
-                    <div class="log-line ready">就绪。点击"启动完整闭环"开始演示五模块数据流动。</div>
-                </div>
+            <div class="log-content" id="log-content">
+                <div class="log-line ready">就绪。点击"启动完整闭环"开始演示。</div>
             </div>
         </div>
     </div>
 
     <footer>
-        Schema-As-Code 联邦自治架构 · 数据平面执行拓扑 · 
-        <a href="https://github.com/2436041978-ops/intent-governance-mesh" style="color: var(--dp-orange);">intent-governance-mesh</a>
+        Schema-As-Code 联邦自治架构 · 
+        <a href="https://github.com/2436041978-ops/intent-governance-mesh" target="_blank">intent-governance-mesh</a> ·
+        <a href="https://github.com/2436041978-ops/schema-as-code-sandbox" target="_blank">返回沙盘</a>
     </footer>
 
     <script>
-        const demo = {
-            steps: [
-                {
-                    id: 'registry',
-                    name: 'Registry',
-                    action: () => {
-                        document.getElementById('node-registry').classList.add('processing');
-                        return 'Registry：语义注册表加载意图协议 v1.1.0，分析影响面（3 个产品需同步更新）';
-                    },
-                    cleanup: () => {
-                        document.getElementById('node-registry').classList.remove('processing');
-                        document.getElementById('node-registry').classList.add('active');
-                    }
-                },
-                {
-                    id: 'compiler',
-                    name: 'Compiler',
-                    action: () => {
-                        document.getElementById('node-compiler').classList.add('processing');
-                        return 'Compiler：编译 YAML 为五层产物（TS 类型 / ESLint 规则 / OpenAPI 扩展 / OPA Policy / DDL 注释）';
-                    },
-                    cleanup: () => {
-                        document.getElementById('node-compiler').classList.remove('processing');
-                        document.getElementById('node-compiler').classList.add('active');
-                    }
-                },
-                {
-                    id: 'validator',
-                    name: 'Validator',
-                    action: () => {
-                        document.getElementById('node-validator').classList.add('processing');
-                        return 'Validator：四层推演安检 — 语法 ✓ 语义 ✓ 安全 ✓ 美感 ✓（全部通过）';
-                    },
-                    cleanup: () => {
-                        document.getElementById('node-validator').classList.remove('processing');
-                        document.getElementById('node-validator').classList.add('active');
-                    }
-                },
-                {
-                    id: 'runtime',
-                    name: 'Runtime',
-                    action: () => {
-                        document.getElementById('node-runtime').classList.add('processing');
-                        return 'Runtime：部署运行时守卫 — React HOC 绑定 12 个组件 / API 中间件挂载 3 个路由 / LLM Tool Guard 包装 2 个工具';
-                    },
-                    cleanup: () => {
-                        document.getElementById('node-runtime').classList.remove('processing');
-                        document.getElementById('node-runtime').classList.add('active');
-                    }
-                },
-                {
-                    id: 'bridge',
-                    name: 'Bridge',
-                    action: () => {
-                        document.getElementById('node-bridge').classList.add('processing');
-                        return 'Bridge：观测桥接器启动，监听语义漂移事件（同义词替代 / 置信度波动 / 安全越界）';
-                    },
-                    cleanup: () => {
-                        document.getElementById('node-bridge').classList.remove('processing');
-                        document.getElementById('node-bridge').classList.add('active');
-                    }
-                },
-                {
-                    id: 'loop',
-                    name: '闭环反哺',
-                    action: () => {
-                        return '闭环完成：Bridge 发现 1 次同义词漂移 → 归因到 synonym-mapping.yaml → 自动创建 Registry PR → 收紧"严重"置信度阈值';
-                    },
-                    cleanup: () => {
-                        // 全部重置
-                        setTimeout(() => {
-                            document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
-                        }, 2000);
-                    }
-                }
-            ],
+        const demoSteps = [
+            { node: 'control-plane', name: '声明式同步', msg: '🚀 GitOps 触发：控制平面 YAML 变更 → Registry 拉取最新意图协议', type: 'ready' },
+            { node: 'node-registry', name: 'Registry', msg: '📋 版本化语义注册，分析影响面（哪些产品/组件需同步更新）', type: 'process' },
+            { node: 'node-compiler', name: 'Compiler', msg: '⚙️ 编译 YAML 为可执行产物（TS 类型 / ESLint 规则 / OpenAPI 扩展 / OPA Policy）', type: 'process' },
+            { node: 'node-validator', name: 'Validator', msg: '🛡️ 四层推演安检（语法 → 语义 → 安全 → 美感），短路终止策略', type: 'process' },
+            { node: 'node-runtime', name: 'Runtime', msg: '🚀 部署运行时守卫（React HOC / Express 中间件 / LLM Tool Guard）', type: 'process' },
+            { node: 'infra-l1', name: '规则下渗', msg: '⬇️ 编译产物分发到 L1-L5：Token / 组件 / API / 容器 / DB', type: 'info' },
+            { node: 'infra-l2', name: 'L2 组件层', msg: '✅ React HOC 注入完成：withIntentGuard(Component, intentConfig)', type: 'success' },
+            { node: 'infra-l3', name: 'L3 API 层', msg: '✅ OpenAPI 扩展字段注入：x-intent-binding: destructive-action', type: 'success' },
+            { node: 'infra-l4', name: 'L4 容器层', msg: '✅ OPA Policy 注入：allow { input.human_confirmed == true }', type: 'success' },
+            { node: 'infra-l5', name: 'L5 DB/LLM', msg: '✅ DDL 注释注入：COMMENT \'intent: status.critical\'', type: 'success' },
+            { node: 'node-bridge', name: 'Bridge', msg: '👁️ 采集运行时漂移事件（同义词替代 / 置信度波动 / 安全越界）', type: 'process' },
+            { node: 'node-bridge', name: '观测上采', msg: '⬆️ 从 DB/LLM/容器/API/组件 采集语义一致性指标', type: 'info' },
+            { node: 'control-plane', name: '闭环反哺', msg: '♻️ 自动创建 Registry PR：收紧"严重"同义词规则 → 人工审批 → 下一周期', type: 'highlight' }
+        ];
 
-            currentStep: 0,
-            isRunning: false,
+        let currentStep = 0;
+        let isRunning = false;
 
-            log(msg, type = 'info') {
-                const panel = document.getElementById('log-content');
-                const line = document.createElement('div');
-                line.className = `log-line ${type}`;
-                line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-                panel.appendChild(line);
-                panel.scrollTop = panel.scrollHeight;
-            },
+        function log(msg, type = 'info') {
+            const panel = document.getElementById('log-content');
+            const line = document.createElement('div');
+            line.className = `log-line ${type}`;
+            const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+            line.textContent = `[${time}] ${msg}`;
+            panel.appendChild(line);
+            // 自适应：不需要 scrollTop，因为全部可见
+        }
 
-            reset() {
-                this.currentStep = 0;
-                this.isRunning = false;
-                document.querySelectorAll('.processing, .active').forEach(el => {
-                    el.classList.remove('processing', 'active');
-                });
-                document.getElementById('log-content').innerHTML = '<div class="log-line ready">就绪。点击"启动完整闭环"开始演示五模块数据流动。</div>';
-                document.getElementById('btn-start').disabled = false;
-                document.getElementById('btn-step').disabled = false;
-            },
+        function clearLog() {
+            document.getElementById('log-content').innerHTML = '<div class="log-line ready">就绪。点击"启动完整闭环"开始演示。</div>';
+        }
 
-            async start() {
-                if (this.isRunning) return;
-                this.isRunning = true;
-                this.reset();
-                this.log('🚀 启动数据平面五模块执行闭环...', 'ready');
-                document.getElementById('btn-start').disabled = true;
-                document.getElementById('btn-step').disabled = true;
-
-                for (let i = 0; i < this.steps.length; i++) {
-                    this.currentStep = i;
-                    const step = this.steps[i];
-                    
-                    this.log(`▶️ [${step.name}] ${step.action()}`, 'process');
-                    await this.sleep(1500);
-                    
-                    if (step.cleanup) step.cleanup();
-                    this.log(`✅ [${step.name}] 完成`, 'success');
-                    
-                    if (i < this.steps.length - 1) await this.sleep(500);
-                }
-
-                this.log('🎉 数据平面闭环演示结束。规则已下渗，观测已上采，意图协议完成自修正。', 'highlight');
-                this.isRunning = false;
-                document.getElementById('btn-start').disabled = false;
-                document.getElementById('btn-step').disabled = false;
-            },
-
-            async step() {
-                if (this.currentStep >= this.steps.length) {
-                    this.reset();
-                    return;
-                }
-
-                if (this.currentStep === 0) {
-                    document.getElementById('log-content').innerHTML = '';
-                }
-
-                const step = this.steps[this.currentStep];
-                this.log(`▶️ [${step.name}] ${step.action()}`, 'process');
-                await this.sleep(800);
-                
-                if (step.cleanup) step.cleanup();
-                this.log(`✅ [${step.name}] 完成`, 'success');
-                this.currentStep++;
-
-                if (this.currentStep >= this.steps.length) {
-                    this.log('🎉 单步演示结束。', 'highlight');
-                }
-            },
-
-            sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
-        };
-
-        // 节点点击提示
-        document.querySelectorAll('.node').forEach(node => {
-            node.addEventListener('click', () => {
-                const name = node.dataset.name;
-                const details = {
-                    'Registry': '语义注册表：管理意图协议版本，分析变更影响面，维护跨产品绑定配置。',
-                    'Compiler': '契约编译器：将 YAML 意图协议翻译为各层可执行产物（TS/ESLint/OpenAPI/OPA/DDL）。',
-                    'Validator': '四层推演引擎：语法/语义/安全/美感分层安检，阻断优于修正，短路终止。',
-                    'Runtime': '运行时拦截：React HOC、Express 中间件、LLM Tool Guard 现场执行权限矩阵。',
-                    'Bridge': '观测桥接器：采集漂移事件，归因分析，自动创建 Registry PR 反哺控制平面。'
-                };
-                demo.log(`ℹ️ [${name}] ${details[name]}`, 'info');
+        function resetDemo() {
+            currentStep = 0;
+            isRunning = false;
+            clearLog();
+            document.querySelectorAll('.active, .processing').forEach(el => {
+                el.classList.remove('active', 'processing');
             });
-        });
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-step').disabled = false;
+        }
+
+        async function startDemo() {
+            if (isRunning) return;
+            resetDemo();
+            isRunning = true;
+            document.getElementById('btn-start').disabled = true;
+            document.getElementById('btn-step').disabled = true;
+
+            for (let i = 0; i < demoSteps.length; i++) {
+                currentStep = i;
+                const step = demoSteps[i];
+                
+                // 高亮节点
+                if (step.node) {
+                    const el = document.getElementById(step.node);
+                    if (el) {
+                        el.classList.add('processing');
+                        await sleep(400);
+                        el.classList.remove('processing');
+                        el.classList.add('active');
+                    }
+                }
+
+                log(`${step.name}：${step.msg}`, step.type);
+                await sleep(800);
+            }
+
+            log('🎉 完整闭环演示结束。数据平面已就绪。', 'highlight');
+            isRunning = false;
+            document.getElementById('btn-start').disabled = false;
+            document.getElementById('btn-step').disabled = false;
+        }
+
+        async function stepDemo() {
+            if (currentStep >= demoSteps.length) {
+                resetDemo();
+                return;
+            }
+            const step = demoSteps[currentStep];
+            if (step.node) {
+                const el = document.getElementById(step.node);
+                if (el) {
+                    el.classList.add('active');
+                }
+            }
+            log(`${step.name}：${step.msg}`, step.type);
+            currentStep++;
+            if (currentStep >= demoSteps.length) {
+                log('🎉 单步演示结束。', 'highlight');
+            }
+        }
+
+        function showNodeInfo(name) {
+            const details = {
+                'Registry': '语义注册表：管理意图协议版本，分析变更影响面，维护跨产品绑定配置。',
+                'Compiler': '契约编译器：将 YAML 意图协议翻译为各层可执行产物（TS/ESLint/OpenAPI/OPA）。',
+                'Validator': '四层推演引擎：语法/语义/安全/美感分层安检，阻断优于修正。',
+                'Runtime': '运行时拦截：React HOC、Express 中间件、LLM Tool Guard 现场执行。',
+                'Bridge': '观测桥接器：采集漂移事件，归因分析，自动创建 Registry PR 反哺。'
+            };
+            log(`ℹ️ [${name}] ${details[name]}`, 'info');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
     </script>
 </body>
 </html>

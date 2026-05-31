@@ -6,28 +6,45 @@
     <title>13 与 AI 工具的关系 — DESIGN.md × Schema-As-Code 双层意图架构</title>
     <style>
         :root {
-            --design-color: #1565c0;
-            --design-bg: #e3f2fd;
-            --schema-color: #ef6c00;
-            --schema-bg: #fff3e0;
-            --bridge-color: #6a1b9a;
-            --success: #4caf50;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
-            --text: #1a1a2e;
-            --text-secondary: #666;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1200px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
             padding: 20px;
         }
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
         .container {
-            max-width: 1200px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
         }
         .header {
@@ -35,13 +52,14 @@
             margin-bottom: 32px;
         }
         .header h1 {
-            font-size: 22px;
-            color: var(--text);
+            font-size: var(--sa-f-xl);
+            color: var(--sa-c-text);
             margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         .header .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-base);
+            color: var(--sa-c-muted);
         }
         .header .badge-group {
             margin-top: 12px;
@@ -52,62 +70,65 @@
         .badge {
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
         }
         .badge.design {
-            background: var(--design-bg);
-            color: var(--design-color);
+            background: #E8F0FE;
+            color: var(--sa-c-navy);
         }
         .badge.schema {
-            background: var(--schema-bg);
-            color: var(--schema-color);
+            background: var(--sa-c-amber-light);
+            color: var(--sa-c-amber);
         }
-        
+
         .layers {
             display: grid;
             grid-template-columns: 1fr 200px 1fr;
             gap: 20px;
             margin-bottom: 24px;
         }
-        
+
         .layer-panel {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
+            box-shadow: var(--sa-shadow);
         }
         .layer-panel.design {
-            border-top: 4px solid var(--design-color);
+            border-top: 4px solid var(--sa-c-navy);
         }
         .layer-panel.schema {
-            border-top: 4px solid var(--schema-color);
+            border-top: 4px solid var(--sa-c-amber);
         }
-        
+
         .layer-title {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: var(--sa-f-sm);
+            font-weight: 600;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
+            letter-spacing: -0.02em;
         }
-        .layer-title.design { color: var(--design-color); }
-        .layer-title.schema { color: var(--schema-color); }
-        
+        .layer-title.design { color: var(--sa-c-navy); }
+        .layer-title.schema { color: var(--sa-c-amber); }
+
         .editor {
-            background: #1a1a2e;
+            background: var(--sa-c-navy);
             color: #a6e22e;
             padding: 16px;
-            border-radius: 6px;
-            font-family: "SF Mono", Monaco, monospace;
-            font-size: 13px;
+            border-radius: var(--sa-r);
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
             line-height: 1.6;
             min-height: 320px;
             white-space: pre-wrap;
             overflow-wrap: break-word;
         }
-        
+
         .bridge-panel {
             display: flex;
             flex-direction: column;
@@ -117,25 +138,27 @@
         }
         .bridge-arrow {
             font-size: 32px;
-            color: var(--bridge-color);
+            color: var(--sa-c-navy-light);
         }
         .bridge-label {
-            font-size: 12px;
-            color: var(--bridge-color);
+            font-size: 11px;
+            color: var(--sa-c-navy-light);
             text-align: center;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         .bridge-box {
-            background: #f3e5f5;
-            border: 2px solid var(--bridge-color);
-            border-radius: 8px;
+            background: #E8F0FE;
+            border: 2px solid var(--sa-c-navy-light);
+            border-radius: var(--sa-r);
             padding: 12px;
             text-align: center;
-            font-size: 12px;
-            color: var(--bridge-color);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-navy-light);
             width: 100%;
+            font-weight: 500;
         }
-        
+
         .scenario-selector {
             display: flex;
             gap: 10px;
@@ -144,36 +167,40 @@
         }
         .scenario-btn {
             padding: 8px 16px;
-            border: 1px solid var(--border);
-            background: white;
-            border-radius: 6px;
+            border: 1px solid var(--sa-c-border);
+            background: var(--sa-c-surface);
+            border-radius: var(--sa-r);
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
+            font-size: var(--sa-f-sm);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            color: var(--sa-c-muted);
         }
         .scenario-btn:hover {
-            border-color: var(--bridge-color);
-            color: var(--bridge-color);
+            border-color: var(--sa-c-navy);
+            color: var(--sa-c-navy);
         }
         .scenario-btn.active {
-            background: var(--bridge-color);
+            background: var(--sa-c-navy);
             color: white;
-            border-color: var(--bridge-color);
+            border-color: var(--sa-c-navy);
         }
-        
+
         .comparison {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 8px;
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
             margin-top: 24px;
+            box-shadow: var(--sa-shadow);
         }
         .comparison h3 {
-            font-size: 14px;
+            font-size: var(--sa-f-sm);
             margin-bottom: 16px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 600;
         }
         .comp-grid {
             display: grid;
@@ -181,30 +208,37 @@
             gap: 20px;
         }
         .comp-item h4 {
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
-        .comp-item.design h4 { color: var(--design-color); }
-        .comp-item.schema h4 { color: var(--schema-color); }
+        .comp-item.design h4 { color: var(--sa-c-navy); }
+        .comp-item.schema h4 { color: var(--sa-c-amber); }
         .comp-item p {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             line-height: 1.5;
         }
-        
+
         .footer {
             text-align: center;
             margin-top: 32px;
             padding-top: 20px;
-            border-top: 1px solid var(--border);
-            font-size: 13px;
-            color: var(--text-secondary);
+            border-top: 1px solid var(--sa-c-border);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
         }
         .footer a {
-            color: var(--design-color);
+            color: var(--sa-c-navy);
             text-decoration: none;
+            font-weight: 500;
         }
-        
+        .footer a:hover {
+            color: var(--sa-c-navy-light);
+            text-decoration: underline;
+        }
+
         @media (max-width: 900px) {
             .layers {
                 grid-template-columns: 1fr;
@@ -218,6 +252,7 @@
             }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -229,13 +264,13 @@
                 <span class="badge schema">🔶 Schema-As-Code — 约束层</span>
             </div>
         </div>
-        
+
         <div class="scenario-selector">
             <button class="scenario-btn active" onclick="loadScenario('alert')">场景 1：告警卡片</button>
             <button class="scenario-btn" onclick="loadScenario('destructive')">场景 2：高危操作</button>
             <button class="scenario-btn" onclick="loadScenario('copy')">场景 3：文案规范</button>
         </div>
-        
+
         <div class="layers">
             <div class="layer-panel design">
                 <div class="layer-title design">
@@ -243,7 +278,7 @@
                 </div>
                 <div class="editor" id="design-editor"></div>
             </div>
-            
+
             <div class="bridge-panel">
                 <div class="bridge-arrow">⇄</div>
                 <div class="bridge-label">Compiler<br>交汇点</div>
@@ -253,7 +288,7 @@
                     <div style="margin-top:4px;">注入约束提示</div>
                 </div>
             </div>
-            
+
             <div class="layer-panel schema">
                 <div class="layer-title schema">
                     <span>⚙️</span> Schema-As-Code（约束层）
@@ -261,7 +296,7 @@
                 <div class="editor" id="schema-editor"></div>
             </div>
         </div>
-        
+
         <div class="comparison">
             <h3>互补关系验证</h3>
             <div class="comp-grid">
@@ -283,7 +318,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="footer">
             <p>Schema-As-Code 联邦自治架构 · 沙盘 13/13</p>
             <p>
@@ -293,7 +328,7 @@
             </p>
         </div>
     </div>
-    
+
     <script>
         const scenarios = {
             alert: {
@@ -420,16 +455,16 @@ llm_constraints:
     - "必须附带人工升级路径"`
             }
         };
-        
+
         function loadScenario(key) {
             document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            
+
             const data = scenarios[key];
             document.getElementById('design-editor').textContent = data.design;
             document.getElementById('schema-editor').textContent = data.schema;
         }
-        
+
         // 默认加载第一个场景
         loadScenario('alert');
     </script>

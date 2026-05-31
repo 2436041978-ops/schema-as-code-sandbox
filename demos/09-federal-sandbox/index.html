@@ -6,31 +6,48 @@
     <title>09 自治 — 域级立法与沙盒 | Schema-As-Code 联邦自治架构</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --dp-orange: #ef6c00;
-            --infra-purple: #6a1b9a;
-            --success: #4caf50;
-            --warn: #ff9800;
-            --error: #d32f2f;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --radius: 8px;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 900px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
         }
 
         .container {
-            max-width: 900px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
             padding: 32px;
         }
@@ -39,26 +56,27 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             text-decoration: none;
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             margin-bottom: 20px;
             transition: color 0.2s;
         }
 
         .back:hover {
-            color: var(--cp-blue);
+            color: var(--sa-c-navy);
         }
 
         h1 {
-            font-size: 22px;
-            color: var(--dp-orange);
+            font-size: var(--sa-f-xl);
+            color: var(--sa-c-amber);
             margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
         .subtitle {
-            color: var(--text-secondary);
-            font-size: 14px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-base);
             margin-bottom: 32px;
         }
 
@@ -68,10 +86,11 @@
             align-items: stretch;
             gap: 0;
             margin-bottom: 32px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             overflow: hidden;
+            box-shadow: var(--sa-shadow);
         }
 
         .stage {
@@ -90,18 +109,18 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 20px;
-            color: var(--border);
+            color: var(--sa-c-border);
             z-index: 2;
         }
 
         .stage.active {
             opacity: 1;
-            background: var(--dp-bg);
+            background: var(--sa-c-amber-light);
         }
 
         .stage.completed {
             opacity: 1;
-            background: #e8f5e9;
+            background: var(--sa-c-teal-light);
         }
 
         .stage .icon {
@@ -110,14 +129,15 @@
         }
 
         .stage .name {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: var(--sa-f-base);
+            font-weight: 600;
             margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
         .stage .desc {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
         }
 
         .stage .status {
@@ -126,23 +146,24 @@
             padding: 4px 12px;
             border-radius: 20px;
             display: inline-block;
-            font-weight: bold;
+            font-weight: 600;
+            letter-spacing: 0.05em;
         }
 
         .stage .status.pending {
-            background: #fff3e0;
-            color: var(--warn);
+            background: var(--sa-c-amber-light);
+            color: var(--sa-c-amber);
         }
 
         .stage .status.passed {
-            background: #e8f5e9;
-            color: var(--success);
+            background: var(--sa-c-teal-light);
+            color: #059669;
         }
 
         .stage .status.experimental {
-            background: #fff8e1;
-            color: var(--warn);
-            border: 1px dashed var(--warn);
+            background: var(--sa-c-amber-light);
+            color: var(--sa-c-amber);
+            border: 1px dashed var(--sa-c-amber);
         }
 
         /* 主工作区 */
@@ -154,30 +175,32 @@
         }
 
         .panel {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px;
+            box-shadow: var(--sa-shadow);
         }
 
         .panel h3 {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid var(--sa-c-border);
+            font-weight: 600;
         }
 
         /* 沙盒编辑器 */
         .sandbox-editor {
-            background: #1a1a2e;
+            background: var(--sa-c-navy);
             color: #a6e22e;
             padding: 16px;
-            border-radius: var(--radius);
-            font-family: "SF Mono", Monaco, monospace;
-            font-size: 13px;
+            border-radius: var(--sa-r);
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
             line-height: 1.8;
             min-height: 200px;
             white-space: pre-wrap;
@@ -197,16 +220,16 @@
         }
 
         .sandbox-editor .highlight {
-            background: rgba(255, 152, 0, 0.2);
-            border-left: 3px solid var(--warn);
+            background: rgba(255, 107, 53, 0.2);
+            border-left: 3px solid var(--sa-c-amber);
             padding-left: 8px;
             margin-left: -8px;
         }
 
         /* 测试日志 */
         .test-log {
-            font-family: "SF Mono", Monaco, monospace;
-            font-size: 12px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
             line-height: 1.8;
             max-height: 220px;
             overflow-y: auto;
@@ -223,18 +246,18 @@
         }
 
         .log-line.success {
-            color: #a6e22e;
-            border-left-color: var(--success);
+            color: var(--sa-c-teal);
+            border-left-color: var(--sa-c-teal);
         }
 
         .log-line.error {
-            color: #f92672;
-            border-left-color: var(--error);
+            color: var(--sa-c-rose);
+            border-left-color: var(--sa-c-rose);
         }
 
         .log-line.warn {
             color: #fd971f;
-            border-left-color: var(--warn);
+            border-left-color: var(--sa-c-amber);
         }
 
         /* 控制按钮 */
@@ -244,48 +267,55 @@
             margin-bottom: 24px;
         }
 
-        .btn {
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             padding: 12px 24px;
             border: none;
-            border-radius: var(--radius);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-base);
             font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
-        .btn-primary {
-            background: var(--dp-orange);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #e65100;
-        }
-
-        .btn-primary:disabled {
+        .sa-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        .btn-secondary {
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
+        .sa-btn--accent {
+            background: var(--sa-c-amber);
+            color: white;
         }
 
-        .btn-secondary:hover {
-            background: var(--border);
+        .sa-btn--accent:hover:not(:disabled) {
+            filter: brightness(1.1);
+        }
+
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
+        }
+
+        .sa-btn--ghost:hover:not(:disabled) {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
         }
 
         /* 注册表单 */
         .register-form {
             display: none;
-            background: var(--card);
-            border: 2px solid var(--success);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 2px solid var(--sa-c-teal);
+            border-radius: var(--sa-r);
             padding: 24px;
             margin-bottom: 24px;
+            box-shadow: var(--sa-shadow);
         }
 
         .register-form.show {
@@ -293,9 +323,11 @@
         }
 
         .register-form h3 {
-            color: var(--success);
-            font-size: 16px;
+            color: #059669;
+            font-size: var(--sa-f-lg);
             margin-bottom: 16px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
 
         .form-row {
@@ -307,32 +339,36 @@
         }
 
         .form-row label {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
         }
 
         .form-row input,
         .form-row select {
             padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 13px;
+            border: 1px solid var(--sa-c-border);
+            border-radius: 6px;
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-text);
+            background: var(--sa-c-surface);
         }
 
         .form-row input:focus,
         .form-row select:focus {
             outline: none;
-            border-color: var(--cp-blue);
+            border-color: var(--sa-c-navy);
+            box-shadow: 0 0 0 3px rgba(10, 37, 64, 0.08);
         }
 
         /* 全局生效展示 */
         .global-effect {
             display: none;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            border: 2px solid var(--success);
-            border-radius: var(--radius);
+            background: var(--sa-c-teal-light);
+            border: 2px solid var(--sa-c-teal);
+            border-radius: var(--sa-r);
             padding: 32px;
             text-align: center;
+            box-shadow: var(--sa-shadow);
         }
 
         .global-effect.show {
@@ -345,14 +381,15 @@
         }
 
         .global-effect h2 {
-            color: var(--success);
-            font-size: 20px;
+            color: #059669;
+            font-size: var(--sa-f-xl);
             margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
         .global-effect p {
-            color: var(--text-secondary);
-            font-size: 14px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-base);
         }
 
         .affected-products {
@@ -360,23 +397,25 @@
             justify-content: center;
             gap: 16px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
 
         .product-tag {
-            background: white;
-            border: 1px solid var(--success);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-teal);
             border-radius: 20px;
             padding: 6px 16px;
-            font-size: 13px;
-            color: var(--success);
+            font-size: var(--sa-f-sm);
+            color: #059669;
+            font-weight: 600;
         }
 
         footer {
             text-align: center;
             padding: 24px;
-            color: var(--text-secondary);
-            font-size: 12px;
-            border-top: 1px solid var(--border);
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-sm);
+            border-top: 1px solid var(--sa-c-border);
             margin-top: 32px;
         }
 
@@ -395,11 +434,12 @@
             }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="container">
         <a class="back" href="../../">← 返回沙盘首页</a>
-        
+
         <h1>09 自治 — 域级立法与沙盒</h1>
         <p class="subtitle">Intent Steward 在沙盒域快速迭代意图规则，通过测试验证后提交联邦注册，全局生效。</p>
 
@@ -433,8 +473,8 @@
 
         <!-- 控制按钮 -->
         <div class="controls" id="controls">
-            <button class="btn btn-primary" id="btn-submit" onclick="submitSandbox()">提交沙盒规则</button>
-            <button class="btn btn-secondary" id="btn-reset" onclick="resetDemo()">重置</button>
+            <button class="sa-btn sa-btn--accent" id="btn-submit" onclick="submitSandbox()">提交沙盒规则</button>
+            <button class="sa-btn sa-btn--ghost" id="btn-reset" onclick="resetDemo()">重置</button>
         </div>
 
         <!-- 注册表单（审批通过后出现） -->
@@ -469,8 +509,8 @@
                 </select>
             </div>
             <div style="margin-top: 16px;">
-                <button class="btn btn-primary" onclick="approveRegister()">委员会审批通过</button>
-                <button class="btn btn-secondary" onclick="rejectRegister()">驳回（返回沙盒）</button>
+                <button class="sa-btn sa-btn--accent" onclick="approveRegister()">委员会审批通过</button>
+                <button class="sa-btn sa-btn--ghost" onclick="rejectRegister()">驳回（返回沙盒）</button>
             </div>
         </div>
 
@@ -499,15 +539,15 @@
     <span class="key">canonical_id</span>: <span class="value">"ST-002"</span>
     <span class="key">version</span>: <span class="value">"2.0.0-sandbox"</span>
     <span class="key">immutable</span>: <span class="value">false</span>
-    
+
     <span class="key">visual_mapping</span>:
       <span class="key">color_token</span>: <span class="value">"status.warning"</span>
       <span class="key">motion_token</span>: <span class="value">"static"</span>
-    
+
     <span class="key">llm_constraints</span>:
       - <span class="value">"生成内容必须说明风险等级和影响面"</span>
       - <span class="value">"必须提供监控指标参考值"</span>
-    
+
     <span class="key">synonym_firewall</span>:
       <span class="key">prohibited</span>:
         - <span class="key">term</span>: <span class="value">"一般"</span>
@@ -544,26 +584,26 @@
 
         async function submitSandbox() {
             document.getElementById('btn-submit').disabled = true;
-            
+
             // Step 1: 沙盒提交
             log('🧪 沙盒规则提交：experimental/status-warning-v2.yaml', 'info');
             await sleep(600);
             log('✅ 沙盒域校验通过：YAML 语法正确，引用闭环完整', 'success');
-            
+
             // 高亮沙盒编辑器中的实验性标记
             document.getElementById('sandbox-editor').innerHTML = 
                 document.getElementById('sandbox-editor').innerHTML
                     .replace('immutable: <span class="value">false</span>', 
-                             'immutable: <span class="value" style="color:#ff9800">false</span> <span style="color:#ff9800">← 沙盒域允许修改</span>');
-            
+                             'immutable: <span class="value" style="color:var(--sa-c-amber)">false</span> <span style="color:var(--sa-c-amber)">← 沙盒域允许修改</span>');
+
             await sleep(800);
-            
+
             // Step 2: 测试验证
             document.getElementById('stage-sandbox').classList.remove('active');
             document.getElementById('stage-sandbox').classList.add('completed');
             document.getElementById('stage-test').classList.add('active');
             document.getElementById('stage-test').querySelector('.status').style.display = 'inline-block';
-            
+
             log('🧪 启动场景测试...', 'info');
             await sleep(800);
             log('✅ Happy Path：status.warning 正确映射到黄色静态图标', 'success');
@@ -573,26 +613,26 @@
             log('⚠️  发现弱项：缺少 "普通" → status.info 的上下文限定', 'warn');
             await sleep(600);
             log('✅ 测试覆盖率：92%（满足联邦注册阈值 90%）', 'success');
-            
+
             await sleep(800);
-            
+
             // Step 3: 联邦注册
             document.getElementById('stage-test').classList.remove('active');
             document.getElementById('stage-test').classList.add('completed');
             document.getElementById('stage-register').classList.add('active');
             document.getElementById('stage-register').querySelector('.status').style.display = 'inline-block';
-            
+
             log('📋 生成联邦注册申请...', 'info');
             await sleep(600);
             log('📋 影响面分析：3 个产品绑定 status.warning，需同步更新', 'info');
             await sleep(600);
             log('📋 提交至联邦治理委员会审批', 'info');
-            
+
             // 显示注册表单
             await sleep(800);
             document.getElementById('register-form').classList.add('show');
             document.getElementById('workspace').style.opacity = '0.3';
-            
+
             log('⏳ 等待委员会审批...', 'warn');
         }
 
@@ -600,22 +640,22 @@
             log('✅ 委员会审批通过：Breaking Change 评估为兼容升级', 'success');
             document.getElementById('register-form').classList.remove('show');
             document.getElementById('workspace').style.opacity = '1';
-            
+
             // 更新沙盒编辑器为正式版本
             document.getElementById('sandbox-editor').innerHTML = 
                 document.getElementById('sandbox-editor').innerHTML
-                    .replace('2.0.0-sandbox', '<span style="color:#4caf50">2.0.0</span>')
-                    .replace('false</span> <span style="color:#ff9800">← 沙盒域允许修改</span>', 
-                             'true</span> <span style="color:#4caf50">← 已冻结，不可变</span>')
+                    .replace('2.0.0-sandbox', '<span style="color:var(--sa-c-teal)">2.0.0</span>')
+                    .replace('false</span> <span style="color:var(--sa-c-amber)">← 沙盒域允许修改</span>', 
+                             'true</span> <span style="color:var(--sa-c-teal)">← 已冻结，不可变</span>')
                     .replace('experimental/status-warning-v2.yaml', 
-                             '<span style="color:#4caf50">semantic-tokens.yaml</span>（正式域）');
-            
+                             '<span style="color:var(--sa-c-teal)">semantic-tokens.yaml</span>（正式域）');
+
             // Step 4: 全局生效
             document.getElementById('stage-register').classList.remove('active');
             document.getElementById('stage-register').classList.add('completed');
             document.getElementById('stage-global').classList.add('completed');
             document.getElementById('stage-global').querySelector('.status').style.display = 'inline-block';
-            
+
             setTimeout(() => {
                 document.getElementById('global-effect').classList.add('show');
                 log('🌍 规则已全局生效：Compiler 自动重新编译，3 个产品已同步', 'success');
@@ -639,17 +679,43 @@
             document.getElementById('register-form').classList.remove('show');
             document.getElementById('global-effect').classList.remove('show');
             document.getElementById('workspace').style.opacity = '1';
-            
+
             document.querySelectorAll('.stage').forEach(s => {
                 s.classList.remove('active', 'completed');
             });
             document.getElementById('stage-sandbox').classList.add('active');
-            
+
             document.querySelectorAll('.status').forEach(s => {
                 if (!s.parentElement.classList.contains('active')) s.style.display = 'none';
             });
-            
+
             document.getElementById('test-log').innerHTML = '<div class="log-line info">就绪。等待沙盒提交...</div>';
+
+            // 重置沙盒编辑器原始内容
+            document.getElementById('sandbox-editor').innerHTML = 
+`<span class="comment"># 沙盒域：experimental/status-warning-v2.yaml</span>
+<span class="comment"># 状态：实验性，待验证</span>
+
+<span class="key">semantic_tokens</span>:
+  <span class="key">status.warning</span>:
+    <span class="key">canonical_id</span>: <span class="value">"ST-002"</span>
+    <span class="key">version</span>: <span class="value">"2.0.0-sandbox"</span>
+    <span class="key">immutable</span>: <span class="value">false</span>
+
+    <span class="key">visual_mapping</span>:
+      <span class="key">color_token</span>: <span class="value">"status.warning"</span>
+      <span class="key">motion_token</span>: <span class="value">"static"</span>
+
+    <span class="key">llm_constraints</span>:
+      - <span class="value">"生成内容必须说明风险等级和影响面"</span>
+      - <span class="value">"必须提供监控指标参考值"</span>
+
+    <span class="key">synonym_firewall</span>:
+      <span class="key">prohibited</span>:
+        - <span class="key">term</span>: <span class="value">"一般"</span>
+          <span class="key">standard_token</span>: <span class="value">"status.warning"</span>
+        - <span class="key">term</span>: <span class="value">"普通"</span>
+          <span class="key">standard_token</span>: <span class="value">"status.info"</span>`;
         }
 
         function sleep(ms) {

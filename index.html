@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schema-As-Code 联邦自治架构 — 全景沙盘</title>
+    <style>
+        :root {
+            --cp-blue: #1565c0;
+            --dp-orange: #ef6c00;
+            --infra-purple: #6a1b9a;
+            --success: #4caf50;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #e0e6ed;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            color: white;
+            padding: 40px 32px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 12px; }
+        .header p { font-size: 14px; opacity: 0.8; max-width: 600px; margin: 0 auto; }
+        .nav-links {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 6px 14px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-secondary);
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--border);
+        }
+        .section-title.cp { color: var(--cp-blue); border-color: var(--cp-blue); }
+        .section-title.dp { color: var(--dp-orange); border-color: var(--dp-orange); }
+        .section-title.diff { color: var(--infra-purple); border-color: var(--infra-purple); }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .demo-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            color: var(--text);
+            display: block;
+        }
+        .demo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .demo-card .number {
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .demo-card h3 {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        .demo-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .demo-card .tag {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+        .demo-card.cp { border-left: 4px solid var(--cp-blue); }
+        .demo-card.dp { border-left: 4px solid var(--dp-orange); }
+        .demo-card.diff { border-left: 4px solid var(--infra-purple); }
+        
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Schema-As-Code 联邦自治架构</h1>
+        <p>13 个交互式沙盘节点，覆盖分层架构、联邦自治机制与差异化互补关系。点击任意卡片进入独立 DEMO。</p>
+        <div class="nav-links">
+            <a href="https://github.com/2436041978-ops/intent-schema-compiler" target="_blank">🔷 控制平面</a>
+            <a href="https://github.com/2436041978-ops/intent-governance-mesh" target="_blank">🔶 数据平面</a>
+            <a href="https://github.com/2436041978-ops/schema-as-code" target="_blank">📚 总架构文档</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section-title cp">一、分层架构详解（6 个 DEMO）</div>
+        <div class="grid">
+            <a class="demo-card cp" href="demos/01-topology/">
+                <div class="number">01</div>
+                <h3>双轴正交模型</h3>
+                <p>纵向基础设施（Token→组件→API→容器→DB）与横向语义治理网格（控制平面→数据平面）的正交穿透。</p>
+                <span class="tag">总拓扑</span>
+            </a>
+            <a class="demo-card cp" href="demos/02-control-plane/">
+                <div class="number">02</div>
+                <h3>控制平面 — 宪法层</h3>
+                <p>intent-schema-compiler 三层结构：语义层、治理层、执行层。YAML 协议编辑与实时校验。</p>
+                <span class="tag">宪法文本</span>
+            </a>
+            <a class="demo-card dp" href="demos/03-data-plane/">
+                <div class="number">03</div>
+                <h3>数据平面 — 执行层</h3>
+                <p>Registry→Compiler→Validator→Runtime→Bridge 五模块拓扑与执行动画。</p>
+                <span class="tag">国家机器</span>
+            </a>
+            <a class="demo-card dp" href="demos/04-infrastructure/">
+                <div class="number">04</div>
+                <h3>基础设施层 — 五层穿透</h3>
+                <p>L1-L5 网格化覆盖：Token/组件/API/容器/DB 注入规则前后的状态对比。</p>
+                <span class="tag">纵向链路</span>
+            </a>
+            <a class="demo-card dp" href="demos/05-data-loop/">
+                <div class="number">05</div>
+                <h3>数据流动闭环</h3>
+                <p>声明式同步→规则下渗→运行时拦截→观测上采→自动反哺 PR 的完整闭环动画。</p>
+                <span class="tag">闭环反馈</span>
+            </a>
+            <a class="demo-card cp" href="demos/06-principles/">
+                <div class="number">06</div>
+                <h3>四大设计原则</h3>
+                <p>声明式、正交穿透、阻断优于修正、版本锁定的交互验证。</p>
+                <span class="tag">核心原则</span>
+            </a>
+        </div>
+
+        <div class="section-title dp">二、联邦自治机制（4 个 DEMO）</div>
+        <div class="grid">
+            <a class="demo-card dp" href="demos/07-federal-roles/">
+                <div class="number">07</div>
+                <h3>三层治理角色</h3>
+                <p>联邦委员会（定基线）→ Intent Steward（域级自治）→ 业务工程师（黑盒接入）的权限金字塔。</p>
+                <span class="tag">角色分工</span>
+            </a>
+            <a class="demo-card dp" href="demos/08-federal-baseline/">
+                <div class="number">08</div>
+                <h3>基线 — 联邦宪法</h3>
+                <p>immutable_boundaries 定义不可变边界，Breaking Change 审批流程演示。</p>
+                <span class="tag">宪法基线</span>
+            </a>
+            <a class="demo-card dp" href="demos/09-federal-sandbox/">
+                <div class="number">09</div>
+                <h3>自治 — 域级立法与沙盒</h3>
+                <p>沙盒域快速迭代 → 测试验证 → 联邦注册 → 全局生效的晋升流程。</p>
+                <span class="tag">沙盒机制</span>
+            </a>
+            <a class="demo-card dp" href="demos/10-blackbox/">
+                <div class="number">10</div>
+                <h3>黑盒 — 零感知接入</h3>
+                <p>前端标签约定式、Figma 插件、AI SDK 自动拉取的三层接入模拟。</p>
+                <span class="tag">接入模拟</span>
+            </a>
+        </div>
+
+        <div class="section-title diff">三、差异化与互补（3 个 DEMO）</div>
+        <div class="grid">
+            <a class="demo-card diff" href="demos/11-design-system/">
+                <div class="number">11</div>
+                <h3>与设计系统的关系</h3>
+                <p>Ant Design / Carbon 的 Design Token 之上叠加语义契约层，不替代只延伸。</p>
+                <span class="tag">Ant Design</span>
+            </a>
+            <a class="demo-card diff" href="demos/12-observability/">
+                <div class="number">12</div>
+                <h3>与可观测平台的关系</h3>
+                <p>LoongSuite GenAI SemConv（运行时观测）与 Schema-As-Code（设计时约束）的阶段互补与闭环咬合。</p>
+                <span class="tag">LoongSuite</span>
+            </a>
+            <a class="demo-card diff" href="demos/13-ai-tools/">
+                <div class="number">13</div>
+                <h3>与 AI 工具的关系</h3>
+                <p>DESIGN.md（描述层）与 Schema-As-Code（约束层）的双层意图架构交汇演示。</p>
+                <span class="tag">DESIGN.md</span>
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        Schema-As-Code 联邦自治架构 · 沙盘演示 · 
+        <a href="https://github.com/2436041978-ops/schema-as-code-sandbox" style="color: var(--cp-blue);">GitHub</a>
+    </footer>
+</body>
+</html>

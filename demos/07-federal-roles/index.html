@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>07 三层治理角色 — 联邦自治权限金字塔</title>
+    <style>
+        :root {
+            --cp-blue: #1565c0;
+            --cp-bg: #e3f2fd;
+            --dp-orange: #ef6c00;
+            --dp-bg: #fff3e0;
+            --infra-purple: #6a1b9a;
+            --infra-bg: #f3e5f5;
+            --success: #4caf50;
+            --warn: #ff9800;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #e0e6ed;
+            --radius: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            color: white;
+            padding: 24px 32px;
+            position: relative;
+        }
+
+        .back {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            transition: color 0.2s;
+        }
+
+        .back:hover { color: white; }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .intro {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 32px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .intro strong {
+            color: var(--text);
+        }
+
+        /* 金字塔结构 */
+        .pyramid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .pyramid-layer {
+            width: 100%;
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pyramid-layer:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .pyramid-layer.federal {
+            background: var(--cp-bg);
+            border: 2px solid var(--cp-blue);
+            max-width: 360px;
+        }
+
+        .pyramid-layer.domain {
+            background: var(--dp-bg);
+            border: 2px solid var(--dp-orange);
+            max-width: 560px;
+        }
+
+        .pyramid-layer.business {
+            background: var(--infra-bg);
+            border: 2px solid var(--infra-purple);
+            max-width: 760px;
+        }
+
+        .layer-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .layer-icon {
+            font-size: 28px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .federal .layer-icon { border: 2px solid var(--cp-blue); }
+        .domain .layer-icon { border: 2px solid var(--dp-orange); }
+        .business .layer-icon { border: 2px solid var(--infra-purple); }
+
+        .layer-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .federal .layer-title { color: var(--cp-blue); }
+        .domain .layer-title { color: var(--dp-orange); }
+        .business .layer-title { color: var(--infra-purple); }
+
+        .layer-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .role-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .role-card:hover {
+            border-color: var(--cp-blue);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .role-card.active {
+            border-color: var(--cp-blue);
+            box-shadow: 0 0 0 2px rgba(21, 101, 192, 0.2);
+        }
+
+        .role-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .role-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .role-tag {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--bg);
+            color: var(--text-secondary);
+        }
+
+        /* 连接箭头 */
+        .pyramid-connector {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 20px;
+            padding: 4px 0;
+        }
+
+        .connector-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        /* 详情面板 */
+        .detail-panel {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-top: 32px;
+            display: none;
+        }
+
+        .detail-panel.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .detail-header h2 {
+            font-size: 18px;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h4 {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .detail-section p,
+        .detail-section li {
+            font-size: 13px;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        .detail-section ul {
+            padding-left: 20px;
+        }
+
+        .detail-section li {
+            margin-bottom: 6px;
+        }
+
+        .power-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin: 4px 4px 4px 0;
+            background: var(--cp-bg);
+            color: var(--cp-blue);
+            border: 1px solid var(--cp-blue);
+        }
+
+        .power-tag.restrict {
+            background: #ffebee;
+            color: var(--error);
+            border-color: var(--error);
+        }
+
+        .power-tag.allow {
+            background: #e8f5e9;
+            color: var(--success);
+            border-color: var(--success);
+        }
+
+        .flow-demo {
+            background: var(--bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .flow-demo h4 {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+
+        .flow-steps {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .flow-step {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px 16px;
+            font-size: 12px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .flow-step.active {
+            border-color: var(--success);
+            background: #e8f5e9;
+            font-weight: bold;
+        }
+
+        .flow-arrow {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .demo-controls {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .demo-controls button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin: 0 8px;
+        }
+
+        .btn-play {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-play:hover {
+            background: #388e3c;
+        }
+
+        .btn-reset {
+            background: var(--text-secondary);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #444;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .roles-grid { grid-template-columns: 1fr; }
+            .pyramid-layer { max-width: 100% !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a class="back" href="../../">← 返回沙盘首页</a>
+        <h1>07 三层治理角色 — 联邦自治权限金字塔</h1>
+        <p>联邦不是中央集权，是"基线定死 + 域级自治 + 业务黑盒"的分层治理</p>
+    </div>
+
+    <div class="container">
+        <div class="intro">
+            <strong>核心隐喻：</strong>控制平面提供"联邦宪法"（基线规则），各域在宪法框架内自治立法，业务方黑盒接入。
+            点击任意角色卡片查看其权力边界、职责范围与可执行动作。
+        </div>
+
+        <div class="pyramid">
+            <!-- 联邦层 -->
+            <div class="pyramid-layer federal" onclick="selectLayer('federal')">
+                <div class="layer-header">
+                    <div class="layer-icon">🏛️</div>
+                    <div>
+                        <div class="layer-title">联邦层（控制平面）</div>
+                        <div class="layer-subtitle">制定元规则 · 维护不可变边界 · 审核 Breaking Change</div>
+                    </div>
+                </div>
+                <div class="roles-grid">
+                    <div class="role-card" onclick="showRole('committee', event)" data-role="committee">
+                        <div class="role-name">联邦治理委员会</div>
+                        <div class="role-desc">3-5 人跨域架构师小组，定义"什么绝对不能变"</div>
+                        <span class="role-tag">最高权力</span>
+                    </div>
+                    <div class="role-card" onclick="showRole('architect', event)" data-role="architect">
+                        <div class="role-name">语义架构师</div>
+                        <div class="role-desc">维护语义域划分、审核意图协议 PR、定义 meta-schema</div>
+                        <span class="role-tag">规则守门人</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector-label">规则下发 + 变更审批</div>
+            <div class="pyramid-connector">▼</div>
+
+            <!-- 域级层 -->
+            <div class="pyramid-layer domain" onclick="selectLayer('domain')">
+                <div class="layer-header">
+                    <div class="layer-icon">⚖️</div>
+                    <div>
+                        <div class="layer-title">域级层（数据平面）</div>
+                        <div class="layer-subtitle">在沙盒内自治立法 · 申请豁免 · 开发适配器</div>
+                    </div>
+                </div>
+                <div class="roles-grid">
+                    <div class="role-card" onclick="showRole('steward', event)" data-role="steward">
+                        <div class="role-name">Intent Steward</div>
+                        <div class="role-desc">每个业务域的语义代表，维护 bindings/*.yaml，申请沙盒晋升</div>
+                        <span class="role-tag">域级立法者</span>
+                    </div>
+                    <div class="role-card" onclick="showRole('tl', event)" data-role="tl">
+                        <div class="role-name">域 TL</div>
+                        <div class="role-desc">审批本域适配器开发、分配 Steward 资源、对接平台团队</div>
+                        <span class="role-tag">资源协调者</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="connector-label">编译产物自动分发</div>
+            <div class="pyramid-connector">▼</div>
+
+            <!-- 业务层 -->
+            <div class="pyramid-layer business" onclick="selectLayer('business')">
+                <div class="layer-header">
+                    <div class="layer-icon">👷</div>
+                    <div>
+                        <div class="layer-title">业务层（基础设施）</div>
+                        <div class="layer-subtitle">零感知接入 · 只消费编译产物 · 不接触 YAML</div>
+                    </div>
+                </div>
+                <div class="roles-grid">
+                    <div class="role-card" onclick="showRole('frontend', event)" data-role="frontend">
+                        <div class="role-name">前端工程师</div>
+                        <div class="role-desc">npm install 后 ESLint 自动提示，IDE 实时报错语义令牌误用</div>
+                        <span class="role-tag">黑盒接入</span>
+                    </div>
+                    <div class="role-card" onclick="showRole('designer', event)" data-role="designer">
+                        <div class="role-name">设计师</div>
+                        <div class="role-desc">Figma 插件读取 Registry 语义定义，设计稿自动校验颜色语义</div>
+                        <span class="role-tag">黑盒接入</span>
+                    </div>
+                    <div class="role-card" onclick="showRole('ai', event)" data-role="ai">
+                        <div class="role-name">AI 工程师</div>
+                        <div class="role-desc">SDK 自动拉取最新约束产物，Prompt 注入无需手动维护</div>
+                        <span class="role-tag">黑盒接入</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详情面板 -->
+        <div class="detail-panel" id="detail-panel">
+            <div id="detail-content"></div>
+        </div>
+
+        <!-- 流程演示 -->
+        <div class="flow-demo">
+            <h4>▶️ 规则流动演示：从联邦宪法到业务执行</h4>
+            <div class="flow-steps" id="flow-steps">
+                <div class="flow-step" id="step-1">联邦委员会<br>定义基线</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" id="step-2">语义架构师<br>审核发布</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" id="step-3">Intent Steward<br>域级绑定</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" id="step-4">Compiler<br>编译产物</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step" id="step-5">业务工程师<br>自动消费</div>
+            </div>
+            <div class="demo-controls">
+                <button class="btn-play" onclick="playFlow()">播放规则流动</button>
+                <button class="btn-reset" onclick="resetFlow()">重置</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const roleData = {
+            committee: {
+                title: '🏛️ 联邦治理委员会',
+                layer: '联邦层（控制平面）',
+                powers: [
+                    { text: '定义 immutable_boundaries（不可变边界）', type: 'allow' },
+                    { text: '审核 Breaking Change（破坏性变更）', type: 'allow' },
+                    { text: '审批域级豁免申请', type: 'allow' },
+                    { text: '定义联邦元规则（meta-rules）', type: 'allow' },
+                    { text: '直接修改业务层代码', type: 'restrict' },
+                    { text: '在沙盒域内快速迭代', type: 'restrict' }
+                ],
+                duties: [
+                    '维护 Schema-As-Code 架构宣言与核心原则',
+                    '定义语义域划分（认知型/交互型/交易型/观测型）',
+                    '审核控制平面仓库的 Major 版本变更',
+                    '裁定跨域语义冲突（如 A 域与 B 域对 "critical" 定义不同）'
+                ],
+                actions: [
+                    '召开季度架构评审会',
+                    'Merge 带有 "breaking-change" 标签的 PR',
+                    '批准或驳回沙盒域晋升申请',
+                    '更新联邦元规则清单'
+                ]
+            },
+            architect: {
+                title: '🔧 语义架构师',
+                layer: '联邦层（控制平面）',
+                powers: [
+                    { text: '维护 meta-schema.json（意图协议元规范）', type: 'allow' },
+                    { text: '审核语义令牌命名与定义', type: 'allow' },
+                    { text: '定义同义词防火墙规则', type: 'allow' },
+                    { text: '发布新版本 Registry', type: 'allow' },
+                    { text: '绕过版本锁定强制推送', type: 'restrict' },
+                    { text: '单方面关闭域级豁免通道', type: 'restrict' }
+                ],
+                duties: [
+                    '维护 intent-schema-compiler 仓库结构',
+                    '定义语义令牌的三段式命名规范（domain.category.name）',
+                    '审核意图协议编写指南',
+                    '设计 Compiler 插件接口规范'
+                ],
+                actions: [
+                    'Review 语义层 YAML 的 PR',
+                    '更新术语表与演进路线图',
+                    '编写架构契约文档',
+                    '指导 Intent Steward 进行域级立法'
+                ]
+            },
+            steward: {
+                title: '⚖️ Intent Steward',
+                layer: '域级层（数据平面）',
+                powers: [
+                    { text: '在沙盒域内自定义意图规则', type: 'allow' },
+                    { text: '维护 bindings/{domain}.yaml', type: 'allow' },
+                    { text: '申请沙盒规则晋升到正式域', type: 'allow' },
+                    { text: '开发域级适配器（Adapter）', type: 'allow' },
+                    { text: '修改联邦层 immutable_boundaries', type: 'restrict' },
+                    { text: '跳过四层推演直接发布', type: 'restrict' }
+                ],
+                duties: [
+                    '代表本域参与联邦治理委员会',
+                    '确保本域产品语义一致性得分 > 90%',
+                    '培训本域业务工程师使用黑盒接入工具',
+                    '定期同步联邦基线到本域绑定配置'
+                ],
+                actions: [
+                    '在 experimental/ 目录创建沙盒规则',
+                    '提交沙盒晋升 PR（需委员会审批）',
+                    '申请临时豁免（标注过期时间）',
+                    '对接平台团队调试 Compiler 产物'
+                ]
+            },
+            tl: {
+                title: '📋 域 TL',
+                layer: '域级层（数据平面）',
+                powers: [
+                    { text: '分配 Intent Steward 人力资源', type: 'allow' },
+                    { text: '审批本域适配器开发排期', type: 'allow' },
+                    { text: '决定本域接入 Phase 1/2/3 节奏', type: 'allow' },
+                    { text: '向联邦委员会申请资源支持', type: 'allow' },
+                    { text: '直接修改控制平面 YAML', type: 'restrict' },
+                    { text: '绕过沙盒机制直接发布规则', type: 'restrict' }
+                ],
+                duties: [
+                    '确保本域在 Phase 1 完成语义锚定',
+                    '协调本域前端/设计/AI 工程师接入',
+                    '向联邦委员会汇报本域治理健康度',
+                    '处理本域业务工程师的接入问题'
+                ],
+                actions: [
+                    '指定本域 Intent Steward 人选',
+                    '审批本域的 Figma 插件接入申请',
+                    '组织本域 Schema-As-Code 培训',
+                    '向平台团队反馈 Compiler 产物问题'
+                ]
+            },
+            frontend: {
+                title: '👨‍💻 前端工程师',
+                layer: '业务层（基础设施）',
+                powers: [
+                    { text: '通过 npm install 消费编译产物', type: 'allow' },
+                    { text: '在 IDE 中接收 ESLint 实时报错', type: 'allow' },
+                    { text: '使用 withIntentGuard HOC 包裹组件', type: 'allow' },
+                    { text: '查看语义令牌文档（只读）', type: 'allow' },
+                    { text: '修改语义令牌 YAML 定义', type: 'restrict' },
+                    { text: '禁用 Validator 四层推演', type: 'restrict' }
+                ],
+                duties: [
+                    '在组件 Props 中正确使用语义令牌',
+                    '响应 ESLint 的语义令牌误用告警',
+                    '配合 Runtime 拦截进行降级处理',
+                    '反馈组件层语义漂移问题给域 TL'
+                ],
+                actions: [
+                    '安装 @company/intent-runtime 包',
+                    '在 JSX 中使用 data-intent 标签',
+                    '查看 IDE 中 Props 类型约束提示',
+                    '提交语义令牌误报 Issue'
+                ]
+            },
+            designer: {
+                title: '🎨 设计师',
+                layer: '业务层（基础设施）',
+                powers: [
+                    { text: '通过 Figma 插件读取语义定义', type: 'allow' },
+                    { text: '在设计稿中查看语义校验结果', type: 'allow' },
+                    { text: '使用 DESIGN.md 表达设计意图', type: 'allow' },
+                    { text: '查看语义令牌与视觉映射关系', type: 'allow' },
+                    { text: '直接修改 synonym-mapping.yaml', type: 'restrict' },
+                    { text: '绕过设计稿校验直接交付', type: 'restrict' }
+                ],
+                duties: [
+                    '在 DESIGN.md 中标注意图契约引用',
+                    '确保设计稿颜色使用符合语义令牌定义',
+                    '配合 Compiler 将设计描述提取为语义令牌',
+                    '反馈语义令牌视觉映射问题'
+                ],
+                actions: [
+                    '安装 Figma Intent Schema 插件',
+                    '在 Design Token 中查看语义注释',
+                    '提交 DESIGN.md 给 Compiler 提取',
+                    '查看设计稿语义一致性评分'
+                ]
+            },
+            ai: {
+                title: '🤖 AI 工程师',
+                layer: '业务层（基础设施）',
+                powers: [
+                    { text: '通过 SDK 自动拉取 Prompt 约束', type: 'allow' },
+                    { text: '查看 LLM 输出的四层推演结果', type: 'allow' },
+                    { text: '在 Tool Calling 中使用 toolGuard', type: 'allow' },
+                    { text: '查看同义词黑名单与置信度阈值', type: 'allow' },
+                    { text: '修改 human-ai-boundary.yaml', type: 'restrict' },
+                    { text: '绕过 Runtime 拦截直接调用 API', type: 'restrict' }
+                ],
+                duties: [
+                    '在 Prompt 中正确使用语义令牌约束',
+                    '处理 LLM 输出被 Validator BLOCK 的情况',
+                    '配合 Bridge 上报语义漂移案例',
+                    '优化 Prompt 以提升语义一致性得分'
+                ],
+                actions: [
+                    '安装 @company/intent-sdk',
+                    '在代码中引入 toolGuard 包装器',
+                    '查看 LLM 输出的推演日志',
+                    '提交漂移案例给 Bridge 归因'
+                ]
+            }
+        };
+
+        function showRole(roleKey, event) {
+            event.stopPropagation();
+            
+            // 高亮当前卡片
+            document.querySelectorAll('.role-card').forEach(c => c.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const data = roleData[roleKey];
+            const panel = document.getElementById('detail-panel');
+            const content = document.getElementById('detail-content');
+            
+            const powersHtml = data.powers.map(p => 
+                `<span class="power-tag ${p.type}">${p.type === 'allow' ? '✓' : '✗'} ${p.text}</span>`
+            ).join('');
+            
+            content.innerHTML = `
+                <div class="detail-header">
+                    <div style="font-size: 28px;">${data.title.split(' ')[0]}</div>
+                    <div>
+                        <h2>${data.title.replace(/^[^\s]+\s/, '')}</h2>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">${data.layer}</div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>权力边界</h4>
+                    <div>${powersHtml}</div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>核心职责</h4>
+                    <ul>${data.duties.map(d => `<li>${d}</li>`).join('')}</ul>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>典型动作</h4>
+                    <ul>${data.actions.map(a => `<li>${a}</li>`).join('')}</ul>
+                </div>
+            `;
+            
+            panel.classList.add('show');
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function selectLayer(layer) {
+            // 点击层时的反馈，可扩展
+            console.log('Selected layer:', layer);
+        }
+
+        async function playFlow() {
+            resetFlow();
+            const steps = ['step-1', 'step-2', 'step-3', 'step-4', 'step-5'];
+            
+            for (let i = 0; i < steps.length; i++) {
+                document.getElementById(steps[i]).classList.add('active');
+                await sleep(800);
+            }
+            
+            await sleep(500);
+            alert('规则流动完成：联邦基线 → 域级绑定 → 编译产物 → 业务自动消费');
+        }
+
+        function resetFlow() {
+            document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active'));
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>

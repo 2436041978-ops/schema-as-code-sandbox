@@ -14,9 +14,9 @@
             --infra-purple: #6a1b9a;
             --infra-bg: #f3e5f5;
             --success: #4caf50;
+            --error: #d32f2f;
+            --warn: #ff9800;
             --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
             --text: #1a1a2e;
         }
 
@@ -27,12 +27,15 @@
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
             background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
             color: white;
-            padding: 24px 32px;
+            padding: 20px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -40,50 +43,247 @@
             gap: 12px;
         }
 
-        .header h1 { font-size: 20px; font-weight: 600; }
-        .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
-        .back-btn {
-            color: white;
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .header a {
+            color: rgba(255,255,255,0.8);
             text-decoration: none;
-            font-size: 13px;
-            padding: 8px 16px;
+            font-size: 12px;
+            padding: 6px 14px;
             border: 1px solid rgba(255,255,255,0.3);
             border-radius: 20px;
             transition: all 0.2s;
         }
-        .back-btn:hover { background: rgba(255,255,255,0.1); }
 
-        .controls {
+        .header a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .diagram-wrap {
             background: white;
-            border-bottom: 1px solid var(--border);
-            padding: 16px 32px;
+            border: 1px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .diagram-wrap .mermaid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .diagram-wrap .mermaid svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 状态样式 —— 通过 JS 动态添加到 SVG 元素 */
+        .node-idle rect, .node-idle circle, .node-idle polygon, .node-idle path {
+            fill: #fafafa !important;
+            stroke: #ccc !important;
+            stroke-width: 2px !important;
+            transition: all 0.4s ease;
+        }
+
+        .node-active rect, .node-active circle, .node-active polygon, .node-active path {
+            fill: var(--dp-bg) !important;
+            stroke: var(--dp-orange) !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 8px rgba(239, 108, 0, 0.3));
+            animation: pulse-node 1.5s infinite;
+        }
+
+        .node-cp-active rect, .node-cp-active circle, .node-cp-active polygon, .node-cp-active path {
+            fill: var(--cp-bg) !important;
+            stroke: var(--cp-blue) !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 8px rgba(21, 101, 192, 0.3));
+            animation: pulse-node 1.5s infinite;
+        }
+
+        .node-infra-active rect, .node-infra-active circle, .node-infra-active polygon, .node-infra-active path {
+            fill: var(--infra-bg) !important;
+            stroke: var(--infra-purple) !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 8px rgba(106, 25, 154, 0.3));
+        }
+
+        .node-success rect, .node-success circle, .node-success polygon, .node-success path {
+            fill: #e8f5e9 !important;
+            stroke: var(--success) !important;
+            stroke-width: 3px !important;
+        }
+
+        .node-error rect, .node-error circle, .node-error polygon, .node-error path {
+            fill: #ffebee !important;
+            stroke: var(--error) !important;
+            stroke-width: 3px !important;
+        }
+
+        @keyframes pulse-node {
+            0% { filter: drop-shadow(0 0 4px currentColor); }
+            50% { filter: drop-shadow(0 0 12px currentColor); }
+            100% { filter: drop-shadow(0 0 4px currentColor); }
+        }
+
+        /* 连线动画 */
+        .edge-active path {
+            stroke: var(--dp-orange) !important;
+            stroke-width: 3px !important;
+            stroke-dasharray: 10, 5;
+            animation: dash-flow 0.5s linear infinite;
+        }
+
+        .edge-cp path {
+            stroke: var(--cp-blue) !important;
+            stroke-width: 3px !important;
+            stroke-dasharray: 10, 5;
+            animation: dash-flow 0.5s linear infinite;
+        }
+
+        .edge-infra path {
+            stroke: var(--infra-purple) !important;
+            stroke-width: 3px !important;
+            stroke-dasharray: 10, 5;
+            animation: dash-flow 0.5s linear infinite;
+        }
+
+        .edge-success path {
+            stroke: var(--success) !important;
+            stroke-width: 3px !important;
+        }
+
+        @keyframes dash-flow {
+            to { stroke-dashoffset: -15; }
+        }
+
+        /* 控制栏 */
+        .controls {
             display: flex;
             gap: 12px;
             align-items: center;
             flex-wrap: wrap;
+            background: white;
+            border: 1px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 16px 20px;
+        }
+
+        .controls .group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .controls button {
-            padding: 8px 20px;
+            padding: 8px 16px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             font-size: 13px;
             transition: all 0.2s;
+            font-weight: 500;
         }
 
-        .btn-play { background: var(--success); color: white; }
-        .btn-play:hover { background: #388e3c; }
-        .btn-play:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-play {
+            background: var(--success);
+            color: white;
+        }
 
-        .btn-reset { background: var(--text); color: white; }
-        .btn-reset:hover { background: #444; }
+        .btn-play:hover {
+            background: #388e3c;
+        }
 
+        .btn-step {
+            background: var(--cp-blue);
+            color: white;
+        }
+
+        .btn-step:hover {
+            background: #0d47a1;
+        }
+
+        .btn-reset {
+            background: #666;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #444;
+        }
+
+        .speed {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .speed input {
+            width: 100px;
+        }
+
+        /* 日志面板 */
+        .log-panel {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 180px;
+            overflow-y: auto;
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .log-line {
+            color: #a6e22e;
+            padding-left: 8px;
+            border-left: 2px solid transparent;
+            animation: fade-in 0.3s ease;
+        }
+
+        .log-line.ready { color: #66d9ef; }
+        .log-line.info { color: #a6e22e; }
+        .log-line.process { color: #fd971f; }
+        .log-line.success { color: #a6e22e; border-left-color: var(--success); }
+        .log-line.error { color: #f92672; border-left-color: var(--error); }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* 图例 */
         .legend {
             display: flex;
             gap: 16px;
-            margin-left: auto;
+            flex-wrap: wrap;
             font-size: 12px;
+            color: #666;
         }
 
         .legend-item {
@@ -92,129 +292,23 @@
             gap: 6px;
         }
 
-        .legend-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 3px;
+        .legend-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 2px solid;
         }
 
-        .main {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 24px;
-            padding: 24px 32px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        .legend-box.idle { background: #fafafa; border-color: #ccc; }
+        .legend-box.cp { background: var(--cp-bg); border-color: var(--cp-blue); }
+        .legend-box.dp { background: var(--dp-bg); border-color: var(--dp-orange); }
+        .legend-box.infra { background: var(--infra-bg); border-color: var(--infra-purple); }
+        .legend-box.success { background: #e8f5e9; border-color: var(--success); }
 
-        .mermaid-container {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 24px;
-            min-height: 600px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mermaid {
-            width: 100%;
-        }
-
-        /* 动态高亮样式 —— 通过 JS 添加到 SVG 元素 */
-        .node-highlight rect, .node-highlight circle, .node-highlight ellipse, .node-highlight polygon {
-            stroke-width: 3px !important;
-            filter: drop-shadow(0 0 8px rgba(239, 108, 0, 0.5));
-        }
-
-        .node-cp-highlight rect, .node-cp-highlight circle, .node-cp-highlight ellipse, .node-cp-highlight polygon {
-            stroke: var(--cp-blue) !important;
-            stroke-width: 3px !important;
-            filter: drop-shadow(0 0 8px rgba(21, 101, 192, 0.5));
-        }
-
-        .node-infra-highlight rect, .node-infra-highlight circle, .node-infra-highlight ellipse, .node-infra-highlight polygon {
-            stroke: var(--infra-purple) !important;
-            stroke-width: 3px !important;
-            filter: drop-shadow(0 0 8px rgba(106, 25, 154, 0.5));
-        }
-
-        .edge-highlight path {
-            stroke: var(--dp-orange) !important;
-            stroke-width: 3px !important;
-            animation: dash 1s linear infinite;
-        }
-
-        .edge-up path {
-            stroke: var(--success) !important;
-            stroke-width: 3px !important;
-            animation: dash 1s linear infinite;
-        }
-
-        @keyframes dash {
-            to { stroke-dashoffset: -20; }
-        }
-
-        .side-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .panel-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 20px;
-        }
-
-        .panel-card h3 {
-            font-size: 14px;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .panel-card .content {
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .panel-card .content strong {
-            color: var(--cp-blue);
-        }
-
-        .status-log {
-            background: #1a1a2e;
-            color: #a6e22e;
-            border-radius: 8px;
-            padding: 16px;
-            font-family: "SF Mono", Monaco, monospace;
-            font-size: 12px;
-            line-height: 1.8;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .status-log .line { padding: 2px 0; }
-        .status-log .line.info { color: #66d9ef; }
-        .status-log .line.process { color: #fd971f; }
-        .status-log .line.success { color: #a6e22e; }
-        .status-log .line.highlight { color: #e6db74; }
-
-        .node-info {
-            display: none;
-        }
-
-        .node-info.active {
-            display: block;
-        }
-
-        @media (max-width: 1024px) {
-            .main { grid-template-columns: 1fr; }
-            .side-panel { order: -1; }
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .header { flex-direction: column; align-items: flex-start; }
+            .controls { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -222,445 +316,235 @@
 
     <div class="header">
         <div>
-            <h1>01 双轴正交模型</h1>
-            <p>纵向基础设施（业务价值流动）× 横向语义治理网格（规则与观测流动）</p>
+            <h1>01 双轴正交模型 — 动态拓扑</h1>
+            <div class="subtitle">纵向基础设施（业务价值）× 横向语义治理网格（规则与观测）</div>
         </div>
-        <a class="back-btn" href="../../">← 返回沙盘首页</a>
-    </div>
-
-    <div class="controls">
-        <button class="btn-play" id="btn-play" onclick="playAnimation()">▶ 播放数据流动闭环</button>
-        <button class="btn-reset" onclick="resetAnimation()">↺ 重置</button>
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-dot" style="background: var(--cp-blue);"></div>
-                <span>控制平面</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background: var(--dp-orange);"></div>
-                <span>数据平面</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-dot" style="background: var(--infra-purple);"></div>
-                <span>基础设施</span>
-            </div>
-        </div>
+        <a href="../../">← 返回沙盘首页</a>
     </div>
 
     <div class="main">
-        <div class="mermaid-container">
+        <div class="diagram-wrap">
             <div class="mermaid" id="mermaid-graph">
 graph TB
     subgraph CP["🔷 控制平面（Control Plane）"]
-        direction TB
-        CP_NODE[intent-schema-compiler<br/>语义层 / 治理层 / 执行层<br/>YAML 意图协议本体]
+        CP_NODE["intent-schema-compiler<br/>语义层 / 治理层 / 执行层"]
     end
 
-    subgraph DP["🔶 数据平面（Data Plane）—— 五模块执行拓扑"]
-        direction LR
-        R[Registry<br/>版本管理<br/>影响面分析]
-        C[Compiler<br/>契约编译<br/>产物生成]
-        V[Validator<br/>四层推演<br/>语法/语义/安全/美感]
-        RT[Runtime<br/>运行时拦截<br/>HOC/中间件/Tool Guard]
-        B[Bridge<br/>观测桥接<br/>漂移归因 + 反哺 PR]
-        R --> C --> V --> RT --> B
+    subgraph DP["🔶 数据平面（Data Plane）"]
+        R["📋 Registry"]
+        C["⚙️ Compiler"]
+        V["🛡️ Validator"]
+        RT["🚀 Runtime"]
+        B["👁️ Bridge"]
     end
 
-    subgraph INFRA["🟣 基础设施层（纵向生产链路）—— 业务价值流动"]
-        direction LR
-        L1[L1 Token<br/>Ant Design / Carbon]
-        L2[L2 组件<br/>React / Vue / Angular]
-        L3[L3 API<br/>OpenAPI / GraphQL]
-        L4[L4 容器<br/>K8s / Envoy / Docker]
-        L5[L5 DB / LLM<br/>MySQL / PostgreSQL / GPT]
-        L1 --> L2 --> L3 --> L4 --> L5
+    subgraph INFRA["🟣 基础设施层（L1-L5）"]
+        L1["L1 Token<br/>Ant Design"]
+        L2["L2 组件<br/>React/Vue"]
+        L3["L3 API<br/>OpenAPI"]
+        L4["L4 容器<br/>K8s/Envoy"]
+        L5["L5 DB/LLM<br/>MySQL/GPT"]
     end
 
-    CP_NODE -->|声明式同步<br/>GitOps| R
+    CP_NODE -->|"① 声明式同步"| R
+    R -->|"② 版本分析"| C
+    C -->|"③ 编译产物"| V
+    V -->|"④ 推演安检"| RT
+    RT -->|"⑤ 运行时拦截"| B
 
-    C -.->|规则下渗| L1
-    C -.->|规则下渗| L2
-    C -.->|规则下渗| L3
-    C -.->|规则下渗| L4
-    C -.->|规则下渗| L5
+    C -.->|"⑥ 规则下渗"| L1
+    C -.-> L2
+    C -.-> L3
+    C -.-> L4
+    C -.-> L5
 
-    L1 -.->|观测上采| B
-    L2 -.->|观测上采| B
-    L3 -.->|观测上采| B
-    L4 -.->|观测上采| B
-    L5 -.->|观测上采| B
+    L5 -.->|"⑦ 观测上采"| B
+    L4 -.-> B
+    L3 -.-> B
+    L2 -.-> B
+    L1 -.-> B
 
-    B -.->|闭环反哺<br/>自动 PR| CP_NODE
+    B -->|"⑧ 闭环反哺"| CP_NODE
 
-    classDef cpClass fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef dpClass fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    classDef infraClass fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
-    classDef cpText fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
-    classDef dpText fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    classDef infraText fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    classDef cp fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef dp fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    classDef infra fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    classDef idle fill:#fafafa,stroke:#ccc,stroke-width:1px,color:#999
 
-    class CP_NODE,CP cpClass
-    class R,C,V,RT,B dpClass
-    class L1,L2,L3,L4,L5 infraClass
-    class CP cpText
-    class DP dpText
-    class INFRA infraText
+    class CP_NODE cp
+    class R,C,V,RT,B dp
+    class L1,L2,L3,L4,L5 infra
             </div>
         </div>
 
-        <div class="side-panel">
-            <div class="panel-card">
-                <h3>📊 执行状态</h3>
-                <div class="status-log" id="status-log">
-                    <div class="line info">就绪。点击"播放数据流动闭环"开始演示。</div>
-                </div>
+        <div class="controls">
+            <div class="group">
+                <button class="btn-play" onclick="startDemo()">▶ 播放完整闭环</button>
+                <button class="btn-step" onclick="stepDemo()">⏭ 单步执行</button>
+                <button class="btn-reset" onclick="resetDemo()">↺ 重置</button>
             </div>
+            <div class="speed">
+                <label>速度</label>
+                <input type="range" id="speed" min="200" max="2000" value="800" step="100">
+                <span id="speed-val">800ms</span>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><div class="legend-box cp"></div>控制平面</div>
+                <div class="legend-item"><div class="legend-box dp"></div>数据平面</div>
+                <div class="legend-item"><div class="legend-box infra"></div>基础设施</div>
+                <div class="legend-item"><div class="legend-box success"></div>完成/闭环</div>
+            </div>
+        </div>
 
-            <div class="panel-card node-info" id="info-default">
-                <h3>ℹ️ 节点详情</h3>
-                <div class="content">
-                    点击拓扑图中的任意节点，查看该节点的详细职责、输入输出与验证设计原则。
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-cp">
-                <h3>🔷 控制平面</h3>
-                <div class="content">
-                    <strong>intent-schema-compiler</strong><br>
-                    全局唯一语义事实源，设计意图的"联邦宪法"。<<br><br>
-                    <strong>三层结构：</strong><br>
-                    • 语义层：语义令牌 + 同义词防火墙<br>
-                    • 治理层：不可变边界 + 人机边界矩阵<br>
-                    • 执行层：场景测试 + 编译思维链<br><br>
-                    <strong>验证原则：</strong>声明式、版本锁定
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-registry">
-                <h3>📋 Registry</h3>
-                <div class="content">
-                    <strong>语义注册表</strong><br>
-                    管理语义 ID 全局唯一注册、版本化与兼容性分析。<br><br>
-                    <strong>核心能力：</strong><br>
-                    • SemVer 版本管理<br>
-                    • 影响面分析（Git Diff → 下游定位）<<br>
-                    • 产品绑定配置（bindings/*.yaml）
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-compiler">
-                <h3>⚙️ Compiler</h3>
-                <div class="content">
-                    <strong>契约编译器</strong><br>
-                    将 YAML 意图协议翻译为各层可执行产物。<br><br>
-                    <strong>三阶段编译：</strong><br>
-                    • 意图加载 + 语义解析<br>
-                    • 约束推导 + 产物生成<br>
-                    • 场景验证 + 影响分析<br><br>
-                    <strong>验证原则：</strong>声明式
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-validator">
-                <h3>🛡️ Validator</h3>
-                <div class="content">
-                    <strong>四层推演引擎</strong><br>
-                    内容进入生产链路前的分层安检。<br><br>
-                    <strong>四层推演：</strong><br>
-                    • T1 语法：结构完整性 → BLOCK<br>
-                    • T2 语义：令牌匹配 → BLOCK<br>
-                    • T3 安全：禁止模式 → BLOCK<br>
-                    • T4 美感：可读性 → WARN<br><br>
-                    <strong>验证原则：</strong>阻断优于修正
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-runtime">
-                <h3>🚀 Runtime</h3>
-                <div class="content">
-                    <strong>运行时拦截</strong><br>
-                    将编译产物部署到生产环境，现场执行拦截。<br><br>
-                    <strong>三种守卫：</strong><br>
-                    • React HOC：withIntentGuard<br>
-                    • API 中间件：apiGuardMiddleware<br>
-                    • LLM Tool Guard：toolGuard<br><br>
-                    <strong>验证原则：</strong>正交穿透
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-bridge">
-                <h3>👁️ Bridge</h3>
-                <div class="content">
-                    <strong>观测桥接器</strong><br>
-                    采集运行时漂移，反向修正控制平面。<br><br>
-                    <strong>闭环流程：</strong><br>
-                    • 采集：LoongSuite / OTel Trace<br>
-                    • 归因：根因定位到契约规则<br>
-                    • 反哺：自动创建 Registry PR<br><br>
-                    <strong>验证原则：</strong>版本锁定
-                </div>
-            </div>
-
-            <div class="panel-card node-info" id="info-infra">
-                <h3>🟣 基础设施层</h3>
-                <div class="content">
-                    <strong>纵向生产链路</strong><br>
-                    现有业务基础设施，承载用户请求与业务逻辑。<br><br>
-                    <strong>五层穿透：</strong><br>
-                    • L1 Token：Ant Design / Carbon<br>
-                    • L2 组件：React / Vue / Angular<br>
-                    • L3 API：OpenAPI / GraphQL<br>
-                    • L4 容器：K8s / Envoy / Docker<br>
-                    • L5 DB / LLM：MySQL / PostgreSQL / GPT<br><br>
-                    <strong>治理方式：</strong>网格化覆盖，不替代只注入
-                </div>
-            </div>
+        <div class="log-panel" id="log-panel">
+            <div class="log-line ready">就绪。点击"播放完整闭环"或"单步执行"开始演示双轴正交数据流。</div>
         </div>
     </div>
 
     <script>
-        mermaid.initialize({
-            startOnLoad: true,
-            securityLevel: 'loose',
-            theme: 'base',
-            themeVariables: {
-                primaryColor: '#fff3e0',
-                primaryTextColor: '#1a1a2e',
-                primaryBorderColor: '#ef6c00',
-                lineColor: '#666',
-                secondaryColor: '#f5f7fa',
-                tertiaryColor: '#f5f7fa'
-            }
+        mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+
+        const steps = [
+            { id: 0,  nodes: ['CP_NODE'], edges: [],                          class: 'cp-active',  desc: '① 声明式同步：GitOps 触发，控制平面 YAML 变更' },
+            { id: 1,  nodes: ['R'],       edges: ['CP_NODE-R'],               class: 'active',     desc: '② Registry：版本化语义注册，分析影响面' },
+            { id: 2,  nodes: ['C'],       edges: ['R-C'],                     class: 'active',     desc: '③ Compiler：YAML → 可执行产物（TS/ESLint/OpenAPI/OPA）' },
+            { id: 3,  nodes: ['V'],       edges: ['C-V'],                     class: 'active',     desc: '④ Validator：四层推演安检（语法→语义→安全→美感）' },
+            { id: 4,  nodes: ['RT'],      edges: ['V-RT'],                    class: 'active',     desc: '⑤ Runtime：部署运行时守卫（HOC/中间件/Tool Guard）' },
+            { id: 5,  nodes: ['L1','L2','L3','L4','L5'], edges: ['C-L1','C-L2','C-L3','C-L4','C-L5'], class: 'infra-active', desc: '⑥ 规则下渗：编译产物分发到 Token/组件/API/容器/DB 五层' },
+            { id: 6,  nodes: ['B'],       edges: ['L5-B','L4-B','L3-B','L2-B','L1-B'], class: 'active', desc: '⑦ 观测上采：从基础设施采集漂移事件' },
+            { id: 7,  nodes: ['CP_NODE'], edges: ['B-CP_NODE'],               class: 'success',    desc: '⑧ 闭环反哺：Bridge 自动创建 PR → 控制平面修宪' },
+            { id: 8,  nodes: [],          edges: [],                          class: 'reset',      desc: '闭环完成。进入下一治理周期。' }
+        ];
+
+        let currentStep = -1;
+        let isRunning = false;
+        let nodeMap = {};
+        let edgeMap = {};
+
+        // 速度控制
+        const speedInput = document.getElementById('speed');
+        const speedVal = document.getElementById('speed-val');
+        speedInput.addEventListener('input', e => {
+            speedVal.textContent = e.target.value + 'ms';
         });
 
-        const nodeDetails = {
-            'CP_NODE': 'info-cp',
-            'R': 'info-registry',
-            'C': 'info-compiler',
-            'V': 'info-validator',
-            'RT': 'info-runtime',
-            'B': 'info-bridge',
-            'L1': 'info-infra',
-            'L2': 'info-infra',
-            'L3': 'info-infra',
-            'L4': 'info-infra',
-            'L5': 'info-infra'
-        };
-
-        let isPlaying = false;
-
-        function setupInteractions() {
-            const svg = document.querySelector('.mermaid svg');
-            if (!svg) return;
-
-            // 为所有节点添加点击事件
-            svg.querySelectorAll('.node').forEach(node => {
-                node.style.cursor = 'pointer';
-                node.addEventListener('click', function() {
-                    const id = this.id;
-                    // 从 id 提取节点名（mermaid 的 id 格式如 "flowchart-CP_NODE-..."）
-                    const match = id.match(/(?:flowchart-)?([A-Z0-9_]+)(?:-|$)/);
-                    if (match) {
-                        const nodeId = match[1];
-                        showDetail(nodeId);
-                    }
-                });
-            });
-        }
-
-        function showDetail(nodeId) {
-            // 隐藏所有详情
-            document.querySelectorAll('.node-info').forEach(el => el.classList.remove('active'));
-            
-            // 显示对应详情
-            const detailId = nodeDetails[nodeId] || 'info-default';
-            const detailEl = document.getElementById(detailId);
-            if (detailEl) {
-                detailEl.classList.add('active');
-            }
-
-            // 高亮节点
-            document.querySelectorAll('.node').forEach(n => {
-                n.classList.remove('node-cp-highlight', 'node-highlight', 'node-infra-highlight');
-            });
-            
-            const svg = document.querySelector('.mermaid svg');
-            if (svg) {
-                const targetNode = svg.querySelector(`[id*="${nodeId}"]`);
-                if (targetNode) {
-                    if (nodeId === 'CP_NODE') {
-                        targetNode.classList.add('node-cp-highlight');
-                    } else if (['R','C','V','RT','B'].includes(nodeId)) {
-                        targetNode.classList.add('node-highlight');
-                    } else {
-                        targetNode.classList.add('node-infra-highlight');
-                    }
-                }
-            }
+        function getDelay() {
+            return parseInt(speedInput.value);
         }
 
         function log(msg, type = 'info') {
-            const panel = document.getElementById('status-log');
+            const panel = document.getElementById('log-panel');
             const line = document.createElement('div');
-            line.className = `line ${type}`;
+            line.className = `log-line ${type}`;
             line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
             panel.appendChild(line);
             panel.scrollTop = panel.scrollHeight;
         }
 
-        async function playAnimation() {
-            if (isPlaying) return;
-            isPlaying = true;
-            document.getElementById('btn-play').disabled = true;
-
-            resetAnimation();
-            log('🚀 启动数据流动闭环演示...', 'highlight');
-
+        function buildMaps() {
             const svg = document.querySelector('.mermaid svg');
-            if (!svg) {
-                log('❌ 图表未渲染', 'error');
-                isPlaying = false;
-                document.getElementById('btn-play').disabled = false;
-                return;
-            }
+            if (!svg) return;
 
-            // 步骤 1：控制平面激活
-            log('▶️ [1/7] 声明式同步：GitOps 触发，控制平面 YAML 变更', 'process');
-            const cpNode = svg.querySelector('[id*="CP_NODE"]');
-            if (cpNode) cpNode.classList.add('node-cp-highlight');
-            await sleep(1200);
+            // 映射节点：根据 text 内容匹配
+            svg.querySelectorAll('.node').forEach(node => {
+                const textEl = node.querySelector('text');
+                const text = textEl ? textEl.textContent.trim().replace(/\s+/g, ' ') : '';
+                // 建立多键映射，方便通过片段查找
+                if (text.includes('intent-schema-compiler')) nodeMap['CP_NODE'] = node;
+                if (text.includes('Registry')) nodeMap['R'] = node;
+                if (text.includes('Compiler')) nodeMap['C'] = node;
+                if (text.includes('Validator')) nodeMap['V'] = node;
+                if (text.includes('Runtime')) nodeMap['RT'] = node;
+                if (text.includes('Bridge')) nodeMap['B'] = node;
+                if (text.includes('Token') || text.includes('L1')) nodeMap['L1'] = node;
+                if (text.includes('组件') || text.includes('L2')) nodeMap['L2'] = node;
+                if (text.includes('API') || text.includes('L3')) nodeMap['L3'] = node;
+                if (text.includes('容器') || text.includes('L4')) nodeMap['L4'] = node;
+                if (text.includes('DB') || text.includes('L5')) nodeMap['L5'] = node;
+            });
 
-            // 步骤 2：Registry
-            log('▶️ [2/7] Registry：版本化语义注册，分析影响面', 'process');
-            const rNode = svg.querySelector('[id*="flowchart-R-"]');
-            if (rNode) rNode.classList.add('node-highlight');
-            highlightEdge(svg, 'CP_NODE', 'R');
-            await sleep(1000);
+            // 映射连线：根据 path 的 d 属性或相邻节点判断较复杂，这里通过遍历所有 edgePaths
+            // Mermaid 的 edge 没有稳定 ID，我们通过起点和终点的坐标近似匹配
+            // 简化：给 edge 添加 class 时，我们直接操作所有 edgePaths，然后根据步骤高亮相关
+            svg.querySelectorAll('.edgePath').forEach((edge, idx) => {
+                edgeMap[idx] = edge;
+            });
+        }
 
-            // 步骤 3：Compiler
-            log('▶️ [3/7] Compiler：编译 YAML 为可执行产物（TS/ESLint/OpenAPI/OPA）', 'process');
-            const cNode = svg.querySelector('[id*="flowchart-C-"]');
-            if (cNode) cNode.classList.add('node-highlight');
-            await sleep(1000);
+        function clearAll() {
+            document.querySelectorAll('.mermaid svg .node, .mermaid svg .edgePath').forEach(el => {
+                el.classList.remove('node-active', 'node-cp-active', 'node-infra-active', 'node-success', 'node-error', 'edge-active', 'edge-cp', 'edge-infra', 'edge-success');
+            });
+        }
 
-            // 步骤 4：Validator
-            log('▶️ [4/7] Validator：四层推演安检（语法→语义→安全→美感）', 'process');
-            const vNode = svg.querySelector('[id*="flowchart-V-"]');
-            if (vNode) vNode.classList.add('node-highlight');
-            await sleep(1000);
+        function highlightStep(stepIdx) {
+            const step = steps[stepIdx];
+            if (!step) return;
 
-            // 步骤 5：Runtime
-            log('▶️ [5/7] Runtime：部署运行时守卫（HOC/中间件/Tool Guard）', 'process');
-            const rtNode = svg.querySelector('[id*="flowchart-RT-"]');
-            if (rtNode) rtNode.classList.add('node-highlight');
-            await sleep(1000);
-
-            // 步骤 6：规则下渗到基础设施
-            log('▶️ [6/7] 规则下渗：编译产物分发到 Token/组件/API/容器/DB 五层', 'process');
-            const infraNodes = ['L1', 'L2', 'L3', 'L4', 'L5'];
-            for (let i = 0; i < infraNodes.length; i++) {
-                const node = svg.querySelector(`[id*="flowchart-${infraNodes[i]}-"]`);
+            // 节点高亮
+            step.nodes.forEach(name => {
+                const node = nodeMap[name];
                 if (node) {
-                    node.classList.add('node-infra-highlight');
-                    // 高亮从 Compiler 到该层的虚线
-                    highlightDottedEdge(svg, 'C', infraNodes[i]);
-                }
-                await sleep(400);
-            }
-
-            // 步骤 7：Bridge + 观测上采 + 闭环
-            log('▶️ [7/7] Bridge：观测漂移 → 归因 → 自动 PR 反哺控制平面', 'process');
-            const bNode = svg.querySelector('[id*="flowchart-B-"]');
-            if (bNode) bNode.classList.add('node-highlight');
-            
-            // 观测上采（从基础设施到 Bridge）
-            for (let i = infraNodes.length - 1; i >= 0; i--) {
-                const node = svg.querySelector(`[id*="flowchart-${infraNodes[i]}-"]`);
-                if (node) {
-                    highlightDottedEdgeUp(svg, infraNodes[i], 'B');
-                }
-                await sleep(300);
-            }
-
-            await sleep(800);
-            
-            // 闭环反哺
-            log('♻️ 闭环完成：Bridge → 自动 PR → 控制平面 → 下一周期', 'success');
-            const loopEdge = svg.querySelector('[id*="B"] + [id*="CP_NODE"], [id*="B"] ~ [id*="CP_NODE"]');
-            // 高亮闭环边
-            svg.querySelectorAll('.edgePath path').forEach(path => {
-                const parent = path.closest('.edgePath');
-                if (parent && parent.id && (parent.id.includes('B') && parent.id.includes('CP_NODE'))) {
-                    parent.classList.add('edge-up');
+                    if (step.class === 'cp-active') node.classList.add('node-cp-active');
+                    else if (step.class === 'infra-active') node.classList.add('node-infra-active');
+                    else if (step.class === 'success') node.classList.add('node-success');
+                    else if (step.class === 'active') node.classList.add('node-active');
                 }
             });
 
-            await sleep(2000);
-            log('🎉 演示结束。点击任意节点查看详情，或点击重置重新开始。', 'highlight');
-            
-            isPlaying = false;
-            document.getElementById('btn-play').disabled = false;
-        }
-
-        function resetAnimation() {
-            const svg = document.querySelector('.mermaid svg');
-            if (svg) {
-                svg.querySelectorAll('.node').forEach(n => {
-                    n.classList.remove('node-cp-highlight', 'node-highlight', 'node-infra-highlight');
-                });
-                svg.querySelectorAll('.edgePath').forEach(e => {
-                    e.classList.remove('edge-highlight', 'edge-up');
+            // 连线高亮（简化：高亮所有 edgePath，实际项目中可精确匹配）
+            if (step.edges.length > 0) {
+                Object.values(edgeMap).forEach(edge => {
+                    edge.classList.add('edge-active');
+                    if (step.class === 'cp-active') edge.classList.add('edge-cp');
+                    if (step.class === 'infra-active') edge.classList.add('edge-infra');
+                    if (step.class === 'success') edge.classList.add('edge-success');
                 });
             }
-            document.getElementById('status-log').innerHTML = '<div class="line info">就绪。点击"播放数据流动闭环"开始演示。</div>';
-            document.querySelectorAll('.node-info').forEach(el => el.classList.remove('active'));
-            document.getElementById('info-default').classList.add('active');
-            isPlaying = false;
-            document.getElementById('btn-play').disabled = false;
+
+            log(step.desc, step.class === 'success' ? 'success' : step.class === 'reset' ? 'ready' : 'process');
         }
 
-        function highlightEdge(svg, from, to) {
-            // 查找连接两个节点的边
-            svg.querySelectorAll('.edgePath').forEach(edge => {
-                const id = edge.id || '';
-                if ((id.includes(from) && id.includes(to)) || edge.getAttribute('data-from') === from) {
-                    edge.classList.add('edge-highlight');
-                }
-            });
+        async function startDemo() {
+            if (isRunning) return;
+            isRunning = true;
+            resetDemo();
+            log('🚀 启动双轴正交模型完整闭环演示...', 'ready');
+
+            for (let i = 0; i < steps.length; i++) {
+                currentStep = i;
+                highlightStep(i);
+                await sleep(getDelay());
+            }
+
+            log('🎉 演示完成。横向网格完成一次对纵向基础设施的治理闭环。', 'success');
+            isRunning = false;
         }
 
-        function highlightDottedEdge(svg, from, to) {
-            svg.querySelectorAll('.edgePath').forEach(edge => {
-                const path = edge.querySelector('path');
-                if (path && path.getAttribute('stroke-dasharray')) {
-                    // 虚线边
-                    const id = edge.id || '';
-                    if (id.includes(from) || id.includes(to)) {
-                        edge.classList.add('edge-highlight');
-                    }
-                }
-            });
+        function stepDemo() {
+            if (isRunning) return;
+            currentStep++;
+            if (currentStep >= steps.length) {
+                resetDemo();
+                currentStep = 0;
+            }
+            highlightStep(currentStep);
         }
 
-        function highlightDottedEdgeUp(svg, from, to) {
-            svg.querySelectorAll('.edgePath').forEach(edge => {
-                const path = edge.querySelector('path');
-                if (path && path.getAttribute('stroke-dasharray')) {
-                    const id = edge.id || '';
-                    if (id.includes(from) || id.includes(to)) {
-                        edge.classList.add('edge-up');
-                    }
-                }
-            });
+        function resetDemo() {
+            currentStep = -1;
+            isRunning = false;
+            clearAll();
+            document.getElementById('log-panel').innerHTML = '<div class="log-line ready">就绪。点击"播放完整闭环"或"单步执行"开始演示。</div>';
         }
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // Mermaid 渲染完成后设置交互
+        // Mermaid 渲染完成后建立映射
         window.addEventListener('load', () => {
-            setTimeout(setupInteractions, 500);
+            setTimeout(buildMaps, 500);
         });
     </script>
 </body>

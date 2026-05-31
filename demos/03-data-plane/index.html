@@ -6,33 +6,50 @@
     <title>03 数据平面（Data Plane）—— 语义治理网格执行拓扑</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --cp-bg: #e3f2fd;
-            --dp-orange: #ef6c00;
-            --dp-bg: #fff3e0;
-            --infra-purple: #6a1b9a;
-            --infra-bg: #f3e5f5;
-            --success: #4caf50;
-            --error: #d32f2f;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --border: #e0e6ed;
-            --radius: 8px;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-f-xxl: 32px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1200px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
-            /* 页面整体可滚动，日志面板不自建滚动条 */
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
             overflow-x: hidden;
         }
 
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+
         .container {
-            max-width: 1200px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
             padding: 20px;
         }
@@ -42,31 +59,39 @@
             text-align: center;
             margin-bottom: 24px;
             padding: 20px;
-            background: white;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
+            background: var(--sa-c-surface);
+            border-radius: var(--sa-r);
+            border: 1px solid var(--sa-c-border);
+            box-shadow: var(--sa-shadow);
         }
 
         header h1 {
-            font-size: 22px;
+            font-size: var(--sa-f-xl);
             margin-bottom: 8px;
-            color: var(--dp-orange);
+            color: var(--sa-c-amber);
+            letter-spacing: -0.02em;
         }
 
         header p {
-            color: var(--text-secondary);
-            font-size: 13px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-sm);
         }
 
         .repo-links {
             margin-top: 12px;
-            font-size: 12px;
+            font-size: var(--sa-f-sm);
         }
 
         .repo-links a {
-            color: var(--cp-blue);
+            color: var(--sa-c-navy);
             text-decoration: none;
             margin: 0 8px;
+            font-weight: 500;
+        }
+
+        .repo-links a:hover {
+            color: var(--sa-c-navy-light);
+            text-decoration: underline;
         }
 
         /* 控制平面 */
@@ -76,45 +101,46 @@
         }
 
         .zone-label {
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             margin-bottom: 12px;
         }
 
         .cp-box {
             display: inline-block;
-            background: var(--cp-bg);
-            border: 2px solid var(--cp-blue);
-            border-radius: var(--radius);
+            background: #E8F0FE;
+            border: 2px solid var(--sa-c-navy);
+            border-radius: var(--sa-r);
             padding: 16px 32px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .cp-box:hover {
             transform: scale(1.02);
-            box-shadow: 0 0 20px rgba(21, 101, 192, 0.2);
+            box-shadow: var(--sa-shadow-hover);
         }
 
         .cp-box .title {
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--cp-blue);
+            font-size: var(--sa-f-lg);
+            font-weight: 600;
+            color: var(--sa-c-navy);
+            letter-spacing: -0.02em;
         }
 
         .cp-box .meta {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-top: 4px;
         }
 
         .cp-box .status {
             font-size: 11px;
-            color: var(--success);
+            color: #059669;
             margin-top: 6px;
-            font-family: monospace;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
         }
 
         /* 数据平面节点 */
@@ -123,7 +149,7 @@
         }
 
         .data-plane-zone .zone-label {
-            color: var(--dp-orange);
+            color: var(--sa-c-amber);
             text-align: center;
         }
 
@@ -137,25 +163,25 @@
         }
 
         .node {
-            background: var(--dp-bg);
-            border: 2px solid var(--dp-orange);
-            border-radius: var(--radius);
+            background: var(--sa-c-amber-light);
+            border: 2px solid var(--sa-c-amber);
+            border-radius: var(--sa-r);
             padding: 14px;
             width: 150px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             position: relative;
         }
 
         .node:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(239, 108, 0, 0.15);
+            box-shadow: var(--sa-shadow-hover);
         }
 
         .node.active {
             background: #ffe0b2;
-            box-shadow: 0 0 20px rgba(239, 108, 0, 0.4);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
             transform: scale(1.05);
         }
 
@@ -164,9 +190,9 @@
         }
 
         @keyframes pulse-node {
-            0% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(239, 108, 0, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.3); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 107, 53, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
         }
 
         .node .icon {
@@ -175,14 +201,15 @@
         }
 
         .node .name {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--dp-orange);
+            font-size: var(--sa-f-base);
+            font-weight: 600;
+            color: var(--sa-c-amber);
+            letter-spacing: -0.02em;
         }
 
         .node .desc {
             font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             margin-top: 4px;
             line-height: 1.4;
         }
@@ -191,7 +218,7 @@
             display: flex;
             align-items: center;
             font-size: 18px;
-            color: var(--dp-orange);
+            color: var(--sa-c-amber);
             font-weight: bold;
         }
 
@@ -199,8 +226,8 @@
         .flow-arrow {
             text-align: center;
             padding: 8px 0;
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
         }
 
         .flow-arrow .arrow-label {
@@ -219,7 +246,7 @@
         }
 
         .infra-zone .zone-label {
-            color: var(--infra-purple);
+            color: var(--sa-c-navy-light);
             text-align: center;
         }
 
@@ -232,30 +259,31 @@
         }
 
         .infra-node {
-            background: var(--infra-bg);
-            border: 2px solid var(--infra-purple);
-            border-radius: var(--radius);
+            background: #E8F0FE;
+            border: 2px solid var(--sa-c-navy-light);
+            border-radius: var(--sa-r);
             padding: 12px;
             width: 130px;
             text-align: center;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
         }
 
         .infra-node.active {
-            background: #e1bee7;
-            box-shadow: 0 0 15px rgba(106, 25, 154, 0.3);
+            background: #dbeafe;
+            box-shadow: 0 0 15px rgba(26, 58, 92, 0.2);
             transform: scale(1.1);
         }
 
         .infra-node .layer {
-            font-size: 12px;
-            font-weight: bold;
-            color: var(--infra-purple);
+            font-size: var(--sa-f-base);
+            font-weight: 600;
+            color: var(--sa-c-navy-light);
+            letter-spacing: -0.02em;
         }
 
         .infra-node .system {
             font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             margin-top: 4px;
         }
 
@@ -267,16 +295,16 @@
 
         .loop-indicator span {
             display: inline-block;
-            background: #e8f5e9;
-            border: 2px solid var(--success);
+            background: var(--sa-c-teal-light);
+            border: 2px solid var(--sa-c-teal);
             border-radius: 20px;
             padding: 6px 16px;
-            font-size: 12px;
-            color: var(--success);
-            font-weight: bold;
+            font-size: var(--sa-f-sm);
+            color: #059669;
+            font-weight: 600;
         }
 
-        /* ===== 执行日志区域（自适应核心修改） ===== */
+        /* ===== 执行日志区域 ===== */
         .demo-controls {
             margin: 20px 0 12px;
             display: flex;
@@ -285,56 +313,70 @@
             flex-wrap: wrap;
         }
 
-        .demo-controls button {
-            padding: 8px 20px;
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 20px;
             border: none;
-            border-radius: var(--radius);
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-base);
+            font-weight: 500;
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            white-space: nowrap;
         }
 
-        .btn-play {
-            background: var(--success);
-            color: white;
-        }
-
-        .btn-play:hover {
-            background: #388e3c;
-        }
-
-        .btn-step {
-            background: var(--cp-blue);
-            color: white;
-        }
-
-        .btn-reset {
-            background: var(--text-secondary);
-            color: white;
-        }
-
-        button:disabled {
+        .sa-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
 
-        /* 日志面板：关键修改 —— 去掉固定高度和内部滚动 */
+        .sa-btn--primary {
+            background: var(--sa-c-navy);
+            color: white;
+        }
+
+        .sa-btn--primary:hover:not(:disabled) {
+            background: var(--sa-c-navy-light);
+        }
+
+        .sa-btn--accent {
+            background: var(--sa-c-amber);
+            color: white;
+        }
+
+        .sa-btn--accent:hover:not(:disabled) {
+            filter: brightness(1.1);
+        }
+
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
+        }
+
+        .sa-btn--ghost:hover:not(:disabled) {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
+        }
+
+        /* 日志面板：品牌深色主题 */
         .log-panel {
-            background: #1a1a2e;
-            border-radius: var(--radius);
+            background: var(--sa-c-navy);
+            border-radius: var(--sa-r);
             padding: 0;
-            /* 删除 max-height: 200px; */
-            /* 删除 overflow-y: auto; */
-            /* 让面板根据内容自然撑开 */
+            box-shadow: var(--sa-shadow);
         }
 
         .log-header {
-            background: #252540;
+            background: var(--sa-c-navy-light);
             padding: 10px 16px;
-            border-radius: var(--radius) var(--radius) 0 0;
-            font-size: 12px;
-            color: #888;
-            font-weight: bold;
+            border-radius: var(--sa-r) var(--sa-r) 0 0;
+            font-size: 11px;
+            color: #9CA3AF;
+            font-weight: 600;
             letter-spacing: 0.5px;
             display: flex;
             align-items: center;
@@ -343,10 +385,9 @@
 
         .log-content {
             padding: 12px 16px 16px;
-            font-family: "SF Mono", Monaco, "Cascadia Code", "Fira Code", monospace;
-            font-size: 12px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
             line-height: 2;
-            /* 内容全部可见，无内部滚动 */
         }
 
         .log-line {
@@ -354,29 +395,35 @@
             border-left: 2px solid transparent;
             padding-left: 8px;
             margin: 2px 0;
-            white-space: pre-wrap; /* 长行自动换行 */
+            white-space: pre-wrap;
             word-break: break-word;
         }
 
         .log-line.ready { color: #66d9ef; }
         .log-line.info { color: #a6e22e; }
         .log-line.process { color: #fd971f; }
-        .log-line.success { color: #a6e22e; border-left-color: var(--success); }
-        .log-line.error { color: #f92672; border-left-color: var(--error); }
+        .log-line.success { color: var(--sa-c-teal); border-left-color: var(--sa-c-teal); }
+        .log-line.error { color: var(--sa-c-rose); border-left-color: var(--sa-c-rose); }
         .log-line.highlight { color: #e6db74; background: rgba(230, 219, 116, 0.08); }
 
         /* Footer */
         footer {
             text-align: center;
             padding: 20px;
-            color: var(--text-secondary);
-            font-size: 12px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-sm);
             margin-top: 20px;
         }
 
         footer a {
-            color: var(--cp-blue);
+            color: var(--sa-c-navy);
             text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            color: var(--sa-c-navy-light);
+            text-decoration: underline;
         }
 
         /* 响应式 */
@@ -394,6 +441,7 @@
             }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -408,7 +456,7 @@
 
         <!-- 控制平面 -->
         <div class="control-plane-zone">
-            <div class="zone-label" style="color: var(--cp-blue);">🔷 控制平面（Control Plane）— 联邦宪法</div>
+            <div class="zone-label" style="color: var(--sa-c-navy);">🔷 控制平面（Control Plane）— 联邦宪法</div>
             <div class="cp-box" id="control-plane">
                 <div class="title">intent-schema-compiler</div>
                 <div class="meta">语义层 / 治理层 / 执行层</div>
@@ -418,7 +466,7 @@
 
         <!-- 声明式同步箭头 -->
         <div class="flow-arrow">
-            <div class="arrow-label" style="color: var(--cp-blue);">声明式同步（GitOps）</div>
+            <div class="arrow-label" style="color: var(--sa-c-navy);">声明式同步（GitOps）</div>
             <div class="arrow-line">▼</div>
         </div>
 
@@ -460,24 +508,39 @@
 
         <!-- 规则下渗 -->
         <div class="flow-arrow">
-            <div class="arrow-label" style="color: var(--dp-orange);">▼ 规则下渗（编译产物分发）</div>
+            <div class="arrow-label" style="color: var(--sa-c-amber);">▼ 规则下渗（编译产物分发）</div>
         </div>
 
         <!-- 基础设施层 -->
         <div class="infra-zone">
-            <div class="zone-label">🟣 基础设施层（纵向生产链路）— 业务价值流动</div>
+            <div class="zone-label">🟣 纵向轴 — 基础设施层（现有系统，被网格注入）</div>
             <div class="infra-row">
-                <div class="infra-node" id="infra-l1">L1<br>Token<br><span style="font-size:10px;color:#666;">Ant Design</span></div>
-                <div class="infra-node" id="infra-l2">L2<br>组件<br><span style="font-size:10px;color:#666;">React/Vue</span></div>
-                <div class="infra-node" id="infra-l3">L3<br>API<br><span style="font-size:10px;color:#666;">OpenAPI</span></div>
-                <div class="infra-node" id="infra-l4">L4<br>容器<br><span style="font-size:10px;color:#666;">K8s/Envoy</span></div>
-                <div class="infra-node" id="infra-l5">L5<br>DB/LLM<br><span style="font-size:10px;color:#666;">MySQL/GPT</span></div>
+                <div class="infra-node" id="infra-l1">
+                    <div class="layer">L1<br>Token</div>
+                    <div class="system">Ant Design</div>
+                </div>
+                <div class="infra-node" id="infra-l2">
+                    <div class="layer">L2<br>组件</div>
+                    <div class="system">React/Vue</div>
+                </div>
+                <div class="infra-node" id="infra-l3">
+                    <div class="layer">L3<br>API</div>
+                    <div class="system">OpenAPI</div>
+                </div>
+                <div class="infra-node" id="infra-l4">
+                    <div class="layer">L4<br>容器</div>
+                    <div class="system">K8s/Envoy</div>
+                </div>
+                <div class="infra-node" id="infra-l5">
+                    <div class="layer">L5<br>DB/LLM</div>
+                    <div class="system">MySQL/GPT</div>
+                </div>
             </div>
         </div>
 
         <!-- 观测上采 -->
         <div class="flow-arrow">
-            <div class="arrow-label" style="color: var(--success);">▲ 观测上采（漂移事件反哺）</div>
+            <div class="arrow-label" style="color: #059669;">▲ 观测上采（漂移事件反哺）</div>
         </div>
 
         <!-- 闭环 -->
@@ -487,12 +550,12 @@
 
         <!-- 演示控制 -->
         <div class="demo-controls">
-            <button class="btn-play" onclick="startDemo()" id="btn-start">▶ 启动完整闭环</button>
-            <button class="btn-step" onclick="stepDemo()" id="btn-step">⏸ 单步执行</button>
-            <button class="btn-reset" onclick="resetDemo()" id="btn-reset">↺ 重置</button>
+            <button class="sa-btn sa-btn--accent" onclick="startDemo()" id="btn-start">▶ 启动完整闭环</button>
+            <button class="sa-btn sa-btn--primary" onclick="stepDemo()" id="btn-step">⏸ 单步执行</button>
+            <button class="sa-btn sa-btn--ghost" onclick="resetDemo()" id="btn-reset">↺ 重置</button>
         </div>
 
-        <!-- ===== 执行日志（自适应 — 全部展开，无需滚动） ===== -->
+        <!-- 执行日志 -->
         <div class="log-panel">
             <div class="log-header">
                 ▶️ 执行日志（自适应 — 全部展开，无需滚动）
@@ -520,7 +583,7 @@
             { node: 'infra-l2', name: 'L2 组件层', msg: '✅ React HOC 注入完成：withIntentGuard(Component, intentConfig)', type: 'success' },
             { node: 'infra-l3', name: 'L3 API 层', msg: '✅ OpenAPI 扩展字段注入：x-intent-binding: destructive-action', type: 'success' },
             { node: 'infra-l4', name: 'L4 容器层', msg: '✅ OPA Policy 注入：allow { input.human_confirmed == true }', type: 'success' },
-            { node: 'infra-l5', name: 'L5 DB/LLM', msg: '✅ DDL 注释注入：COMMENT \'intent: status.critical\'', type: 'success' },
+            { node: 'infra-l5', name: 'L5 DB/LLM', msg: '✅ DDL 注释注入：COMMENT 'intent: status.critical'', type: 'success' },
             { node: 'node-bridge', name: 'Bridge', msg: '👁️ 采集运行时漂移事件（同义词替代 / 置信度波动 / 安全越界）', type: 'process' },
             { node: 'node-bridge', name: '观测上采', msg: '⬆️ 从 DB/LLM/容器/API/组件 采集语义一致性指标', type: 'info' },
             { node: 'control-plane', name: '闭环反哺', msg: '♻️ 自动创建 Registry PR：收紧"严重"同义词规则 → 人工审批 → 下一周期', type: 'highlight' }
@@ -536,7 +599,6 @@
             const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
             line.textContent = `[${time}] ${msg}`;
             panel.appendChild(line);
-            // 自适应：不需要 scrollTop，因为全部可见
         }
 
         function clearLog() {
@@ -564,8 +626,7 @@
             for (let i = 0; i < demoSteps.length; i++) {
                 currentStep = i;
                 const step = demoSteps[i];
-                
-                // 高亮节点
+
                 if (step.node) {
                     const el = document.getElementById(step.node);
                     if (el) {

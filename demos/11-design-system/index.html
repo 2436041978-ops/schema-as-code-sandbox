@@ -6,80 +6,100 @@
     <title>11 与设计系统的关系 — Schema-As-Code 向上延伸</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --dp-orange: #ef6c00;
-            --infra-purple: #6a1b9a;
-            --success: #4caf50;
-            --error: #d32f2f;
-            --warn: #ff9800;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --radius: 8px;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1100px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
             padding: 20px;
         }
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
         .container {
-            max-width: 1100px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
         }
         .back {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             text-decoration: none;
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             margin-bottom: 16px;
+            transition: color 0.2s;
         }
-        .back:hover { color: var(--cp-blue); }
-        
+        .back:hover { color: var(--sa-c-navy); }
+
         h1 {
-            font-size: 22px;
-            color: var(--infra-purple);
+            font-size: var(--sa-f-xl);
+            color: var(--sa-c-navy);
             margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-base);
+            color: var(--sa-c-muted);
             margin-bottom: 24px;
         }
-        
+
         /* 核心命题卡片 */
         .proposition {
-            background: linear-gradient(135deg, #f3e5f5 0%, #e8f5e9 100%);
-            border: 2px solid var(--infra-purple);
-            border-radius: var(--radius);
+            background: linear-gradient(135deg, #E8F0FE 0%, var(--sa-c-teal-light) 100%);
+            border: 2px solid var(--sa-c-navy);
+            border-radius: var(--sa-r);
             padding: 20px 24px;
             margin-bottom: 24px;
             display: flex;
             align-items: center;
             gap: 16px;
+            box-shadow: var(--sa-shadow);
         }
         .proposition .icon {
             font-size: 36px;
             flex-shrink: 0;
         }
         .proposition .text {
-            font-size: 15px;
+            font-size: var(--sa-f-base);
             font-weight: 600;
-            color: var(--infra-purple);
+            color: var(--sa-c-navy);
+            letter-spacing: -0.02em;
         }
         .proposition .sub {
-            font-size: 13px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             font-weight: normal;
             margin-top: 4px;
         }
-        
+
         /* 切换开关 */
         .toggle-bar {
             display: flex;
@@ -87,32 +107,36 @@
             gap: 12px;
             margin-bottom: 24px;
             padding: 16px;
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            box-shadow: var(--sa-shadow);
         }
         .toggle-btn {
             padding: 10px 24px;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            background: white;
+            border: 2px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            background: var(--sa-c-surface);
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s;
+            font-size: var(--sa-f-base);
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            font-weight: 500;
+            color: var(--sa-c-muted);
         }
         .toggle-btn:hover {
-            border-color: var(--cp-blue);
+            border-color: var(--sa-c-navy);
+            color: var(--sa-c-navy);
         }
         .toggle-btn.active {
-            border-color: var(--infra-purple);
-            background: #f3e5f5;
-            color: var(--infra-purple);
-            font-weight: bold;
+            border-color: var(--sa-c-navy);
+            background: #E8F0FE;
+            color: var(--sa-c-navy);
+            font-weight: 600;
         }
-        
+
         /* 对比区域 */
         .compare-area {
             display: grid;
@@ -121,10 +145,11 @@
             margin-bottom: 24px;
         }
         .compare-panel {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px;
+            box-shadow: var(--sa-shadow);
         }
         .compare-panel .panel-header {
             display: flex;
@@ -132,15 +157,16 @@
             gap: 8px;
             margin-bottom: 16px;
             padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid var(--sa-c-border);
         }
         .compare-panel .panel-title {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: var(--sa-f-sm);
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
-        .compare-panel.traditional .panel-title { color: var(--text-secondary); }
-        .compare-panel.semantic .panel-title { color: var(--infra-purple); }
-        
+        .compare-panel.traditional .panel-title { color: var(--sa-c-muted); }
+        .compare-panel.semantic .panel-title { color: var(--sa-c-navy); }
+
         /* Token 展示 */
         .token-list {
             display: flex;
@@ -152,9 +178,14 @@
             align-items: center;
             gap: 12px;
             padding: 12px;
-            border-radius: var(--radius);
-            background: #fafafa;
-            border: 1px solid var(--border);
+            border-radius: var(--sa-r);
+            background: var(--sa-c-bg);
+            border: 1px solid var(--sa-c-border);
+            transition: all 0.2s ease;
+        }
+        .token-item:hover {
+            box-shadow: var(--sa-shadow-hover);
+            transform: translateY(-1px);
         }
         .token-swatch {
             width: 40px;
@@ -167,82 +198,87 @@
             flex: 1;
         }
         .token-name {
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             font-weight: 600;
+            letter-spacing: -0.02em;
         }
         .token-value {
-            font-size: 12px;
-            color: var(--text-secondary);
-            font-family: monospace;
+            font-size: 11px;
+            color: var(--sa-c-muted);
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
         }
         .token-meta {
             font-size: 11px;
-            color: #999;
+            color: var(--sa-c-muted);
             margin-top: 2px;
         }
         .token-badge {
             font-size: 10px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
         }
         .token-badge.semantic {
-            background: #e8f5e9;
-            color: var(--success);
+            background: var(--sa-c-teal-light);
+            color: #059669;
         }
         .token-badge.none {
-            background: #f5f5f5;
-            color: #999;
+            background: var(--sa-c-bg);
+            color: var(--sa-c-muted);
         }
-        
+
         /* 组件预览区 */
         .preview-area {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px;
             margin-bottom: 24px;
+            box-shadow: var(--sa-shadow);
         }
         .preview-area h3 {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-bottom: 16px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 600;
         }
-        
+
         /* 模拟组件 */
         .mock-app {
-            background: #fafafa;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-bg);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px;
             max-width: 400px;
             margin: 0 auto;
         }
         .mock-app-title {
-            font-size: 16px;
-            font-weight: bold;
+            font-size: var(--sa-f-lg);
+            font-weight: 600;
             margin-bottom: 16px;
-            color: var(--text);
+            color: var(--sa-c-text);
+            letter-spacing: -0.02em;
         }
         .alert-card {
-            border-radius: var(--radius);
+            border-radius: var(--sa-r);
             padding: 16px;
             margin-bottom: 12px;
             transition: all 0.3s ease;
         }
         .alert-card.critical {
-            background: #ffebee;
-            border: 2px solid #d32f2f;
+            background: var(--sa-c-rose-light);
+            border: 2px solid var(--sa-c-rose);
         }
         .alert-card.warning {
-            background: #fff8e1;
-            border: 2px solid #f9a825;
+            background: var(--sa-c-amber-light);
+            border: 2px solid var(--sa-c-amber);
         }
         .alert-card.info {
-            background: #e3f2fd;
-            border: 2px solid #1565c0;
+            background: #E8F0FE;
+            border: 2px solid var(--sa-c-navy);
         }
         .alert-header {
             display: flex;
@@ -254,15 +290,17 @@
             padding: 2px 10px;
             border-radius: 12px;
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 600;
             color: white;
+            letter-spacing: 0.05em;
         }
-        .alert-badge.critical { background: #d32f2f; }
-        .alert-badge.warning { background: #f9a825; color: #333; }
-        .alert-badge.info { background: #1565c0; }
+        .alert-badge.critical { background: var(--sa-c-rose); }
+        .alert-badge.warning { background: var(--sa-c-amber); color: white; }
+        .alert-badge.info { background: var(--sa-c-navy); }
         .alert-text {
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             line-height: 1.5;
+            color: var(--sa-c-text);
         }
         .alert-actions {
             display: flex;
@@ -271,73 +309,93 @@
         }
         .btn {
             padding: 6px 14px;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: var(--sa-f-sm);
             border: none;
             cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
         .btn-primary {
-            background: #1565c0;
+            background: var(--sa-c-navy);
             color: white;
         }
+        .btn-primary:hover {
+            background: var(--sa-c-navy-light);
+        }
         .btn-danger {
-            background: #d32f2f;
+            background: var(--sa-c-rose);
             color: white;
+        }
+        .btn-danger:hover {
+            filter: brightness(1.1);
         }
         .btn-danger:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
         .btn-secondary {
-            background: white;
-            border: 1px solid var(--border);
-            color: var(--text);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            color: var(--sa-c-text);
         }
-        
+        .btn-secondary:hover {
+            background: var(--sa-c-bg);
+        }
+
         /* 语义层叠加展示 */
         .semantic-overlay {
             display: none;
             margin-top: 12px;
             padding: 12px;
-            background: #f3e5f5;
-            border: 1px dashed var(--infra-purple);
-            border-radius: var(--radius);
-            font-size: 12px;
+            background: #E8F0FE;
+            border: 1px dashed var(--sa-c-navy);
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-sm);
         }
         .semantic-overlay.show {
             display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .semantic-overlay .overlay-title {
-            font-weight: bold;
-            color: var(--infra-purple);
+            font-weight: 600;
+            color: var(--sa-c-navy);
             margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
         .semantic-overlay .overlay-item {
             display: flex;
             align-items: center;
             gap: 6px;
             margin-bottom: 4px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
+            font-size: 11px;
         }
         .semantic-overlay .overlay-item::before {
             content: "✓";
-            color: var(--success);
+            color: var(--sa-c-teal);
             font-weight: bold;
         }
-        
+
         /* 底部说明 */
         .explanation {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 24px;
+            box-shadow: var(--sa-shadow);
         }
         .explanation h3 {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 600;
         }
         .explanation-grid {
             display: grid;
@@ -346,34 +404,43 @@
         }
         .exp-card {
             padding: 16px;
-            background: #fafafa;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
+            background: var(--sa-c-bg);
+            border-radius: var(--sa-r);
+            border: 1px solid var(--sa-c-border);
+            transition: all 0.2s ease;
+        }
+        .exp-card:hover {
+            box-shadow: var(--sa-shadow-hover);
+            transform: translateY(-2px);
         }
         .exp-card h4 {
-            font-size: 13px;
-            color: var(--infra-purple);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-navy);
             margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
         .exp-card p {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: 11px;
+            color: var(--sa-c-muted);
             line-height: 1.5;
         }
-        
+
         @media (max-width: 768px) {
             .compare-area { grid-template-columns: 1fr; }
             .explanation-grid { grid-template-columns: 1fr; }
+            .toggle-bar { flex-direction: column; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="container">
         <a class="back" href="../../">← 返回沙盘首页</a>
-        
+
         <h1>与设计系统的关系：向上延伸，而非替代</h1>
         <p class="subtitle">Schema-As-Code 在 Ant Design / Carbon 的 Design Token 之上，增加语义契约层</p>
-        
+
         <div class="proposition">
             <div class="icon">🎯</div>
             <div>
@@ -381,7 +448,7 @@
                 <div class="sub">设计系统解决"组件长什么样"，Schema-As-Code 解决"这个组件在什么场景下应该怎么用、不能怎么用"</div>
             </div>
         </div>
-        
+
         <!-- 切换开关 -->
         <div class="toggle-bar">
             <button class="toggle-btn active" id="btn-traditional" onclick="setMode('traditional')">
@@ -391,7 +458,7 @@
                 🔮 Schema-As-Code 叠加（Token + 语义契约）
             </button>
         </div>
-        
+
         <!-- 对比区域：Token 定义 -->
         <div class="compare-area">
             <div class="compare-panel traditional">
@@ -429,7 +496,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="compare-panel semantic">
                 <div class="panel-header">
                     <span style="font-size: 20px;">🔮</span>
@@ -466,18 +533,18 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- 组件预览区 -->
         <div class="preview-area">
             <h3>🖥️ 界面渲染对比：同一个告警场景</h3>
-            
+
             <div class="mock-app">
                 <div class="mock-app-title">系统监控面板</div>
-                
+
                 <div class="alert-card critical" id="alert-critical">
                     <div class="alert-header">
                         <span class="alert-badge critical" id="badge-critical">P0</span>
-                        <span style="font-size: 12px; color: #666;">刚刚</span>
+                        <span style="font-size: 12px; color: var(--sa-c-muted);">刚刚</span>
                     </div>
                     <div class="alert-text" id="text-critical">
                         CPU 使用率超过阈值，导致服务响应延迟
@@ -494,11 +561,11 @@
                         <div class="overlay-item">同义词防火墙："严重"必须映射为 status.critical</div>
                     </div>
                 </div>
-                
+
                 <div class="alert-card warning" id="alert-warning">
                     <div class="alert-header">
                         <span class="alert-badge warning" id="badge-warning">P1</span>
-                        <span style="font-size: 12px; color: #666;">5分钟前</span>
+                        <span style="font-size: 12px; color: var(--sa-c-muted);">5分钟前</span>
                     </div>
                     <div class="alert-text" id="text-warning">
                         内存使用率接近阈值，建议关注
@@ -515,7 +582,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- 底部说明 -->
         <div class="explanation">
             <h3>📐 三层关系详解</h3>
@@ -535,40 +602,40 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         function setMode(mode) {
             const btnTrad = document.getElementById('btn-traditional');
             const btnSem = document.getElementById('btn-semantic');
-            
+
             if (mode === 'traditional') {
                 btnTrad.classList.add('active');
                 btnSem.classList.remove('active');
-                
+
                 // 隐藏语义叠加层
                 document.querySelectorAll('.semantic-overlay').forEach(el => el.classList.remove('show'));
-                
+
                 // 恢复传统按钮状态
                 document.getElementById('btn-repair').disabled = false;
                 document.getElementById('btn-repair').textContent = '立即修复';
                 document.getElementById('btn-repair').style.opacity = '1';
-                
+
                 // 修改文案为自然语言（模拟无约束时的 LLM 输出）
                 document.getElementById('badge-critical').textContent = '严重';
                 document.getElementById('text-critical').textContent = 'CPU 使用率超过阈值，建议自动修复';
-                
+
             } else {
                 btnSem.classList.add('active');
                 btnTrad.classList.remove('active');
-                
+
                 // 显示语义叠加层
                 document.querySelectorAll('.semantic-overlay').forEach(el => el.classList.add('show'));
-                
+
                 // 应用语义约束：高危操作必须人工确认
                 document.getElementById('btn-repair').disabled = true;
                 document.getElementById('btn-repair').textContent = '需人工确认';
                 document.getElementById('btn-repair').style.opacity = '0.5';
-                
+
                 // 修正文案为语义令牌（模拟约束后的 LLM 输出）
                 document.getElementById('badge-critical').textContent = 'P0';
                 document.getElementById('text-critical').textContent = 'CPU 使用率超过阈值，导致服务响应延迟。根因：数据库连接池耗尽。建议人工排查。';

@@ -6,33 +6,51 @@
     <title>05 数据流动闭环 — Schema-As-Code 联邦自治架构</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --cp-bg: #e3f2fd;
-            --dp-orange: #ef6c00;
-            --dp-bg: #fff3e0;
-            --infra-purple: #6a1b9a;
-            --infra-bg: #f3e5f5;
-            --success: #4caf50;
-            --error: #d32f2f;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --border: #e0e6ed;
-            --radius: 8px;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-f-xxl: 32px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1400px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
             min-height: 100vh;
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
         }
 
         /* Header */
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            background: var(--sa-c-navy);
             color: white;
             padding: 24px 32px;
             position: relative;
@@ -41,23 +59,25 @@
         .header .back {
             color: rgba(255,255,255,0.7);
             text-decoration: none;
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             display: inline-flex;
             align-items: center;
             gap: 6px;
             margin-bottom: 12px;
+            transition: color 0.2s;
         }
 
         .header .back:hover { color: white; }
 
         .header h1 {
-            font-size: 22px;
+            font-size: var(--sa-f-xl);
             font-weight: 600;
             margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
             opacity: 0.8;
         }
 
@@ -67,19 +87,20 @@
             grid-template-columns: 1fr 320px;
             gap: 24px;
             padding: 24px;
-            max-width: 1400px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
         }
 
         /* Canvas Area */
         .canvas {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 32px;
             position: relative;
             min-height: 600px;
             overflow: hidden;
+            box-shadow: var(--sa-shadow);
         }
 
         /* SVG Flow Lines */
@@ -95,14 +116,14 @@
 
         .flow-path {
             fill: none;
-            stroke: var(--border);
+            stroke: var(--sa-c-border);
             stroke-width: 2;
             stroke-dasharray: 8 4;
             opacity: 0.3;
         }
 
         .flow-path.active {
-            stroke: var(--dp-orange);
+            stroke: var(--sa-c-amber);
             stroke-width: 3;
             stroke-dasharray: 12 6;
             opacity: 1;
@@ -110,7 +131,7 @@
         }
 
         .flow-path.up {
-            stroke: var(--success);
+            stroke: var(--sa-c-teal);
         }
 
         @keyframes dashFlow {
@@ -126,16 +147,16 @@
 
         .layer-title {
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 2px;
             text-align: center;
             margin-bottom: 16px;
         }
 
-        .layer-title.cp { color: var(--cp-blue); }
-        .layer-title.dp { color: var(--dp-orange); }
-        .layer-title.infra { color: var(--infra-purple); }
+        .layer-title.cp { color: var(--sa-c-navy); }
+        .layer-title.dp { color: var(--sa-c-amber); }
+        .layer-title.infra { color: var(--sa-c-navy-light); }
 
         .node-row {
             display: flex;
@@ -146,9 +167,9 @@
         }
 
         .node {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 2px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 16px 20px;
             min-width: 140px;
             text-align: center;
@@ -156,32 +177,33 @@
             transition: all 0.4s ease;
             position: relative;
             z-index: 2;
+            box-shadow: var(--sa-shadow);
         }
 
         .node.cp {
-            border-color: var(--cp-blue);
-            background: var(--cp-bg);
+            border-color: var(--sa-c-navy);
+            background: #E8F0FE;
         }
 
         .node.dp {
-            border-color: var(--dp-orange);
-            background: var(--dp-bg);
+            border-color: var(--sa-c-amber);
+            background: var(--sa-c-amber-light);
         }
 
         .node.infra {
-            border-color: var(--infra-purple);
-            background: var(--infra-bg);
+            border-color: var(--sa-c-navy-light);
+            background: #E8F0FE;
             padding: 12px 16px;
             min-width: 100px;
         }
 
         .node:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: var(--sa-shadow-hover);
         }
 
         .node.active {
-            box-shadow: 0 0 0 4px rgba(239, 108, 0, 0.2);
+            box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
             transform: scale(1.05);
         }
 
@@ -190,8 +212,8 @@
         }
 
         @keyframes nodePulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 108, 0, 0.4); }
-            50% { box-shadow: 0 0 0 12px rgba(239, 108, 0, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.3); }
+            50% { box-shadow: 0 0 0 12px rgba(255, 107, 53, 0); }
         }
 
         .node .icon {
@@ -200,45 +222,46 @@
         }
 
         .node .name {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: var(--sa-f-base);
+            font-weight: 600;
             margin-bottom: 2px;
+            letter-spacing: -0.02em;
         }
 
-        .node.cp .name { color: var(--cp-blue); }
-        .node.dp .name { color: var(--dp-orange); }
-        .node.infra .name { color: var(--infra-purple); font-size: 12px; }
+        .node.cp .name { color: var(--sa-c-navy); }
+        .node.dp .name { color: var(--sa-c-amber); }
+        .node.infra .name { color: var(--sa-c-navy-light); font-size: var(--sa-f-sm); }
 
         .node .desc {
             font-size: 11px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             line-height: 1.4;
         }
 
         /* Arrow Labels */
         .arrow-label {
             text-align: center;
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             margin: 12px 0;
             font-weight: 600;
         }
 
-        .arrow-label.down { color: var(--dp-orange); }
-        .arrow-label.up { color: var(--success); }
+        .arrow-label.down { color: var(--sa-c-amber); }
+        .arrow-label.up { color: #059669; }
 
         /* Loop Back */
         .loop-back {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: #e8f5e9;
-            border: 2px solid var(--success);
+            background: var(--sa-c-teal-light);
+            border: 2px solid var(--sa-c-teal);
             border-radius: 20px;
             padding: 8px 16px;
-            font-size: 12px;
-            color: var(--success);
-            font-weight: bold;
+            font-size: var(--sa-f-sm);
+            color: #059669;
+            font-weight: 600;
             opacity: 0;
             transition: opacity 0.5s;
             z-index: 10;
@@ -256,18 +279,20 @@
         }
 
         .panel-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
+            box-shadow: var(--sa-shadow);
         }
 
         .panel-card h3 {
-            font-size: 14px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 12px;
+            font-weight: 600;
         }
 
         .controls {
@@ -276,62 +301,77 @@
             flex-wrap: wrap;
         }
 
-        .btn {
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             padding: 10px 16px;
             border: none;
-            border-radius: var(--radius);
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-sm);
+            font-weight: 500;
             cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            white-space: nowrap;
             flex: 1;
             min-width: 80px;
         }
 
-        .btn-primary {
-            background: var(--success);
+        .sa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .sa-btn--primary {
+            background: var(--sa-c-navy);
             color: white;
         }
 
-        .btn-primary:hover {
-            background: #388e3c;
+        .sa-btn--primary:hover:not(:disabled) {
+            background: var(--sa-c-navy-light);
         }
 
-        .btn-secondary {
-            background: var(--text-secondary);
+        .sa-btn--accent {
+            background: var(--sa-c-amber);
             color: white;
         }
 
-        .btn-secondary:hover {
-            background: #444;
+        .sa-btn--accent:hover:not(:disabled) {
+            filter: brightness(1.1);
         }
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
+        }
+
+        .sa-btn--ghost:hover:not(:disabled) {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
         }
 
         /* Log Panel */
         .log-panel {
-            background: #1a1a2e;
-            border-radius: var(--radius);
+            background: var(--sa-c-navy);
+            border-radius: var(--sa-r);
             padding: 16px;
             max-height: 400px;
             overflow-y: auto;
         }
 
         .log-title {
-            color: #666;
+            color: #9CA3AF;
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 12px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             padding-bottom: 6px;
+            font-weight: 600;
         }
 
         .log-content {
-            font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
-            font-size: 12px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
             line-height: 1.8;
         }
 
@@ -351,8 +391,8 @@
         .log-line.ready { color: #66d9ef; }
         .log-line.info { color: #a6e22e; }
         .log-line.process { color: #fd971f; }
-        .log-line.success { color: #a6e22e; border-left-color: var(--success); }
-        .log-line.error { color: #f92672; border-left-color: var(--error); }
+        .log-line.success { color: var(--sa-c-teal); border-left-color: var(--sa-c-teal); }
+        .log-line.error { color: var(--sa-c-rose); border-left-color: var(--sa-c-rose); }
         .log-line.highlight { color: #e6db74; background: rgba(230, 219, 116, 0.1); }
 
         /* Step Indicator */
@@ -366,17 +406,17 @@
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--border);
+            background: var(--sa-c-border);
             transition: all 0.3s;
         }
 
         .step-dot.active {
-            background: var(--dp-orange);
+            background: var(--sa-c-amber);
             transform: scale(1.3);
         }
 
         .step-dot.done {
-            background: var(--success);
+            background: var(--sa-c-teal);
         }
 
         /* Status Badge */
@@ -384,24 +424,24 @@
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: var(--sa-f-sm);
+            font-weight: 600;
             margin-top: 8px;
         }
 
         .status-badge.idle {
-            background: var(--bg);
-            color: var(--text-secondary);
+            background: var(--sa-c-bg);
+            color: var(--sa-c-muted);
         }
 
         .status-badge.running {
-            background: var(--dp-bg);
-            color: var(--dp-orange);
+            background: var(--sa-c-amber-light);
+            color: var(--sa-c-amber);
         }
 
         .status-badge.complete {
-            background: #e8f5e9;
-            color: var(--success);
+            background: var(--sa-c-teal-light);
+            color: #059669;
         }
 
         /* Responsive */
@@ -414,6 +454,7 @@
             }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -459,25 +500,25 @@
                         <div class="name">Registry</div>
                         <div class="desc">版本管理<br>影响面分析</div>
                     </div>
-                    <div style="font-size: 20px; color: var(--dp-orange);">→</div>
+                    <div style="font-size: 20px; color: var(--sa-c-amber);">→</div>
                     <div class="node dp" id="node-c">
                         <div class="icon">⚙️</div>
                         <div class="name">Compiler</div>
                         <div class="desc">契约编译<br>产物生成</div>
                     </div>
-                    <div style="font-size: 20px; color: var(--dp-orange);">→</div>
+                    <div style="font-size: 20px; color: var(--sa-c-amber);">→</div>
                     <div class="node dp" id="node-v">
                         <div class="icon">🛡️</div>
                         <div class="name">Validator</div>
                         <div class="desc">四层推演<br>安检拦截</div>
                     </div>
-                    <div style="font-size: 20px; color: var(--dp-orange);">→</div>
+                    <div style="font-size: 20px; color: var(--sa-c-amber);">→</div>
                     <div class="node dp" id="node-rt">
                         <div class="icon">🚀</div>
                         <div class="name">Runtime</div>
                         <div class="desc">运行时拦截<br>HOC / 中间件</div>
                     </div>
-                    <div style="font-size: 20px; color: var(--dp-orange);">→</div>
+                    <div style="font-size: 20px; color: var(--sa-c-amber);">→</div>
                     <div class="node dp" id="node-b">
                         <div class="icon">👁️</div>
                         <div class="name">Bridge</div>
@@ -491,7 +532,7 @@
 
             <!-- Infrastructure -->
             <div class="node-layer">
-                <div class="layer-title infra">🟣 基础设施层（纵向生产链路）— 业务价值</div>
+                <div class="layer-title infra">🟣 纵向轴 — 基础设施层（现有系统，被网格注入）</div>
                 <div class="node-row">
                     <div class="node infra" id="node-l1">
                         <div class="icon">🎨</div>
@@ -533,8 +574,8 @@
                     <!-- 9 dots -->
                 </div>
                 <div class="controls">
-                    <button class="btn btn-primary" id="btn-start" onclick="loop.start()">▶ 启动闭环</button>
-                    <button class="btn btn-secondary" id="btn-reset" onclick="loop.reset()">↺ 重置</button>
+                    <button class="sa-btn sa-btn--accent" id="btn-start" onclick="loop.start()">▶ 启动闭环</button>
+                    <button class="sa-btn sa-btn--ghost" id="btn-reset" onclick="loop.reset()">↺ 重置</button>
                 </div>
                 <div class="status-badge idle" id="status-badge">就绪</div>
             </div>
@@ -626,7 +667,6 @@
             isRunning: false,
 
             init() {
-                // Generate step dots
                 const indicator = document.getElementById('step-indicator');
                 for (let i = 0; i < 9; i++) {
                     const dot = document.createElement('div');
@@ -635,7 +675,6 @@
                     indicator.appendChild(dot);
                 }
 
-                // Draw SVG paths
                 this.drawPaths();
                 window.addEventListener('resize', () => this.drawPaths());
             },
@@ -644,7 +683,7 @@
                 const svg = document.getElementById('flow-svg');
                 const canvas = document.getElementById('canvas');
                 const rect = canvas.getBoundingClientRect();
-                
+
                 svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
                 svg.innerHTML = '';
 
@@ -659,16 +698,12 @@
                 if (!cp || !r || !l3) return;
 
                 const paths = [
-                    // CP → Registry (down)
                     this.createPath(cp, r, 'path-cp-r'),
-                    // Registry → Compiler → Validator → Runtime → Bridge (horizontal)
                     this.createPath(r, c, 'path-r-c'),
                     this.createPath(c, v, 'path-c-v'),
                     this.createPath(v, rt, 'path-v-rt'),
                     this.createPath(rt, b, 'path-rt-b'),
-                    // Compiler → L3 (down, rule penetration)
                     this.createPath(c, l3, 'path-c-l3', true),
-                    // L3 → Bridge (up, observation)
                     this.createPath(l3, b, 'path-l3-b', false, true)
                 ];
 
@@ -686,7 +721,7 @@
                 const y2 = toRect.top + toRect.height / 2 - canvasRect.top;
 
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                
+
                 let d;
                 if (isDown) {
                     d = `M ${x1} ${y1 + fromRect.height/2} C ${x1} ${y1 + 60}, ${x2} ${y2 - 60}, ${x2} ${y2 - toRect.height/2}`;
@@ -707,7 +742,7 @@
                 if (this.isRunning) return;
                 this.reset();
                 this.isRunning = true;
-                
+
                 document.getElementById('btn-start').disabled = true;
                 document.getElementById('status-badge').className = 'status-badge running';
                 document.getElementById('status-badge').textContent = '运行中...';
@@ -720,22 +755,20 @@
 
                 document.getElementById('loop-back').classList.add('show');
                 this.log('🎉 完整闭环演示结束。数据平面已就绪。', 'highlight');
-                
+
                 document.getElementById('status-badge').className = 'status-badge complete';
                 document.getElementById('status-badge').textContent = '闭环完成';
-                
+
                 this.isRunning = false;
                 document.getElementById('btn-start').disabled = false;
             },
 
             async executeStep(step) {
-                // Update dot
                 document.querySelectorAll('.step-dot').forEach((d, i) => {
                     d.classList.toggle('active', i === step.id);
                     d.classList.toggle('done', i < step.id);
                 });
 
-                // Activate nodes
                 if (step.node) {
                     document.getElementById(step.node)?.classList.add('active');
                 }
@@ -743,12 +776,10 @@
                     step.nodes.forEach(n => document.getElementById(n)?.classList.add('active'));
                 }
 
-                // Activate label
                 if (step.label) {
                     document.getElementById(step.label)?.classList.add('active');
                 }
 
-                // Activate path
                 const pathMap = {
                     0: 'path-cp-r',
                     1: 'path-r-c',
@@ -766,7 +797,6 @@
                     }
                 }
 
-                // Log
                 this.log(step.log, step.type);
             },
 
@@ -782,14 +812,14 @@
             reset() {
                 this.currentStep = -1;
                 this.isRunning = false;
-                
+
                 document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
                 document.querySelectorAll('.processing').forEach(el => el.classList.remove('processing'));
                 document.querySelectorAll('.step-dot').forEach(d => d.classList.remove('active', 'done'));
                 document.getElementById('loop-back').classList.remove('show');
-                
+
                 document.getElementById('log-content').innerHTML = '<div class="log-line ready">系统就绪。点击"启动闭环"开始演示。</div>';
-                
+
                 document.getElementById('status-badge').className = 'status-badge idle';
                 document.getElementById('status-badge').textContent = '就绪';
                 document.getElementById('btn-start').disabled = false;

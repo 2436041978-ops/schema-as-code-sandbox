@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>02 控制平面 — 宪法层 | Schema-As-Code 沙盘</title>
+    <style>
+        :root {
+            --cp-blue: #1565c0;
+            --cp-bg: #e3f2fd;
+            --success: #4caf50;
+            --error: #d32f2f;
+            --warn: #ff9800;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #e0e6ed;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            color: white;
+            padding: 24px 32px;
+        }
+        .header a.back {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .header a.back:hover { color: white; }
+        .header h1 { font-size: 20px; margin-bottom: 6px; }
+        .header p { font-size: 13px; opacity: 0.8; }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 32px;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            cursor: pointer;
+            background: white;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: var(--cp-blue);
+            color: white;
+            border-color: var(--cp-blue);
+        }
+        .tab:hover:not(.active) {
+            background: var(--cp-bg);
+            color: var(--cp-blue);
+        }
+        .editor-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: calc(100vh - 240px);
+            min-height: 500px;
+        }
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .panel-header .status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        .status.ok { background: #e8f5e9; color: var(--success); }
+        .status.err { background: #ffebee; color: var(--error); }
+        .panel-body {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+        }
+        textarea {
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            font-family: "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            outline: none;
+            color: var(--text);
+        }
+        .validation-result {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .validation-result .pass {
+            color: var(--success);
+            padding: 2px 0;
+            border-left: 2px solid var(--success);
+            padding-left: 10px;
+            margin: 4px 0;
+        }
+        .validation-result .fail {
+            color: var(--error);
+            padding: 2px 0;
+            border-left: 2px solid var(--error);
+            padding-left: 10px;
+            margin: 4px 0;
+        }
+        .validation-result .info {
+            color: var(--text-secondary);
+            padding: 2px 0;
+            padding-left: 10px;
+            margin: 4px 0;
+        }
+        .schema-info {
+            background: #f8f9fa;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .schema-info strong {
+            color: var(--cp-blue);
+        }
+        @media (max-width: 768px) {
+            .editor-grid { grid-template-columns: 1fr; height: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a class="back" href="../../">← 返回沙盘首页</a>
+        <h1>🔷 02 控制平面（Control Plane）— 宪法层</h1>
+        <p>intent-schema-compiler：语义层 / 治理层 / 执行层。左侧编辑 YAML，右侧实时基于 JSON Schema 校验。</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('semantic')">语义层 semantic-tokens.yaml</div>
+            <div class="tab" onclick="switchTab('governance')">治理层 prompt-boundary.yaml</div>
+            <div class="tab" onclick="switchTab('schema')">元数据 intent-schema.json</div>
+        </div>
+
+        <div class="editor-grid">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>YAML / JSON 编辑器</span>
+                    <span class="status ok" id="edit-status">可编辑</span>
+                </div>
+                <div class="panel-body">
+                    <textarea id="yaml-editor" spellcheck="false"></textarea>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <span>机器校验结果</span>
+                    <span class="status ok" id="val-status">就绪</span>
+                </div>
+                <div class="panel-body">
+                    <div class="schema-info" id="schema-info">
+                        <strong>校验规则来源：</strong> kernel/intent-schema.json<br>
+                        定义了意图协议的必填字段、类型约束与不可变边界
+                    </div>
+                    <div class="validation-result" id="validation-result">
+                        <div class="info">等待输入...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 来自 intent-schema-compiler 仓库的实际内容
+        const sources = {
+            semantic: {
+                title: '语义层 semantic-tokens.yaml',
+                schemaDesc: '校验规则：semantic-tokens 必须包含 canonical_id、visual_mapping、llm_constraints',
+                content: `semantic_tokens:
+  status.critical:
+    canonical_id: "ST-001"
+    version: "1.0.0"
+    immutable: true
+    description: "系统级故障，需立即响应"
+    visual_mapping:
+      color_token: "status.critical"
+      motion_token: "pulse.red.urgent"
+      sound_token: "alert.high"
+    llm_constraints:
+      - "生成内容必须包含明确的故障定位信息"
+      - "禁止提供未经验证的修复建议"
+      - "必须附带人工升级路径"
+    synonym_firewall:
+      prohibited:
+        - term: "严重"
+          confidence_threshold: 0.95
+          allowed_contexts: ["AW-001", "AW-002"]
+        - term: "紧急"
+          confidence_threshold: 0.95
+          allowed_contexts: ["AW-001"]`,
+                rules: [
+                    { check: (t) => t.includes('canonical_id'), msg: '✅ 包含 canonical_id（语义令牌唯一标识）', type: 'pass' },
+                    { check: (t) => t.includes('immutable: true'), msg: '✅ 声明不可变边界（immutable: true）', type: 'pass' },
+                    { check: (t) => t.includes('visual_mapping'), msg: '✅ 包含视觉映射（visual_mapping）', type: 'pass' },
+                    { check: (t) => t.includes('llm_constraints'), msg: '✅ 包含 LLM 约束（llm_constraints）', type: 'pass' },
+                    { check: (t) => t.includes('synonym_firewall'), msg: '✅ 包含同义词防火墙（synonym_firewall）', type: 'pass' },
+                    { check: (t) => !t.includes('canonical_id'), msg: '❌ 缺少 canonical_id：语义令牌无法被全局引用', type: 'fail' },
+                    { check: (t) => t.includes('prohibited') && !t.includes('confidence_threshold'), msg: '⚠️ 同义词规则缺少 confidence_threshold：可能导致误拦截', type: 'fail' }
+                ]
+            },
+            governance: {
+                title: '治理层 prompt-boundary.yaml',
+                schemaDesc: '校验规则：input-constraints 必须包含 prohibited_patterns、human_mandatory、ai_prohibited',
+                content: `input_constraints:
+  destructive_action:
+    intent_id: "IC-003"
+    boundary_type: "safety"
+    violation_action: "block"
+    
+    human_mandatory:
+      - "是否触发自动修复"
+      - "升级路径选择"
+    
+    ai_prohibited:
+      - "直接执行修复操作"
+      - "修改告警阈值配置"
+      - "关闭或忽略告警"
+    
+    prohibited_patterns:
+      - pattern: "自动执行"
+        severity: "critical"
+        action: "block"
+      - pattern: "无需确认"
+        severity: "critical"
+        action: "block"
+      - pattern: "(?i)ignore.*warning"
+        severity: "high"
+        action: "escalate"`,
+                rules: [
+                    { check: (t) => t.includes('violation_action'), msg: '✅ 声明违规动作（violation_action: block）', type: 'pass' },
+                    { check: (t) => t.includes('human_mandatory'), msg: '✅ 定义人机边界（human_mandatory）', type: 'pass' },
+                    { check: (t) => t.includes('ai_prohibited'), msg: '✅ 定义 AI 禁止项（ai_prohibited）', type: 'pass' },
+                    { check: (t) => t.includes('prohibited_patterns'), msg: '✅ 包含禁止模式（prohibited_patterns）', type: 'pass' },
+                    { check: (t) => t.includes('block') || t.includes('escalate'), msg: '✅ 违规动作限定在 block/escalate/fallback 内', type: 'pass' },
+                    { check: (t) => !t.includes('human_mandatory'), msg: '❌ 缺少 human_mandatory：高危操作无人确认点', type: 'fail' },
+                    { check: (t) => t.includes('ai_prohibited') && t.includes('直接执行'), msg: '⚠️ 安全边界：AI 被禁止直接执行修复', type: 'pass' }
+                ]
+            },
+            schema: {
+                title: '元数据 intent-schema.json',
+                schemaDesc: 'JSON Schema：定义意图协议的元结构，所有 YAML 必须遵守此 Schema',
+                content: `{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IntentContract",
+  "type": "object",
+  "required": ["intent_id", "semantic_domain", "immutable_boundaries", "version"],
+  "properties": {
+    "intent_id": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}-[0-9]{3}$"
+    },
+    "semantic_domain": {
+      "type": "string",
+      "enum": ["cognitive", "interactive", "transactional", "observational"]
+    },
+    "immutable_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "boundary_type": {
+            "enum": ["semantic", "safety", "aesthetic", "compliance"]
+          },
+          "constraint_rule_ref": { "type": "string" },
+          "violation_action": {
+            "enum": ["block", "escalate", "fallback"]
+          }
+        }
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\\\.[0-9]+\\\\.[0-9]+$"
+    }
+  }
+}`,
+                rules: [
+                    { check: (t) => t.includes('"$schema"'), msg: '✅ 声明 JSON Schema 版本', type: 'pass' },
+                    { check: (t) => t.includes('required'), msg: '✅ 定义必填字段（required）', type: 'pass' },
+                    { check: (t) => t.includes('intent_id'), msg: '✅ 包含 intent_id 字段定义', type: 'pass' },
+                    { check: (t) => t.includes('immutable_boundaries'), msg: '✅ 包含不可变边界定义', type: 'pass' },
+                    { check: (t) => t.includes('violation_action'), msg: '✅ 违规动作枚举：block / escalate / fallback', type: 'pass' },
+                    { check: (t) => t.includes('semantic_domain'), msg: '✅ 语义域枚举：cognitive / interactive / transactional / observational', type: 'pass' }
+                ]
+            }
+        };
+
+        let currentTab = 'semantic';
+        const editor = document.getElementById('yaml-editor');
+        const resultPanel = document.getElementById('validation-result');
+        const valStatus = document.getElementById('val-status');
+        const schemaInfo = document.getElementById('schema-info');
+
+        function switchTab(key) {
+            currentTab = key;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const src = sources[key];
+            editor.value = src.content;
+            schemaInfo.innerHTML = `<strong>校验规则来源：</strong> ${src.schemaDesc}`;
+            validate();
+        }
+
+        function validate() {
+            const text = editor.value;
+            const src = sources[currentTab];
+            const results = [];
+            let passCount = 0;
+            let failCount = 0;
+
+            src.rules.forEach(rule => {
+                if (rule.check(text)) {
+                    results.push(`<<div class="${rule.type}">${rule.msg}</div>`);
+                    if (rule.type === 'pass') passCount++;
+                    if (rule.type === 'fail') failCount++;
+                }
+            });
+
+            if (results.length === 0) {
+                results.push('<div class="info">编辑中，等待完整输入...</div>');
+            }
+
+            resultPanel.innerHTML = results.join('');
+
+            if (failCount > 0) {
+                valStatus.textContent = `${failCount} 项未通过`;
+                valStatus.className = 'status err';
+            } else if (passCount > 0) {
+                valStatus.textContent = `${passCount} 项通过`;
+                valStatus.className = 'status ok';
+            } else {
+                valStatus.textContent = '校验中...';
+                valStatus.className = 'status ok';
+            }
+        }
+
+        editor.addEventListener('input', validate);
+
+        // 初始化
+        editor.value = sources.semantic.content;
+        validate();
+    </script>
+</body>
+</html>

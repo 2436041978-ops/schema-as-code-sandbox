@@ -3,656 +3,766 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10 黑盒接入 — 业务工程师的零感知体验</title>
+    <title>10 黑盒接入 — 业务方零感知体验</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --dp-orange: #ef6c00;
-            --success: #4caf50;
-            --error: #d32f2f;
-            --warn: #ff9800;
-            --bg: #f5f7fa;
-            --card: #ffffff;
-            --border: #e0e6ed;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --radius: 8px;
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1000px;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
+            min-height: 100vh;
         }
-        .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-        
-        /* Header */
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
+        }
+
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            background: var(--sa-c-navy);
             color: white;
-            padding: 28px 32px;
-            border-radius: var(--radius);
-            margin-bottom: 24px;
+            padding: 24px 32px;
+            position: relative;
         }
-        .header h1 { font-size: 20px; margin-bottom: 8px; }
-        .header p { font-size: 13px; opacity: 0.8; }
+
         .back {
-            display: inline-block;
-            margin-bottom: 12px;
-            color: rgba(255,255,255,0.6);
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
-            font-size: 12px;
+            font-size: var(--sa-f-sm);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            transition: color 0.2s;
         }
+
         .back:hover { color: white; }
 
-        /* Section */
-        .section {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        .section-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section-title .badge {
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 4px;
-            background: var(--bg);
-            color: var(--text-secondary);
-            font-weight: normal;
+        .header h1 {
+            font-size: var(--sa-f-xl);
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
         }
 
-        /* Role tabs */
+        .header p {
+            font-size: var(--sa-f-sm);
+            opacity: 0.8;
+        }
+
+        .container {
+            max-width: var(--sa-max-w);
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .intro {
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            padding: 20px;
+            margin-bottom: 32px;
+            font-size: var(--sa-f-base);
+            color: var(--sa-c-muted);
+            box-shadow: var(--sa-shadow);
+        }
+
+        .intro strong {
+            color: var(--sa-c-text);
+        }
+
+        /* 角色切换标签 */
         .role-tabs {
             display: flex;
             gap: 8px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 12px;
-        }
-        .role-tab {
-            padding: 8px 16px;
-            font-size: 14px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-radius: var(--radius);
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-        .role-tab.active {
-            background: var(--cp-blue);
-            color: white;
-        }
-        .role-tab:hover:not(.active) {
-            background: var(--bg);
+            margin-bottom: 24px;
         }
 
-        /* Demo area */
-        .demo-area {
-            display: none;
+        .role-tab {
+            padding: 10px 20px;
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            cursor: pointer;
+            background: var(--sa-c-surface);
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-sm);
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
-        .demo-area.active {
+
+        .role-tab:hover {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
+        }
+
+        .role-tab.active {
+            background: var(--sa-c-navy);
+            color: white;
+            border-color: var(--sa-c-navy);
+        }
+
+        /* 工作区 */
+        .workspace {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .panel {
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            padding: 24px;
+            box-shadow: var(--sa-shadow);
+        }
+
+        .panel h3 {
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--sa-c-border);
+            font-weight: 600;
+        }
+
+        /* 代码编辑器模拟 */
+        .code-editor {
+            background: var(--sa-c-navy);
+            border-radius: var(--sa-r);
+            padding: 16px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
+            line-height: 1.8;
+            color: #a6e22e;
+            overflow-x: auto;
+        }
+
+        .code-editor .comment { color: #75715e; }
+        .code-editor .keyword { color: #66d9ef; }
+        .code-editor .string { color: #e6db74; }
+        .code-editor .tag { color: #f92672; }
+        .code-editor .attr { color: #a6e22e; }
+        .code-editor .value { color: #e6db74; }
+        .code-editor .error-line {
+            background: rgba(225, 29, 72, 0.2);
+            border-left: 3px solid var(--sa-c-rose);
+            padding-left: 8px;
+            margin-left: -8px;
             display: block;
-            animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+        .code-editor .warn-line {
+            background: rgba(255, 107, 53, 0.15);
+            border-left: 3px solid var(--sa-c-amber);
+            padding-left: 8px;
+            margin-left: -8px;
+            display: block;
+        }
+
+        /* IDE 提示模拟 */
+        .ide-tooltip {
+            background: var(--sa-c-navy-light);
+            border: 1px solid var(--sa-c-navy);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 11px;
+            color: white;
+            margin-top: 8px;
+            display: none;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+        }
+
+        .ide-tooltip.show {
+            display: block;
+            animation: tooltipIn 0.2s ease;
+        }
+
+        @keyframes tooltipIn {
+            from { opacity: 0; transform: translateY(-4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Code block */
-        .code-block {
-            background: #1a1a2e;
-            color: #a6e22e;
-            padding: 16px;
-            border-radius: var(--radius);
-            font-family: "SF Mono", Monaco, monospace;
-            font-size: 13px;
-            line-height: 1.8;
-            overflow-x: auto;
-            margin-bottom: 16px;
-        }
-        .code-block .comment { color: #75715e; }
-        .code-block .attr { color: #66d9ef; }
-        .code-block .string { color: #e6db74; }
-        .code-block .tag { color: #f92672; }
-        .code-block .error-line {
-            background: rgba(249, 38, 114, 0.15);
-            display: block;
-            margin: 0 -16px;
-            padding: 0 16px;
-            border-left: 3px solid var(--error);
+        .ide-tooltip.error {
+            border-color: var(--sa-c-rose);
+            background: var(--sa-c-rose);
         }
 
-        /* Preview box */
-        .preview-box {
-            background: var(--bg);
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            padding: 24px;
-            min-height: 120px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-        .preview-box.has-error {
-            border-color: var(--error);
-            background: #ffebee;
-        }
-        .preview-box.has-intent {
-            border-color: var(--success);
-            background: #e8f5e9;
+        .ide-tooltip.warn {
+            border-color: var(--sa-c-amber);
+            background: var(--sa-c-amber);
         }
 
-        /* Simulated UI components */
-        .sim-button {
-            padding: 10px 24px;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .sim-button.danger {
-            background: var(--error);
-            color: white;
-        }
-        .sim-button.danger:hover {
-            background: #b71c1c;
-        }
-        .sim-button.normal {
-            background: #e0e0e0;
-            color: var(--text);
-        }
-
-        .sim-modal {
-            background: white;
-            border: 2px solid var(--warn);
-            border-radius: var(--radius);
-            padding: 16px;
-            text-align: center;
-            max-width: 300px;
-        }
-        .sim-modal h4 { color: var(--warn); margin-bottom: 8px; }
-        .sim-modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
-
-        .eslint-error {
-            background: #ffebee;
-            border-left: 4px solid var(--error);
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: var(--error);
-            margin-top: 12px;
-        }
-        .eslint-error::before {
-            content: "✕ ESLint: ";
-            font-weight: bold;
-        }
-
-        /* Figma simulation */
-        .figma-canvas {
-            background: #e5e5e5;
-            border-radius: var(--radius);
+        /* 设计稿模拟 */
+        .design-mockup {
+            background: var(--sa-c-bg);
+            border-radius: var(--sa-r);
             padding: 20px;
-            display: flex;
-            gap: 16px;
-            align-items: flex-start;
+            text-align: center;
         }
-        .figma-sidebar {
-            width: 160px;
-            background: white;
-            border-radius: 6px;
-            padding: 12px;
-            font-size: 12px;
+
+        .design-card {
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--sa-shadow);
         }
-        .figma-sidebar h4 {
+
+        .design-card .label {
             font-size: 11px;
-            color: #666;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        .color-swatch {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px;
-            border-radius: 4px;
-            cursor: pointer;
+            color: var(--sa-c-muted);
             margin-bottom: 4px;
         }
-        .color-swatch:hover { background: #f5f5f5; }
-        .color-swatch .dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            border: 2px solid transparent;
+
+        .design-card .color-swatch {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            margin: 0 auto 8px;
         }
-        .color-swatch.selected .dot {
-            border-color: var(--cp-blue);
+
+        .design-card .color-swatch.critical { background: #D32F2F; }
+        .design-card .color-swatch.warning { background: #F9A825; }
+        .design-card .color-swatch.info { background: #1976D2; }
+
+        .design-card .semantic-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #E8F0FE;
+            color: var(--sa-c-navy);
+            font-weight: 600;
         }
-        .color-swatch.error .dot {
-            border-color: var(--error);
+
+        .design-card .semantic-tag.error {
+            background: var(--sa-c-rose-light);
+            color: var(--sa-c-rose);
         }
-        .figma-preview {
-            flex: 1;
-            background: white;
+
+        /* LLM 输出模拟 */
+        .llm-output {
+            background: var(--sa-c-bg);
+            border-radius: var(--sa-r);
+            padding: 16px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
+            line-height: 1.6;
+        }
+
+        .llm-output .system-prompt {
+            background: var(--sa-c-navy);
+            color: #a6e22e;
+            padding: 12px;
             border-radius: 6px;
-            padding: 40px;
+            margin-bottom: 12px;
+            font-size: 11px;
+        }
+
+        .llm-output .user-prompt {
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .llm-output .response {
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .llm-output .response.blocked {
+            border-color: var(--sa-c-rose);
+            background: var(--sa-c-rose-light);
+        }
+
+        .llm-output .response.passed {
+            border-color: var(--sa-c-teal);
+            background: var(--sa-c-teal-light);
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .sa-btn--accent {
+            background: var(--sa-c-amber);
+            color: white;
+        }
+
+        .sa-btn--accent:hover:not(:disabled) { filter: brightness(1.1); }
+
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
+        }
+
+        .sa-btn--ghost:hover:not(:disabled) {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
+        }
+
+        /* 接入步骤 */
+        .steps {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .step-card {
+            flex: 1;
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
+            padding: 16px;
+            text-align: center;
+            box-shadow: var(--sa-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            box-shadow: var(--sa-shadow-hover);
+            transform: translateY(-2px);
+        }
+
+        .step-card .number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--sa-c-navy);
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 200px;
+            font-size: var(--sa-f-sm);
+            font-weight: 600;
+            margin: 0 auto 8px;
         }
-        .figma-alert-card {
-            border-radius: 8px;
-            padding: 20px;
-            width: 240px;
-            transition: all 0.3s;
+
+        .step-card .title {
+            font-size: var(--sa-f-sm);
+            font-weight: 600;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
-        .figma-toast {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            background: var(--error);
-            color: white;
-            padding: 12px 20px;
-            border-radius: var(--radius);
-            font-size: 13px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+
+        .step-card .desc {
+            font-size: 11px;
+            color: var(--sa-c-muted);
+        }
+
+        /* 结果展示 */
+        .result-panel {
             display: none;
+            background: var(--sa-c-teal-light);
+            border: 2px solid var(--sa-c-teal);
+            border-radius: var(--sa-r);
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: var(--sa-shadow);
+        }
+
+        .result-panel.show {
+            display: block;
             animation: slideIn 0.3s ease;
         }
-        .figma-toast.show { display: block; }
-        .figma-toast.success {
-            background: var(--success);
-        }
+
         @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* AI SDK simulation */
-        .sdk-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        .sdk-panel {
-            background: var(--bg);
-            border-radius: var(--radius);
-            padding: 16px;
-        }
-        .sdk-panel h4 {
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-        }
-        .sdk-code {
-            background: #1a1a2e;
-            color: #a6e22e;
-            padding: 12px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-        .llm-output {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 12px;
-            font-size: 13px;
-            line-height: 1.6;
-            min-height: 80px;
-        }
-        .llm-output .highlight {
-            background: #fff3e0;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-        .llm-output .error-text {
-            color: var(--error);
-            text-decoration: wavy underline;
+        .result-panel h2 {
+            color: #059669;
+            font-size: var(--sa-f-xl);
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
-        .status-bar {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            font-size: 12px;
+        .result-panel p {
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-base);
         }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-        .status-dot.green { background: var(--success); }
-        .status-dot.red { background: var(--error); }
 
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 16px;
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-sm);
+            border-top: 1px solid var(--sa-c-border);
+            margin-top: 32px;
         }
-        .toggle-switch {
-            position: relative;
-            width: 44px;
-            height: 24px;
-            background: #ccc;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .toggle-switch.on {
-            background: var(--success);
-        }
-        .toggle-switch::after {
-            content: "";
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.3s;
-        }
-        .toggle-switch.on::after {
-            transform: translateX(20px);
+
+        @media (max-width: 768px) {
+            .workspace { grid-template-columns: 1fr; }
+            .steps { flex-direction: column; }
+            .role-tabs { flex-wrap: wrap; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
+
+    <div class="header">
+        <a class="back" href="../../">← 返回沙盘首页</a>
+        <h1>10 黑盒接入 — 业务方零感知体验</h1>
+        <p>前端、设计师、AI 工程师无需理解 YAML，通过工具链自动消费编译产物</p>
+    </div>
+
     <div class="container">
-        <div class="header">
-            <a class="back" href="../../">← 返回沙盘首页</a>
-            <h1>🔲 黑盒接入 — 业务工程师的零感知体验</h1>
-            <p>前端 / 设计 / AI 工程师无需理解 YAML 协议，只需消费编译产物。Schema-As-Code 自动注入约束。</p>
+        <div class="intro">
+            <strong>核心原则：</strong>业务方不接触控制平面 YAML，只通过 IDE 插件、npm 包、Figma 插件、SDK 消费编译产物。
+            选择下方角色，体验"零感知"接入流程。
         </div>
 
-        <div class="section">
-            <div class="role-tabs">
-                <button class="role-tab active" onclick="switchRole('frontend')">💻 前端工程师</button>
-                <button class="role-tab" onclick="switchRole('designer')">🎨 设计师</button>
-                <button class="role-tab" onclick="switchRole('ai')">🤖 AI 工程师</button>
+        <!-- 角色切换 -->
+        <div class="role-tabs">
+            <div class="role-tab active" onclick="switchRole('frontend')">👨‍💻 前端工程师</div>
+            <div class="role-tab" onclick="switchRole('designer')">🎨 设计师</div>
+            <div class="role-tab" onclick="switchRole('ai')">🤖 AI 工程师</div>
+        </div>
+
+        <!-- 接入步骤 -->
+        <div class="steps" id="steps">
+            <div class="step-card">
+                <div class="number">1</div>
+                <div class="title">安装工具</div>
+                <div class="desc">npm install / Figma 插件 / SDK</div>
             </div>
-
-            <!-- 前端工程师 -->
-            <div class="demo-area active" id="role-frontend">
-                <div class="section-title">
-                    标签约定式接入
-                    <span class="badge">npm install @intent/runtime</span>
-                </div>
-                
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    只需添加 <code>data-intent</code> 属性，Runtime 自动注入约束。ESLint 插件实时校验语义合规性。
-                </p>
-
-                <div class="toggle-row">
-                    <div class="toggle-switch on" id="intent-toggle" onclick="toggleIntent()"></div>
-                    <span id="toggle-label">已添加 data-intent="destructive-action"</span>
-                </div>
-
-                <div class="code-block" id="frontend-code">
-<span class="tag">&lt;Button</span>
-  <span class="attr">data-intent</span>=<<span class="string">"destructive-action"</span>
-  <span class="attr">onClick</span>={handleDelete}
-<span class="tag">&gt;</span>
-  删除账户
-<span class="tag">&lt;/Button&gt;</span>
-                </div>
-
-                <div class="preview-box has-intent" id="frontend-preview">
-                    <button class="sim-button danger" onclick="tryDelete()">删除账户</button>
-                    <div style="font-size: 12px; color: var(--text-secondary);">点击按钮体验 Runtime 拦截</div>
-                </div>
-
-                <div id="eslint-output"></div>
+            <div class="step-card">
+                <div class="number">2</div>
+                <div class="title">配置绑定</div>
+                <div class="desc">自动读取 Registry 语义定义</div>
             </div>
-
-            <!-- 设计师 -->
-            <div class="demo-area" id="role-designer">
-                <div class="section-title">
-                    Figma 插件自动校验
-                    <span class="badge">Figma Plugin: Intent Validator</span>
-                </div>
-                
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    插件读取 Registry 语义定义，设计稿中自动标记颜色语义误用。设计师无需学习 YAML。
-                </p>
-
-                <div class="figma-canvas">
-                    <div class="figma-sidebar">
-                        <h4>语义颜色</h4>
-                        <div class="color-swatch selected" onclick="selectColor('critical', this)">
-                            <div class="dot" style="background: #D32F2F;"></div>
-                            <span>Critical</span>
-                        </div>
-                        <div class="color-swatch" onclick="selectColor('warning', this)">
-                            <div class="dot" style="background: #F9A825;"></div>
-                            <span>Warning</span>
-                        </div>
-                        <div class="color-swatch" onclick="selectColor('success', this)">
-                            <div class="dot" style="background: #4CAF50;"></div>
-                            <span>Success</span>
-                        </div>
-                        <div class="color-swatch" onclick="selectColor('info', this)">
-                            <div class="dot" style="background: #2196F3;"></div>
-                            <span>Info</span>
-                        </div>
-                        <h4 style="margin-top: 12px;">当前意图</h4>
-                        <div style="font-size: 11px; color: #666; padding: 6px; background: #f5f5f5; border-radius: 4px;">
-                            destructive-action<br>
-                            <span style="color: var(--error);">需要 critical 红色</span>
-                        </div>
-                    </div>
-                    <div class="figma-preview">
-                        <div class="figma-alert-card" id="figma-card" style="background: #ffebee; border: 2px solid #D32F2F;">
-                            <div style="font-size: 14px; font-weight: bold; color: #D32F2F; margin-bottom: 8px;">⚠️ 系统告警</div>
-                            <div style="font-size: 12px; color: #666;">检测到高危操作，需要人工确认</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="figma-toast" id="figma-toast">颜色语义不匹配：destructive-action 必须使用 critical 红色</div>
+            <div class="step-card">
+                <div class="number">3</div>
+                <div class="title">实时校验</div>
+                <div class="desc">IDE / 设计稿 / Prompt 自动拦截</div>
             </div>
+            <div class="step-card">
+                <div class="number">4</div>
+                <div class="title">自动升级</div>
+                <div class="desc">Registry 更新后自动同步</div>
+            </div>
+        </div>
 
-            <!-- AI 工程师 -->
-            <div class="demo-area" id="role-ai">
-                <div class="section-title">
-                    SDK 自动拉取 Prompt 约束
-                    <span class="badge">npm install @intent/sdk</span>
-                </div>
-                
-                <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">
-                    AI 工程师无需手动维护 Prompt 前缀。SDK 自动从 Registry 拉取最新约束，注入 LLM 调用。
-                </p>
+        <!-- 结果面板 -->
+        <div class="result-panel" id="result-panel">
+            <h2>✅ 接入完成</h2>
+            <p id="result-text">工具链已就绪，语义治理自动生效</p>
+        </div>
 
-                <div class="toggle-row">
-                    <div class="toggle-switch" id="sdk-toggle" onclick="toggleSDK()"></div>
-                    <span id="sdk-label">未启用 Intent SDK</span>
-                </div>
+        <!-- 工作区 -->
+        <div class="workspace" id="workspace">
+            <!-- 前端工程师场景 -->
+            <div class="panel" id="panel-frontend">
+                <h3>👨‍💻 IDE 实时校验</h3>
+                <div class="code-editor" id="code-frontend">
+<span class="comment">// 安装：npm install @company/intent-runtime</span>
+<span class="comment">// ESLint 规则自动生效</span>
 
-                <div class="sdk-area">
-                    <div class="sdk-panel">
-                        <h4>代码</h4>
-                        <div class="sdk-code" id="sdk-code">
-// 未启用 SDK
-const response = await openai.chat.completions.create({
-  model: "gpt-4",
-  messages: [{ role: "user", content: "生成告警卡片" }]
+<span class="keyword">import</span> { withIntentGuard } <span class="keyword">from</span> <span class="string">'@company/intent-runtime'</span>;
+
+<span class="keyword">function</span> <span class="attr">AlertCard</span>({ alertLevel }) {
+  <span class="comment">// ❌ 错误：使用自然语言描述</span>
+  <span class="error-line">return &lt;Badge type="danger"&gt;严重故障&lt;/Badge&gt;;</span>
+
+  <span class="comment">// ✅ 正确：使用语义令牌</span>
+  return &lt;Badge <span class="attr">intent</span>=<span class="string">"status.critical"</span>&gt;
+    系统故障
+  &lt;/Badge&gt;;
+}
+
+<span class="comment">// HOC 自动注入校验</span>
+<span class="keyword">export default</span> withIntentGuard(AlertCard, {
+  <span class="attr">intentContract</span>: <span class="string">'status.critical'</span>
 });
-                        </div>
+                </div>
+                <div class="ide-tooltip error" id="tooltip-frontend">
+                    ESLint: 禁止使用自然语言描述告警等级<br>
+                    建议：使用 intent="status.critical" 语义令牌
+                </div>
+            </div>
+
+            <div class="panel" id="panel-frontend-right">
+                <h3>📦 产物自动同步</h3>
+                <div class="code-editor" style="color: #66d9ef;">
+<span class="comment"># package.json</span>
+{
+  <span class="string">"dependencies"</span>: {
+    <span class="string">"@company/intent-runtime"</span>: <span class="string">"^1.2.0"</span>,
+    <span class="string">"@company/intent-types"</span>: <span class="string">"^1.2.0"</span>
+  }
+}
+
+<span class="comment"># 自动生成的类型定义</span>
+<span class="keyword">export type</span> <span class="attr">SemanticToken</span> =
+  | <span class="string">'status.critical'</span>
+  | <span class="string">'status.warning'</span>
+  | <span class="string">'status.info'</span>;
+
+<span class="comment"># Registry 更新后自动同步</span>
+<span class="comment"># 无需手动修改代码</span>
+                </div>
+            </div>
+
+            <!-- 设计师场景（默认隐藏） -->
+            <div class="panel" id="panel-designer" style="display:none">
+                <h3>🎨 Figma 语义校验</h3>
+                <div class="design-mockup">
+                    <div class="design-card">
+                        <div class="label">语义令牌</div>
+                        <div class="color-swatch critical"></div>
+                        <div class="semantic-tag">status.critical</div>
                     </div>
-                    <div class="sdk-panel">
-                        <h4>LLM 输出</h4>
-                        <div class="llm-output" id="llm-output">
-                            告警等级：<span class="error-text">严重</span><br>
-                            根因：CPU 故障<br>
-                            处置建议：<span class="error-text">自动修复</span>
-                        </div>
-                        <div class="status-bar">
-                            <div class="status-dot red" id="sdk-status"></div>
-                            <span id="sdk-status-text">未通过语义校验：3 处违规</span>
-                        </div>
+                    <div class="design-card">
+                        <div class="label">语义令牌</div>
+                        <div class="color-swatch warning"></div>
+                        <div class="semantic-tag">status.warning</div>
+                    </div>
+                    <div class="design-card" id="design-error">
+                        <div class="label">⚠️ 语义漂移</div>
+                        <div class="color-swatch" style="background: #E53935;"></div>
+                        <div class="semantic-tag error">未匹配语义令牌</div>
+                    </div>
+                </div>
+                <div class="ide-tooltip error" id="tooltip-designer" style="margin-top: 12px;">
+                    Figma 插件：检测到颜色 #E53935 未绑定语义令牌<br>
+                    建议：使用 status.critical (#D32F2F) 或申请新令牌
+                </div>
+            </div>
+
+            <div class="panel" id="panel-designer-right" style="display:none">
+                <h3>📐 DESIGN.md 提取</h3>
+                <div class="code-editor" style="color: #a6e22e;">
+<span class="comment"># DESIGN.md — 设计意图文档</span>
+
+## 告警卡片语义规范
+
+- <span class="string">状态：系统故障</span>
+  - 语义令牌：<span class="string">status.critical</span>
+  - 视觉映射：红色脉冲 + 高频告警音
+  - LLM 约束：禁止建议自动修复
+
+- <span class="string">状态：潜在风险</span>
+  - 语义令牌：<span class="string">status.warning</span>
+  - 视觉映射：黄色静态 + 低频提示音
+
+<span class="comment"># Compiler 自动提取为 YAML</span>
+<span class="comment"># 无需设计师手动编写</span>
+                </div>
+            </div>
+
+            <!-- AI 工程师场景（默认隐藏） -->
+            <div class="panel" id="panel-ai" style="display:none">
+                <h3>🤖 LLM Prompt 自动注入</h3>
+                <div class="llm-output">
+                    <div class="system-prompt">
+                        <strong>[SYSTEM CONSTRAINT]</strong><br>
+                        你必须使用 status.critical 语义令牌描述系统故障状态。<br>
+                        禁止使用"严重"/"紧急"/"危急"等自然语言同义词替代。<br>
+                        生成内容必须包含明确的故障定位信息。
+                    </div>
+                    <div class="user-prompt">
+                        <strong>User:</strong> 请描述当前系统状态
+                    </div>
+                    <div class="response passed" id="llm-response-pass">
+                        <strong>Assistant:</strong><br>
+                        系统状态：<span style="color: var(--sa-c-teal);">status.critical</span><br>
+                        故障定位：数据库主节点连接超时<br>
+                        影响面：支付服务不可用<br>
+                        升级路径：请联系值班工程师处理
+                    </div>
+                    <div class="response blocked" id="llm-response-block" style="display:none">
+                        <strong>Validator:</strong><br>
+                        <span style="color: var(--sa-c-rose);">🚫 BLOCK</span><br>
+                        语义推演失败：使用"严重"替代 status.critical<br>
+                        置信度：0.97（超过阈值 0.95）<br>
+                        动作：升级人工审核
                     </div>
                 </div>
             </div>
+
+            <div class="panel" id="panel-ai-right" style="display:none">
+                <h3>🔧 SDK 自动约束</h3>
+                <div class="code-editor" style="color: #66d9ef;">
+<span class="comment"># 安装：pip install intent-sdk</span>
+
+<span class="keyword">from</span> intent_sdk <span class="keyword">import</span> toolGuard
+
+<span class="attr">tools</span> = [{
+    <span class="string">"name"</span>: <span class="string">"check_system_status"</span>,
+    <span class="string">"parameters"</span>: {
+        <span class="string">"status"</span>: {
+            <span class="string">"type"</span>: <span class="string">"string"</span>,
+            <span class="string">"enum"</span>: [<span class="string">"status.critical"</span>,
+                      <span class="string">"status.warning"</span>,
+                      <span class="string">"status.info"</span>]
+        }
+    }
+}]
+
+<span class="comment"># toolGuard 自动拦截非法调用</span>
+<span class="attr">guarded_tools</span> = toolGuard(tools, policy_store)
+                </div>
+                <div class="controls" style="margin-top: 16px;">
+                    <button class="sa-btn sa-btn--accent" onclick="testLLM('pass')">✅ 合法输出</button>
+                    <button class="sa-btn sa-btn--ghost" onclick="testLLM('block')">🚫 漂移输出</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="sa-btn sa-btn--accent" onclick="runDemo()">▶ 演示接入流程</button>
+            <button class="sa-btn sa-btn--ghost" onclick="resetDemo()">↺ 重置</button>
         </div>
     </div>
 
+    <footer>
+        Schema-As-Code 联邦自治架构 · 黑盒接入机制演示
+    </footer>
+
     <script>
-        // Role switching
+        let currentRole = 'frontend';
+
         function switchRole(role) {
+            currentRole = role;
             document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
             event.target.classList.add('active');
-            
-            document.querySelectorAll('.demo-area').forEach(d => d.classList.remove('active'));
-            document.getElementById('role-' + role).classList.add('active');
+
+            // 隐藏所有面板
+            document.getElementById('panel-frontend').style.display = 'none';
+            document.getElementById('panel-frontend-right').style.display = 'none';
+            document.getElementById('panel-designer').style.display = 'none';
+            document.getElementById('panel-designer-right').style.display = 'none';
+            document.getElementById('panel-ai').style.display = 'none';
+            document.getElementById('panel-ai-right').style.display = 'none';
+
+            // 显示对应角色面板
+            document.getElementById(`panel-${role}`).style.display = 'block';
+            document.getElementById(`panel-${role}-right`).style.display = 'block';
+
+            // 重置结果
+            document.getElementById('result-panel').classList.remove('show');
         }
 
-        // Frontend: toggle intent
-        let hasIntent = true;
-        function toggleIntent() {
-            hasIntent = !hasIntent;
-            const toggle = document.getElementById('intent-toggle');
-            const label = document.getElementById('toggle-label');
-            const code = document.getElementById('frontend-code');
-            const preview = document.getElementById('frontend-preview');
-            const eslint = document.getElementById('eslint-output');
+        async function runDemo() {
+            resetDemo();
+            const steps = document.querySelectorAll('.step-card');
 
-            if (hasIntent) {
-                toggle.classList.add('on');
-                label.textContent = '已添加 data-intent="destructive-action"';
-                code.innerHTML = `<span class="tag">&lt;Button</span>\n  <span class="attr">data-intent</span>=<<span class="string">"destructive-action"</span>\n  <span class="attr">onClick</span>={handleDelete}\n<span class="tag">&gt;</span>\n  删除账户\n<span class="tag">&lt;/Button&gt;</span>`;
-                preview.className = 'preview-box has-intent';
-                eslint.innerHTML = '';
+            for (let i = 0; i < steps.length; i++) {
+                steps[i].style.transform = 'scale(1.05)';
+                steps[i].style.borderColor = 'var(--sa-c-teal)';
+                steps[i].style.background = 'var(--sa-c-teal-light)';
+                await sleep(600);
+                steps[i].style.transform = 'scale(1)';
+                steps[i].style.borderColor = 'var(--sa-c-border)';
+                steps[i].style.background = 'var(--sa-c-surface)';
+            }
+
+            // 显示角色特定结果
+            const resultPanel = document.getElementById('result-panel');
+            const resultText = document.getElementById('result-text');
+
+            if (currentRole === 'frontend') {
+                resultText.textContent = 'IDE 插件已安装：ESLint 实时拦截语义令牌误用，TypeScript 类型自动同步';
+                document.getElementById('tooltip-frontend').classList.add('show');
+            } else if (currentRole === 'designer') {
+                resultText.textContent = 'Figma 插件已安装：设计稿自动校验语义一致性，颜色使用符合语义令牌定义';
+                document.getElementById('tooltip-designer').classList.add('show');
+            } else if (currentRole === 'ai') {
+                resultText.textContent = 'SDK 已安装：Prompt 约束自动注入，toolGuard 拦截非法 Function Calling';
+            }
+
+            resultPanel.classList.add('show');
+        }
+
+        function testLLM(type) {
+            const passResponse = document.getElementById('llm-response-pass');
+            const blockResponse = document.getElementById('llm-response-block');
+
+            if (type === 'pass') {
+                passResponse.style.display = 'block';
+                blockResponse.style.display = 'none';
             } else {
-                toggle.classList.remove('on');
-                label.textContent = '未添加 data-intent（缺失意图绑定）';
-                code.innerHTML = `<span class="tag">&lt;Button</span>\n  <span class="error-line"><span class="attr">onClick</span>={handleDelete}</span>\n<span class="tag">&gt;</span>\n  删除账户\n<span class="tag">&lt;/Button&gt;</span>`;
-                preview.className = 'preview-box has-error';
-                eslint.innerHTML = `<div class="eslint-error">Intent binding missing: destructive-action requires data-intent attribute and human-confirmation guard. (intent-eslint-plugin)</div>`;
+                passResponse.style.display = 'none';
+                blockResponse.style.display = 'block';
             }
         }
 
-        function tryDelete() {
-            if (!hasIntent) return;
-            
-            const preview = document.getElementById('frontend-preview');
-            preview.innerHTML = `
-                <div class="sim-modal">
-                    <h4>⚠️ 人工确认 required</h4>
-                    <p>当前操作绑定意图：<strong>destructive-action</strong><br>根据联邦宪法 IC-003，此操作必须人工确认。</p>
-                    <div style="display: flex; gap: 8px; justify-content: center;">
-                        <button class="sim-button normal" onclick="cancelDelete()">取消</button>
-                        <button class="sim-button danger" onclick="confirmDelete()">确认删除</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function cancelDelete() {
-            const preview = document.getElementById('frontend-preview');
-            preview.innerHTML = `
-                <button class="sim-button danger" onclick="tryDelete()">删除账户</button>
-                <div style="font-size: 12px; color: var(--text-secondary);">操作已取消，Runtime 拦截生效</div>
-            `;
-        }
-
-        function confirmDelete() {
-            const preview = document.getElementById('frontend-preview');
-            preview.innerHTML = `
-                <div style="color: var(--success); font-size: 14px;">✅ 已确认，Runtime 放行</div>
-                <div style="font-size: 12px; color: var(--text-secondary);">human_confirmed=true 已记录审计日志</div>
-                <button class="sim-button normal" onclick="resetFrontend()" style="margin-top: 12px;">重置</button>
-            `;
-        }
-
-        function resetFrontend() {
-            const preview = document.getElementById('frontend-preview');
-            preview.innerHTML = `
-                <button class="sim-button danger" onclick="tryDelete()">删除账户</button>
-                <div style="font-size: 12px; color: var(--text-secondary);">点击按钮体验 Runtime 拦截</div>
-            `;
-        }
-
-        // Designer: color selection
-        let currentIntent = 'destructive-action';
-        function selectColor(semantic, el) {
-            document.querySelectorAll('.color-swatch').forEach(s => {
-                s.classList.remove('selected', 'error');
+        function resetDemo() {
+            document.querySelectorAll('.step-card').forEach(s => {
+                s.style.transform = 'scale(1)';
+                s.style.borderColor = 'var(--sa-c-border)';
+                s.style.background = 'var(--sa-c-surface)';
             });
-            
-            const card = document.getElementById('figma-card');
-            const toast = document.getElementById('figma-toast');
-            
-            const colors = {
-                critical: { bg: '#ffebee', border: '#D32F2F', text: '#D32F2F' },
-                warning: { bg: '#fff8e1', border: '#F9A825', text: '#F9A825' },
-                success: { bg: '#e8f5e9', border: '#4CAF50', text: '#4CAF50' },
-                info: { bg: '#e3f2fd', border: '#2196F3', text: '#2196F3' }
-            };
-            
-            if (currentIntent === 'destructive-action' && semantic !== 'critical') {
-                el.classList.add('error');
-                toast.textContent = `颜色语义不匹配：${currentIntent} 必须使用 critical 红色`;
-                toast.className = 'figma-toast show';
-                setTimeout(() => toast.classList.remove('show'), 3000);
-            } else {
-                el.classList.add('selected');
-                toast.className = 'figma-toast success show';
-                toast.textContent = `✅ 语义匹配：${semantic} 适用于 ${currentIntent}`;
-                setTimeout(() => toast.classList.remove('show'), 2000);
-            }
-            
-            const c = colors[semantic];
-            card.style.background = c.bg;
-            card.style.borderColor = c.border;
-            card.querySelector('div').style.color = c.text;
+            document.getElementById('result-panel').classList.remove('show');
+            document.getElementById('tooltip-frontend').classList.remove('show');
+            document.getElementById('tooltip-designer').classList.remove('show');
+
+            // 重置 LLM 输出
+            document.getElementById('llm-response-pass').style.display = 'block';
+            document.getElementById('llm-response-block').style.display = 'none';
         }
 
-        // AI: toggle SDK
-        let sdkEnabled = false;
-        function toggleSDK() {
-            sdkEnabled = !sdkEnabled;
-            const toggle = document.getElementById('sdk-toggle');
-            const label = document.getElementById('sdk-label');
-            const code = document.getElementById('sdk-code');
-            const output = document.getElementById('llm-output');
-            const status = document.getElementById('sdk-status');
-            const statusText = document.getElementById('sdk-status-text');
-
-            if (sdkEnabled) {
-                toggle.classList.add('on');
-                label.textContent = '已启用 Intent SDK（自动拉取约束）';
-                code.innerHTML = `// 启用 Intent SDK\n<span style="color: #66d9ef;">import</span> { intentSDK } <span style="color: #66d9ef;">from</span> <span style="color: #e6db74;">"@intent/sdk"</span>;\n\n<span style="color: #75715e;">// SDK 自动注入 Prompt 约束前缀</span>\n<span style="color: #66d9ef;">const</span> constraints = <span style="color: #66d9ef;">await</span> intentSDK.load(<span style="color: #e6db74;">"alert-card"</span>);\n<span style="color: #75715e;">// 返回: { tokens: ["status.critical"], prohibited: ["自动修复"] }</span>\n\n<span style="color: #66d9ef;">const</span> response = <span style="color: #66d9ef;">await</span> openai.chat.completions.create({\n  model: <span style="color: #e6db74;">"gpt-4"</span>,\n  messages: [\n    { role: <span style="color: #e6db74;">"system"</span>, content: constraints.toPrompt() },\n    { role: <span style="color: #e6db74;">"user"</span>, content: <span style="color: #e6db74;">"生成告警卡片"</span> }\n  ]\n});`;
-                output.innerHTML = `告警等级：<span class="highlight">P0</span>（命中语义令牌 status.critical）<<br>根因：CPU 使用率超过阈值，导致服务响应延迟<br>处置建议：<span class="highlight">人工排查</span>（自动修复已列入 prohibited）<<br>置信度：0.85`;
-                status.className = 'status-dot green';
-                statusText.textContent = '通过语义校验：4 层推演全部 PASS';
-            } else {
-                toggle.classList.remove('on');
-                label.textContent = '未启用 Intent SDK';
-                code.innerHTML = `// 未启用 SDK\nconst response = await openai.chat.completions.create({\n  model: "gpt-4",\n  messages: [{ role: "user", content: "生成告警卡片" }]\n});`;
-                output.innerHTML = `告警等级：<span class="error-text">严重</span><br>根因：CPU 故障<br>处置建议：<span class="error-text">自动修复</span>`;
-                status.className = 'status-dot red';
-                statusText.textContent = '未通过语义校验：3 处违规';
-            }
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
     </script>
 </body>

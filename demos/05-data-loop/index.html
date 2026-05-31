@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>05 数据流动闭环 | Schema-As-Code 沙盘</title>
+    <style>
+        :root {
+            --cp-blue: #1565c0;
+            --cp-bg: #e3f2fd;
+            --dp-orange: #ef6c00;
+            --dp-bg: #fff3e0;
+            --infra-purple: #6a1b9a;
+            --infra-bg: #f3e5f5;
+            --success: #4caf50;
+            --error: #d32f2f;
+            --loop: #9c27b0;
+            --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #e0e6ed;
+            --text: #1a1a2e;
+            --text-secondary: #666;
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            color: white;
+            padding: 24px 32px;
+        }
+        .header a.back {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+        .header a.back:hover { color: white; }
+        .header h1 { font-size: 20px; margin-bottom: 6px; }
+        .header p { font-size: 13px; opacity: 0.8; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 32px;
+        }
+
+        /* 沙盘画布 */
+        .canvas {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px;
+            position: relative;
+            min-height: 700px;
+            overflow: hidden;
+        }
+
+        /* 控制平面 */
+        .cp-zone {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .cp-box {
+            display: inline-block;
+            background: var(--cp-bg);
+            border: 2px solid var(--cp-blue);
+            border-radius: var(--radius);
+            padding: 16px 40px;
+            position: relative;
+        }
+        .cp-box .title {
+            font-size: 15px;
+            font-weight: bold;
+            color: var(--cp-blue);
+        }
+        .cp-box .meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* 数据流箭头 */
+        .flow-arrow {
+            text-align: center;
+            margin: 12px 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+            position: relative;
+        }
+        .flow-arrow .line {
+            width: 2px;
+            height: 30px;
+            background: var(--dp-orange);
+            margin: 0 auto;
+            position: relative;
+        }
+        .flow-arrow .line::after {
+            content: '▼';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--dp-orange);
+            font-size: 12px;
+        }
+        .flow-arrow.up .line {
+            background: var(--success);
+        }
+        .flow-arrow.up .line::after {
+            content: '▲';
+            color: var(--success);
+            bottom: auto;
+            top: -10px;
+        }
+        .flow-arrow.loop .line {
+            background: var(--loop);
+        }
+        .flow-arrow.loop .line::after {
+            content: '↻';
+            color: var(--loop);
+        }
+        .flow-label {
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        /* 数据平面 */
+        .dp-zone {
+            margin-bottom: 30px;
+        }
+        .dp-title {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--dp-orange);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .dp-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .dp-node {
+            background: var(--dp-bg);
+            border: 2px solid var(--dp-orange);
+            border-radius: var(--radius);
+            padding: 14px;
+            width: 140px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .dp-node.active {
+            background: #ffe0b2;
+            box-shadow: 0 0 16px rgba(239, 108, 0, 0.3);
+            transform: scale(1.05);
+        }
+        .dp-node .icon { font-size: 22px; margin-bottom: 4px; }
+        .dp-node .name { font-size: 12px; font-weight: bold; color: var(--dp-orange); }
+        .dp-node .desc { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+        /* 规则下渗 */
+        .penetration-zone {
+            margin-bottom: 30px;
+        }
+        .pen-title {
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: var(--dp-orange);
+            margin-bottom: 16px;
+        }
+        .infra-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .infra-node {
+            background: var(--infra-bg);
+            border: 2px solid var(--infra-purple);
+            border-radius: var(--radius);
+            padding: 12px;
+            width: 120px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .infra-node.active {
+            background: #e1bee7;
+            box-shadow: 0 0 16px rgba(106, 25, 154, 0.3);
+            transform: scale(1.08);
+        }
+        .infra-node .layer { font-size: 11px; font-weight: bold; color: var(--infra-purple); }
+        .infra-node .system { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+        /* 闭环回指 */
+        .loop-back {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f3e5f5;
+            border: 2px solid var(--loop);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 12px;
+            color: var(--loop);
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .loop-back.show { opacity: 1; }
+
+        /* 控制面板 */
+        .control-panel {
+            margin-top: 24px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .control-panel h2 {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-play { background: var(--success); color: white; }
+        .btn-play:hover { background: #388e3c; }
+        .btn-reset { background: var(--text-secondary); color: white; }
+        .btn-reset:hover { background: #444; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .log-panel {
+            background: #1a1a2e;
+            border-radius: var(--radius);
+            padding: 12px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .log-title {
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+        .log-content {
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .log-line {
+            color: #a6e22e;
+            padding-left: 10px;
+            border-left: 2px solid transparent;
+            margin: 2px 0;
+        }
+        .log-line.ready { color: #66d9ef; }
+        .log-line.process { color: #fd971f; }
+        .log-line.success { color: #a6e22e; border-left-color: var(--success); }
+        .log-line.highlight { color: #e6db74; }
+
+        /* 粒子动画 */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--dp-orange);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.8s ease-in-out;
+        }
+        .particle.show { opacity: 1; }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a class="back" href="../../">← 返回沙盘首页</a>
+        <h1>♻️ 05 数据流动闭环</h1>
+        <p>控制平面 → 数据平面 → 基础设施 → 观测反哺 → 自动修宪的完整闭环动画</p>
+    </div>
+
+    <div class="container">
+        <div class="canvas" id="canvas">
+
+            <!-- 闭环回指 -->
+            <div class="loop-back" id="loop-back">↻ 闭环：Bridge → 自动 PR → 控制平面</div>
+
+            <!-- 控制平面 -->
+            <div class="cp-zone">
+                <div class="cp-box" id="cp-box">
+                    <div class="title">🔷 intent-schema-compiler</div>
+                    <div class="meta">控制平面 YAML 意图协议 v1.1.0</div>
+                </div>
+            </div>
+
+            <!-- 箭头：声明式同步 -->
+            <div class="flow-arrow">
+                <div class="flow-label" style="color: var(--dp-orange);">声明式同步（GitOps）</div>
+                <div class="line"></div>
+            </div>
+
+            <!-- 数据平面 -->
+            <div class="dp-zone">
+                <div class="dp-title">🔶 数据平面（Data Plane）</div>
+                <div class="dp-row">
+                    <div class="dp-node" id="dp-registry">
+                        <div class="icon">📋</div>
+                        <div class="name">Registry</div>
+                        <div class="desc">版本管理 + 影响面</div>
+                    </div>
+                    <div class="dp-node" id="dp-compiler">
+                        <div class="icon">⚙️</div>
+                        <div class="name">Compiler</div>
+                        <div class="desc">YAML → 产物</div>
+                    </div>
+                    <div class="dp-node" id="dp-validator">
+                        <div class="icon">🛡️</div>
+                        <div class="name">Validator</div>
+                        <div class="desc">四层推演</div>
+                    </div>
+                    <div class="dp-node" id="dp-runtime">
+                        <div class="icon">🚀</div>
+                        <div class="name">Runtime</div>
+                        <div class="desc">运行时拦截</div>
+                    </div>
+                    <div class="dp-node" id="dp-bridge">
+                        <div class="icon">👁️</div>
+                        <div class="name">Bridge</div>
+                        <div class="desc">观测 + 反哺</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 箭头：规则下渗 -->
+            <div class="flow-arrow">
+                <div class="flow-label" style="color: var(--dp-orange);">规则下渗（编译产物分发）</div>
+                <div class="line"></div>
+            </div>
+
+            <!-- 基础设施层 -->
+            <div class="penetration-zone">
+                <div class="infra-row">
+                    <div class="infra-node" id="infra-l1">
+                        <div class="layer">L1 Token</div>
+                        <div class="system">Ant Design</div>
+                    </div>
+                    <div class="infra-node" id="infra-l2">
+                        <div class="layer">L2 组件</div>
+                        <div class="system">React</div>
+                    </div>
+                    <div class="infra-node" id="infra-l3">
+                        <div class="layer">L3 API</div>
+                        <div class="system">OpenAPI</div>
+                    </div>
+                    <div class="infra-node" id="infra-l4">
+                        <div class="layer">L4 容器</div>
+                        <div class="system">K8s</div>
+                    </div>
+                    <div class="infra-node" id="infra-l5">
+                        <div class="layer">L5 DB</div>
+                        <div class="system">MySQL</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 箭头：观测上采 -->
+            <div class="flow-arrow up">
+                <div class="line"></div>
+                <div class="flow-label" style="color: var(--success);">观测上采（漂移事件反哺）</div>
+            </div>
+
+            <!-- 箭头：闭环 -->
+            <div class="flow-arrow loop">
+                <div class="line"></div>
+                <div class="flow-label" style="color: var(--loop);">闭环反哺（自动 PR 修宪）</div>
+            </div>
+
+        </div>
+
+        <div class="control-panel">
+            <h2>▶️ 演示控制</h2>
+            <div class="buttons">
+                <button class="btn-play" onclick="demo.start()" id="btn-start">启动完整闭环</button>
+                <button class="btn-reset" onclick="demo.reset()" id="btn-reset">重置</button>
+            </div>
+            <div class="log-panel">
+                <div class="log-title">执行日志</div>
+                <div class="log-content" id="log-content">
+                    <div class="log-line ready">就绪。点击"启动完整闭环"观看数据流动。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Schema-As-Code 联邦自治架构 · 数据流动闭环演示
+    </footer>
+
+    <script>
+        const demo = {
+            steps: [
+                {
+                    id: 'cp',
+                    name: '控制平面',
+                    action: () => {
+                        document.getElementById('cp-box').style.boxShadow = '0 0 20px rgba(21, 101, 192, 0.4)';
+                        return '控制平面：intent-schema-compiler 发布 v1.1.0，语义令牌 "status.critical" 新增同义词防火墙';
+                    },
+                    cleanup: () => {
+                        document.getElementById('cp-box').style.boxShadow = 'none';
+                    }
+                },
+                {
+                    id: 'registry',
+                    name: 'Registry',
+                    action: () => {
+                        document.getElementById('dp-registry').classList.add('active');
+                        return 'Registry：检测到 v1.1.0 Breaking Change，影响面分析 → 3 个产品、12 个组件需同步';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'compiler',
+                    name: 'Compiler',
+                    action: () => {
+                        document.getElementById('dp-compiler').classList.add('active');
+                        return 'Compiler：编译为五层产物 — TS 类型 / ESLint 规则 / OpenAPI 扩展 / OPA Policy / DDL 注释';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'validator',
+                    name: 'Validator',
+                    action: () => {
+                        document.getElementById('dp-validator').classList.add('active');
+                        return 'Validator：四层推演 — 语法 ✓ 语义 ✓ 安全 ✓ 美感 ✓（全部通过，无阻断）';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'runtime',
+                    name: 'Runtime',
+                    action: () => {
+                        document.getElementById('dp-runtime').classList.add('active');
+                        return 'Runtime：部署守卫 — React HOC(12) / API 中间件(3) / LLM Tool Guard(2)';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'infra',
+                    name: '规则下渗',
+                    action: () => {
+                        const layers = ['infra-l1', 'infra-l2', 'infra-l3', 'infra-l4', 'infra-l5'];
+                        layers.forEach((id, i) => {
+                            setTimeout(() => document.getElementById(id).classList.add('active'), i * 200);
+                        });
+                        return '规则下渗：产物分发到 L1-L5 — Token 语义注释 / 组件 Props 约束 / API 扩展字段 / OPA Policy / DDL 注释';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'bridge',
+                    name: 'Bridge',
+                    action: () => {
+                        document.getElementById('dp-bridge').classList.add('active');
+                        return 'Bridge：观测到 LLM 输出 "严重" 替代 "critical"，漂移事件采集';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'feedback',
+                    name: '观测上采',
+                    action: () => {
+                        const layers = ['infra-l5', 'infra-l4', 'infra-l3', 'infra-l2', 'infra-l1'];
+                        layers.forEach((id, i) => {
+                            setTimeout(() => document.getElementById(id).classList.remove('active'), i * 150);
+                        });
+                        return '观测上采：从 DB / 容器 / API / 组件 / Token 采集语义一致性指标';
+                    },
+                    cleanup: () => {}
+                },
+                {
+                    id: 'loop',
+                    name: '闭环反哺',
+                    action: () => {
+                        document.getElementById('loop-back').classList.add('show');
+                        document.querySelectorAll('.dp-node').forEach(n => n.classList.remove('active'));
+                        return '闭环完成：Bridge 归因 → 自动 PR 收紧 synonym-mapping.yaml → 合并到控制平面 → 下一周期';
+                    },
+                    cleanup: () => {
+                        setTimeout(() => {
+                            document.getElementById('loop-back').classList.remove('show');
+                        }, 3000);
+                    }
+                }
+            ],
+
+            isRunning: false,
+
+            log(msg, type = 'info') {
+                const panel = document.getElementById('log-content');
+                const line = document.createElement('div');
+                line.className = `log-line ${type}`;
+                line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+                panel.appendChild(line);
+                panel.scrollTop = panel.scrollHeight;
+            },
+
+            reset() {
+                this.isRunning = false;
+                document.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+                document.getElementById('loop-back').classList.remove('show');
+                document.getElementById('cp-box').style.boxShadow = 'none';
+                document.getElementById('log-content').innerHTML = '<div class="log-line ready">就绪。点击"启动完整闭环"观看数据流动。</div>';
+                document.getElementById('btn-start').disabled = false;
+            },
+
+            async start() {
+                if (this.isRunning) return;
+                this.isRunning = true;
+                this.reset();
+                this.log('🚀 启动数据流动闭环...', 'ready');
+                document.getElementById('btn-start').disabled = true;
+
+                for (let i = 0; i < this.steps.length; i++) {
+                    const step = this.steps[i];
+                    this.log(`▶️ [${step.name}] ${step.action()}`, 'process');
+                    await this.sleep(1400);
+                    this.log(`✅ [${step.name}] 完成`, 'success');
+                    if (step.cleanup) step.cleanup();
+                    if (i < this.steps.length - 1) await this.sleep(400);
+                }
+
+                this.log('🎉 闭环演示结束。控制平面 → 数据平面 → 基础设施 → 观测 → 反哺 → 控制平面。', 'highlight');
+                this.isRunning = false;
+                document.getElementById('btn-start').disabled = false;
+            },
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        };
+    </script>
+</body>
+</html>

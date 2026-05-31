@@ -8,163 +8,414 @@
     <style>
         :root {
             --cp-blue: #1565c0;
+            --cp-bg: #e3f2fd;
             --dp-orange: #ef6c00;
+            --dp-bg: #fff3e0;
             --infra-purple: #6a1b9a;
+            --infra-bg: #f3e5f5;
             --success: #4caf50;
             --bg: #f5f7fa;
             --card: #ffffff;
+            --border: #e0e6ed;
             --text: #1a1a2e;
-            --text-secondary: #666;
         }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            padding: 24px;
         }
+
         .header {
-            text-align: center;
-            margin-bottom: 24px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
         }
-        .header h1 { font-size: 20px; color: var(--text); }
-        .header p { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-        .back {
-            display: inline-block;
-            margin-bottom: 16px;
-            color: var(--text-secondary);
+
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+        .back-btn {
+            color: white;
             text-decoration: none;
             font-size: 13px;
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            transition: all 0.2s;
         }
-        .mermaid-container {
-            background: var(--card);
-            border: 1px solid #e0e6ed;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .back-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .controls {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
             display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .controls button {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .btn-play { background: var(--success); color: white; }
+        .btn-play:hover { background: #388e3c; }
+        .btn-play:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-reset { background: var(--text); color: white; }
+        .btn-reset:hover { background: #444; }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-left: auto;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            padding: 24px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .mermaid-container {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 24px;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
             justify-content: center;
         }
-        .mermaid { width: 100%; max-width: 1000px; }
-        
-        /* 覆盖 Mermaid 默认样式 */
-        .node rect, .node circle, .node ellipse, .node polygon, .node path {
-            stroke-width: 2px !important;
+
+        .mermaid {
+            width: 100%;
         }
-        
-        #detail-panel {
-            background: var(--card);
-            border: 1px solid #e0e6ed;
+
+        /* 动态高亮样式 —— 通过 JS 添加到 SVG 元素 */
+        .node-highlight rect, .node-highlight circle, .node-highlight ellipse, .node-highlight polygon {
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 8px rgba(239, 108, 0, 0.5));
+        }
+
+        .node-cp-highlight rect, .node-cp-highlight circle, .node-cp-highlight ellipse, .node-cp-highlight polygon {
+            stroke: var(--cp-blue) !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 8px rgba(21, 101, 192, 0.5));
+        }
+
+        .node-infra-highlight rect, .node-infra-highlight circle, .node-infra-highlight ellipse, .node-infra-highlight polygon {
+            stroke: var(--infra-purple) !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 8px rgba(106, 25, 154, 0.5));
+        }
+
+        .edge-highlight path {
+            stroke: var(--dp-orange) !important;
+            stroke-width: 3px !important;
+            animation: dash 1s linear infinite;
+        }
+
+        .edge-up path {
+            stroke: var(--success) !important;
+            stroke-width: 3px !important;
+            animation: dash 1s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -20; }
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-card {
+            background: white;
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            display: none;
         }
-        #detail-panel.show { display: block; }
-        #detail-panel h3 {
-            font-size: 16px;
+
+        .panel-card h3 {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
             margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e6ed;
         }
-        #detail-panel p, #detail-panel li {
+
+        .panel-card .content {
             font-size: 13px;
             line-height: 1.6;
-            color: var(--text-secondary);
         }
-        #detail-panel ul { padding-left: 20px; }
-        #detail-panel code {
-            background: #f5f5f5;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
+
+        .panel-card .content strong {
             color: var(--cp-blue);
+        }
+
+        .status-log {
+            background: #1a1a2e;
+            color: #a6e22e;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: "SF Mono", Monaco, monospace;
+            font-size: 12px;
+            line-height: 1.8;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .status-log .line { padding: 2px 0; }
+        .status-log .line.info { color: #66d9ef; }
+        .status-log .line.process { color: #fd971f; }
+        .status-log .line.success { color: #a6e22e; }
+        .status-log .line.highlight { color: #e6db74; }
+
+        .node-info {
+            display: none;
+        }
+
+        .node-info.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .main { grid-template-columns: 1fr; }
+            .side-panel { order: -1; }
         }
     </style>
 </head>
 <body>
-    <a class="back" href="../../">← 返回沙盘首页</a>
-    
+
     <div class="header">
-        <h1>01 双轴正交模型（Orthogonal Governance Mesh）</h1>
-        <p>纵向：基础设施层（业务价值流动）| 横向：语义治理网格（规则与观测流动）| 点击节点查看详情</p>
+        <div>
+            <h1>01 双轴正交模型</h1>
+            <p>纵向基础设施（业务价值流动）× 横向语义治理网格（规则与观测流动）</p>
+        </div>
+        <a class="back-btn" href="../../">← 返回沙盘首页</a>
     </div>
 
-    <div class="mermaid-container">
-        <div class="mermaid">
+    <div class="controls">
+        <button class="btn-play" id="btn-play" onclick="playAnimation()">▶ 播放数据流动闭环</button>
+        <button class="btn-reset" onclick="resetAnimation()">↺ 重置</button>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--cp-blue);"></div>
+                <span>控制平面</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--dp-orange);"></div>
+                <span>数据平面</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: var(--infra-purple);"></div>
+                <span>基础设施</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="mermaid-container">
+            <div class="mermaid" id="mermaid-graph">
 graph TB
-    subgraph 控制平面["🔷 控制平面（Control Plane）"]
-        CP[intent-schema-compiler<br/>语义层 / 治理层 / 执行层<br/>YAML 意图协议本体]
+    subgraph CP["🔷 控制平面（Control Plane）"]
+        direction TB
+        CP_NODE[intent-schema-compiler<br/>语义层 / 治理层 / 执行层<br/>YAML 意图协议本体]
     end
 
-    subgraph 数据平面["🔶 数据平面（Data Plane）— 五模块拓扑"]
+    subgraph DP["🔶 数据平面（Data Plane）—— 五模块执行拓扑"]
         direction LR
-        R[Registry<br/>📋 版本管理<br/>影响面分析]
-        C[Compiler<br/>⚙️ 契约编译<br/>产物生成]
-        V[Validator<br/>🛡️ 四层推演<br/>语法/语义/安全/美感]
-        RT[Runtime<br/>🚀 运行时拦截<br/>HOC/中间件/Tool Guard]
-        B[Bridge<br/>👁️ 观测桥接器<br/>漂移归因 + 反哺 PR]
-        
+        R[Registry<br/>版本管理<br/>影响面分析]
+        C[Compiler<br/>契约编译<br/>产物生成]
+        V[Validator<br/>四层推演<br/>语法/语义/安全/美感]
+        RT[Runtime<br/>运行时拦截<br/>HOC/中间件/Tool Guard]
+        B[Bridge<br/>观测桥接<br/>漂移归因 + 反哺 PR]
         R --> C --> V --> RT --> B
-        B -.->|观测反哺| R
     end
 
-    subgraph 基础设施层["🟣 基础设施层（纵向生产链路）"]
+    subgraph INFRA["🟣 基础设施层（纵向生产链路）—— 业务价值流动"]
         direction LR
         L1[L1 Token<br/>Ant Design / Carbon]
         L2[L2 组件<br/>React / Vue / Angular]
         L3[L3 API<br/>OpenAPI / GraphQL]
         L4[L4 容器<br/>K8s / Envoy / Docker]
         L5[L5 DB / LLM<br/>MySQL / PostgreSQL / GPT]
-        
         L1 --> L2 --> L3 --> L4 --> L5
     end
 
-    CP -->|声明式同步<br/>GitOps| R
-    
+    CP_NODE -->|声明式同步<br/>GitOps| R
+
     C -.->|规则下渗| L1
     C -.->|规则下渗| L2
     C -.->|规则下渗| L3
     C -.->|规则下渗| L4
     C -.->|规则下渗| L5
-    
+
     L1 -.->|观测上采| B
     L2 -.->|观测上采| B
     L3 -.->|观测上采| B
     L4 -.->|观测上采| B
     L5 -.->|观测上采| B
 
-    click CP call showDetail('cp')
-    click R call showDetail('registry')
-    click C call showDetail('compiler')
-    click V call showDetail('validator')
-    click RT call showDetail('runtime')
-    click B call showDetail('bridge')
-    click L1 call showDetail('l1')
-    click L2 call showDetail('l2')
-    click L3 call showDetail('l3')
-    click L4 call showDetail('l4')
-    click L5 call showDetail('l5')
+    B -.->|闭环反哺<br/>自动 PR| CP_NODE
 
-    style CP fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#0d47a1
-    style R fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style C fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style V fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style RT fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style B fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
-    style L1 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
-    style L2 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
-    style L3 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
-    style L4 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
-    style L5 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    classDef cpClass fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef dpClass fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    classDef infraClass fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+    classDef cpText fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    classDef dpText fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#e65100
+    classDef infraText fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#4a148c
+
+    class CP_NODE,CP cpClass
+    class R,C,V,RT,B dpClass
+    class L1,L2,L3,L4,L5 infraClass
+    class CP cpText
+    class DP dpText
+    class INFRA infraText
+            </div>
         </div>
-    </div>
 
-    <div id="detail-panel">
-        <h3 id="detail-title">详情</h3>
-        <div id="detail-content"></div>
+        <div class="side-panel">
+            <div class="panel-card">
+                <h3>📊 执行状态</h3>
+                <div class="status-log" id="status-log">
+                    <div class="line info">就绪。点击"播放数据流动闭环"开始演示。</div>
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-default">
+                <h3>ℹ️ 节点详情</h3>
+                <div class="content">
+                    点击拓扑图中的任意节点，查看该节点的详细职责、输入输出与验证设计原则。
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-cp">
+                <h3>🔷 控制平面</h3>
+                <div class="content">
+                    <strong>intent-schema-compiler</strong><br>
+                    全局唯一语义事实源，设计意图的"联邦宪法"。<<br><br>
+                    <strong>三层结构：</strong><br>
+                    • 语义层：语义令牌 + 同义词防火墙<br>
+                    • 治理层：不可变边界 + 人机边界矩阵<br>
+                    • 执行层：场景测试 + 编译思维链<br><br>
+                    <strong>验证原则：</strong>声明式、版本锁定
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-registry">
+                <h3>📋 Registry</h3>
+                <div class="content">
+                    <strong>语义注册表</strong><br>
+                    管理语义 ID 全局唯一注册、版本化与兼容性分析。<br><br>
+                    <strong>核心能力：</strong><br>
+                    • SemVer 版本管理<br>
+                    • 影响面分析（Git Diff → 下游定位）<<br>
+                    • 产品绑定配置（bindings/*.yaml）
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-compiler">
+                <h3>⚙️ Compiler</h3>
+                <div class="content">
+                    <strong>契约编译器</strong><br>
+                    将 YAML 意图协议翻译为各层可执行产物。<br><br>
+                    <strong>三阶段编译：</strong><br>
+                    • 意图加载 + 语义解析<br>
+                    • 约束推导 + 产物生成<br>
+                    • 场景验证 + 影响分析<br><br>
+                    <strong>验证原则：</strong>声明式
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-validator">
+                <h3>🛡️ Validator</h3>
+                <div class="content">
+                    <strong>四层推演引擎</strong><br>
+                    内容进入生产链路前的分层安检。<br><br>
+                    <strong>四层推演：</strong><br>
+                    • T1 语法：结构完整性 → BLOCK<br>
+                    • T2 语义：令牌匹配 → BLOCK<br>
+                    • T3 安全：禁止模式 → BLOCK<br>
+                    • T4 美感：可读性 → WARN<br><br>
+                    <strong>验证原则：</strong>阻断优于修正
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-runtime">
+                <h3>🚀 Runtime</h3>
+                <div class="content">
+                    <strong>运行时拦截</strong><br>
+                    将编译产物部署到生产环境，现场执行拦截。<br><br>
+                    <strong>三种守卫：</strong><br>
+                    • React HOC：withIntentGuard<br>
+                    • API 中间件：apiGuardMiddleware<br>
+                    • LLM Tool Guard：toolGuard<br><br>
+                    <strong>验证原则：</strong>正交穿透
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-bridge">
+                <h3>👁️ Bridge</h3>
+                <div class="content">
+                    <strong>观测桥接器</strong><br>
+                    采集运行时漂移，反向修正控制平面。<br><br>
+                    <strong>闭环流程：</strong><br>
+                    • 采集：LoongSuite / OTel Trace<br>
+                    • 归因：根因定位到契约规则<br>
+                    • 反哺：自动创建 Registry PR<br><br>
+                    <strong>验证原则：</strong>版本锁定
+                </div>
+            </div>
+
+            <div class="panel-card node-info" id="info-infra">
+                <h3>🟣 基础设施层</h3>
+                <div class="content">
+                    <strong>纵向生产链路</strong><br>
+                    现有业务基础设施，承载用户请求与业务逻辑。<br><br>
+                    <strong>五层穿透：</strong><br>
+                    • L1 Token：Ant Design / Carbon<br>
+                    • L2 组件：React / Vue / Angular<br>
+                    • L3 API：OpenAPI / GraphQL<br>
+                    • L4 容器：K8s / Envoy / Docker<br>
+                    • L5 DB / LLM：MySQL / PostgreSQL / GPT<br><br>
+                    <strong>治理方式：</strong>网格化覆盖，不替代只注入
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -174,147 +425,243 @@ graph TB
             theme: 'base',
             themeVariables: {
                 primaryColor: '#fff3e0',
-                primaryTextColor: '#e65100',
+                primaryTextColor: '#1a1a2e',
                 primaryBorderColor: '#ef6c00',
-                lineColor: '#999',
-                secondaryColor: '#f3e5f5',
-                tertiaryColor: '#e3f2fd',
-                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+                lineColor: '#666',
+                secondaryColor: '#f5f7fa',
+                tertiaryColor: '#f5f7fa'
             }
         });
 
-        const details = {
-            cp: {
-                title: '🔷 控制平面（Control Plane）— intent-schema-compiler',
-                content: `
-                    <p><strong>定位：</strong>全局唯一语义事实源，设计意图的"联邦宪法"。</p>
-                    <ul>
-                        <li><strong>语义层：</strong>语义令牌（<<code>status.critical</code>）携带视觉映射 + LLM 约束 + 同义词防火墙</li>
-                        <li><strong>治理层：</strong>意图契约定义不可变边界（<<code>violation_action: block</code>）、人机边界矩阵</li>
-                        <li><strong>执行层：</strong>场景测试（Happy Path + Edge Case）、编译思维链</li>
-                    </ul>
-                    <p><strong>关键属性：</strong>Git-Native、版本化、引用闭环、Diff 可见。</p>
-                `
-            },
-            registry: {
-                title: '📋 Registry — 语义注册表',
-                content: `
-                    <p><strong>职责：</strong>管理语义 ID 全局唯一注册、版本化与兼容性分析、跨产品绑定配置。</p>
-                    <ul>
-                        <li>SemVer 版本管理：Breaking Change 自动冻结旧版本</li>
-                        <li>影响面分析：Git Diff → 自动定位下游需同步的产品与组件</li>
-                        <li>产品绑定：<code>bindings/product-a.yaml</code> 记录各域引用的意图契约</li>
-                    </ul>
-                `
-            },
-            compiler: {
-                title: '⚙️ Compiler — 契约编译器',
-                content: `
-                    <p><strong>职责：</strong>将控制平面的 YAML 声明翻译为各层可消费的"规则产物"。</p>
-                    <ul>
-                        <li>三阶段编译：意图加载 → 语义解析 → 约束推导 → 产物生成 → 场景验证 → 影响分析</li>
-                        <li>五层产物：Token / 组件 / API / 容器 / DB</li>
-                        <li>插件化：新增平台 = 新增一个插件文件</li>
-                    </ul>
-                `
-            },
-            validator: {
-                title: '🛡️ Validator — 四层推演引擎',
-                content: `
-                    <p><strong>职责：</strong>在内容进入生产链路前的分层安检。</p>
-                    <ul>
-                        <li><strong>T1 语法：</strong>JSON 结构完整性、字段类型、必填项 → BLOCK</li>
-                        <li><strong>T2 语义：</strong>令牌精确匹配、同义词黑名单命中 → BLOCK</li>
-                        <li><strong>T3 安全：</strong>禁止模式命中、人机边界越权 → BLOCK</li>
-                        <li><strong>T4 美感：</strong>文案长度、信息密度、可读性 → WARN（不阻断）</li>
-                    </ul>
-                    <p><strong>核心原则：</strong>阻断优于修正。校验失败不触发 LLM 自动重试，直接拦截并升级人工。</p>
-                `
-            },
-            runtime: {
-                title: '🚀 Runtime — 运行时拦截',
-                content: `
-                    <p><strong>职责：</strong>将编译后的规则产物部署到生产环境，实现"运行时语义拦截"。</p>
-                    <ul>
-                        <li><strong>React HOC：</strong><code>withIntentGuard(Component, intentConfig)</code> — 组件渲染前校验 Props</li>
-                        <li><strong>API 中间件：</strong><code>apiGuardMiddleware()</code> — 请求体校验 <code>human_confirmed</code></li>
-                        <li><strong>LLM Tool Guard：</strong><code>toolGuard(tools, policyStore)</code> — Function Calling 前拦截</li>
-                    </ul>
-                `
-            },
-            bridge: {
-                title: '👁️ Bridge — 观测桥接器',
-                content: `
-                    <p><strong>职责：</strong>连接运行时观测与控制平面，实现"观测 → 归因 → 约束 → 验证"的闭环。</p>
-                    <ul>
-                        <li>采集：从 LoongSuite SemConv / OpenTelemetry 消费 Trace 数据</li>
-                        <li>归一化：将原始 Trace 映射为意图协议 ID</li>
-                        <li>归因：定位漂移根因（哪条契约规则失效）</li>
-                        <li>反哺：自动创建 Registry PR 收紧规则</li>
-                    </ul>
-                    <p><strong>治理指标：</strong>语义一致性得分、规则拦截率、人工升级比例。</p>
-                `
-            },
-            l1: {
-                title: '🟣 L1 Token 层 — Ant Design / Carbon',
-                content: `
-                    <p><strong>治理方式：</strong>网格化覆盖，不替代，只注入。</p>
-                    <p>Schema-As-Code 不替代 Ant Design 的 Design Token，只在 Token 之上增加语义契约层。</p>
-                    <p><strong>注入后：</strong><code>--status-critical: #D32F2F /* intent: system-fault */</code></p>
-                    <p><strong>验证原则：</strong>正交穿透 — Ant Design 的 CSS 文件无需修改，Compiler 在编译时注入语义注释。</p>
-                `
-            },
-            l2: {
-                title: '🟣 L2 组件层 — React / Vue / Angular',
-                content: `
-                    <p><strong>治理方式：</strong>Props 类型约束 + ESLint 规则。</p>
-                    <p>Compiler 生成 TypeScript 类型定义和 ESLint 规则，开发时自动校验。</p>
-                    <p><strong>注入后：</strong><code>type AlertLevel = 'P0' | 'P1' | 'P2' | 'P3'</code></p>
-                    <p><strong>验证原则：</strong>声明式 — 设计师定义意图契约后，组件 Props 自动收敛到约束类型。</p>
-                `
-            },
-            l3: {
-                title: '🟣 L3 API 层 — OpenAPI / GraphQL',
-                content: `
-                    <p><strong>治理方式：</strong>OpenAPI 扩展字段 + 请求体验证。</p>
-                    <p>API 契约中注入意图绑定标记，网关层自动校验高危操作。</p>
-                    <p><strong>注入后：</strong><code>x-intent-binding: destructive-action</code></p>
-                    <p><strong>验证原则：</strong>阻断优于修正 — API 网关直接拒绝非法请求，不进入业务逻辑。</p>
-                `
-            },
-            l4: {
-                title: '🟣 L4 容器层 — K8s / Envoy / Docker',
-                content: `
-                    <p><strong>治理方式：</strong>OPA Policy / WASM Sidecar。</p>
-                    <p>在容器入口部署策略引擎，运行时拦截越权语义调用。</p>
-                    <p><strong>注入后：</strong>OPA Policy <code>allow { input.human_confirmed == true }</code></p>
-                    <p><strong>验证原则：</strong>版本锁定 — OPA Policy 携带 <code>schema_version_hash</code>，运行时校验与 Registry 版本一致。</p>
-                `
-            },
-            l5: {
-                title: '🟣 L5 DB / LLM 层 — 数据持久化 / 模型调用',
-                content: `
-                    <p><strong>治理方式：</strong>DDL 注释 + 字段约束 + LLM Prompt 注入。</p>
-                    <p>数据库层软约束标记语义来源，LLM 层硬约束注入 Prompt 前缀。</p>
-                    <p><strong>注入后：</strong><code>COMMENT 'intent: status.critical'</code></p>
-                    <p><strong>LLM 注入：</strong>Prompt system 前缀：<code>"你必须使用 status.critical 语义令牌，禁止使用'严重'替代"</code></p>
-                `
-            }
+        const nodeDetails = {
+            'CP_NODE': 'info-cp',
+            'R': 'info-registry',
+            'C': 'info-compiler',
+            'V': 'info-validator',
+            'RT': 'info-runtime',
+            'B': 'info-bridge',
+            'L1': 'info-infra',
+            'L2': 'info-infra',
+            'L3': 'info-infra',
+            'L4': 'info-infra',
+            'L5': 'info-infra'
         };
 
-        function showDetail(key) {
-            const panel = document.getElementById('detail-panel');
-            const title = document.getElementById('detail-title');
-            const content = document.getElementById('detail-content');
-            const data = details[key];
+        let isPlaying = false;
+
+        function setupInteractions() {
+            const svg = document.querySelector('.mermaid svg');
+            if (!svg) return;
+
+            // 为所有节点添加点击事件
+            svg.querySelectorAll('.node').forEach(node => {
+                node.style.cursor = 'pointer';
+                node.addEventListener('click', function() {
+                    const id = this.id;
+                    // 从 id 提取节点名（mermaid 的 id 格式如 "flowchart-CP_NODE-..."）
+                    const match = id.match(/(?:flowchart-)?([A-Z0-9_]+)(?:-|$)/);
+                    if (match) {
+                        const nodeId = match[1];
+                        showDetail(nodeId);
+                    }
+                });
+            });
+        }
+
+        function showDetail(nodeId) {
+            // 隐藏所有详情
+            document.querySelectorAll('.node-info').forEach(el => el.classList.remove('active'));
             
-            if (data) {
-                title.textContent = data.title;
-                content.innerHTML = data.content;
-                panel.classList.add('show');
-                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // 显示对应详情
+            const detailId = nodeDetails[nodeId] || 'info-default';
+            const detailEl = document.getElementById(detailId);
+            if (detailEl) {
+                detailEl.classList.add('active');
+            }
+
+            // 高亮节点
+            document.querySelectorAll('.node').forEach(n => {
+                n.classList.remove('node-cp-highlight', 'node-highlight', 'node-infra-highlight');
+            });
+            
+            const svg = document.querySelector('.mermaid svg');
+            if (svg) {
+                const targetNode = svg.querySelector(`[id*="${nodeId}"]`);
+                if (targetNode) {
+                    if (nodeId === 'CP_NODE') {
+                        targetNode.classList.add('node-cp-highlight');
+                    } else if (['R','C','V','RT','B'].includes(nodeId)) {
+                        targetNode.classList.add('node-highlight');
+                    } else {
+                        targetNode.classList.add('node-infra-highlight');
+                    }
+                }
             }
         }
+
+        function log(msg, type = 'info') {
+            const panel = document.getElementById('status-log');
+            const line = document.createElement('div');
+            line.className = `line ${type}`;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            panel.appendChild(line);
+            panel.scrollTop = panel.scrollHeight;
+        }
+
+        async function playAnimation() {
+            if (isPlaying) return;
+            isPlaying = true;
+            document.getElementById('btn-play').disabled = true;
+
+            resetAnimation();
+            log('🚀 启动数据流动闭环演示...', 'highlight');
+
+            const svg = document.querySelector('.mermaid svg');
+            if (!svg) {
+                log('❌ 图表未渲染', 'error');
+                isPlaying = false;
+                document.getElementById('btn-play').disabled = false;
+                return;
+            }
+
+            // 步骤 1：控制平面激活
+            log('▶️ [1/7] 声明式同步：GitOps 触发，控制平面 YAML 变更', 'process');
+            const cpNode = svg.querySelector('[id*="CP_NODE"]');
+            if (cpNode) cpNode.classList.add('node-cp-highlight');
+            await sleep(1200);
+
+            // 步骤 2：Registry
+            log('▶️ [2/7] Registry：版本化语义注册，分析影响面', 'process');
+            const rNode = svg.querySelector('[id*="flowchart-R-"]');
+            if (rNode) rNode.classList.add('node-highlight');
+            highlightEdge(svg, 'CP_NODE', 'R');
+            await sleep(1000);
+
+            // 步骤 3：Compiler
+            log('▶️ [3/7] Compiler：编译 YAML 为可执行产物（TS/ESLint/OpenAPI/OPA）', 'process');
+            const cNode = svg.querySelector('[id*="flowchart-C-"]');
+            if (cNode) cNode.classList.add('node-highlight');
+            await sleep(1000);
+
+            // 步骤 4：Validator
+            log('▶️ [4/7] Validator：四层推演安检（语法→语义→安全→美感）', 'process');
+            const vNode = svg.querySelector('[id*="flowchart-V-"]');
+            if (vNode) vNode.classList.add('node-highlight');
+            await sleep(1000);
+
+            // 步骤 5：Runtime
+            log('▶️ [5/7] Runtime：部署运行时守卫（HOC/中间件/Tool Guard）', 'process');
+            const rtNode = svg.querySelector('[id*="flowchart-RT-"]');
+            if (rtNode) rtNode.classList.add('node-highlight');
+            await sleep(1000);
+
+            // 步骤 6：规则下渗到基础设施
+            log('▶️ [6/7] 规则下渗：编译产物分发到 Token/组件/API/容器/DB 五层', 'process');
+            const infraNodes = ['L1', 'L2', 'L3', 'L4', 'L5'];
+            for (let i = 0; i < infraNodes.length; i++) {
+                const node = svg.querySelector(`[id*="flowchart-${infraNodes[i]}-"]`);
+                if (node) {
+                    node.classList.add('node-infra-highlight');
+                    // 高亮从 Compiler 到该层的虚线
+                    highlightDottedEdge(svg, 'C', infraNodes[i]);
+                }
+                await sleep(400);
+            }
+
+            // 步骤 7：Bridge + 观测上采 + 闭环
+            log('▶️ [7/7] Bridge：观测漂移 → 归因 → 自动 PR 反哺控制平面', 'process');
+            const bNode = svg.querySelector('[id*="flowchart-B-"]');
+            if (bNode) bNode.classList.add('node-highlight');
+            
+            // 观测上采（从基础设施到 Bridge）
+            for (let i = infraNodes.length - 1; i >= 0; i--) {
+                const node = svg.querySelector(`[id*="flowchart-${infraNodes[i]}-"]`);
+                if (node) {
+                    highlightDottedEdgeUp(svg, infraNodes[i], 'B');
+                }
+                await sleep(300);
+            }
+
+            await sleep(800);
+            
+            // 闭环反哺
+            log('♻️ 闭环完成：Bridge → 自动 PR → 控制平面 → 下一周期', 'success');
+            const loopEdge = svg.querySelector('[id*="B"] + [id*="CP_NODE"], [id*="B"] ~ [id*="CP_NODE"]');
+            // 高亮闭环边
+            svg.querySelectorAll('.edgePath path').forEach(path => {
+                const parent = path.closest('.edgePath');
+                if (parent && parent.id && (parent.id.includes('B') && parent.id.includes('CP_NODE'))) {
+                    parent.classList.add('edge-up');
+                }
+            });
+
+            await sleep(2000);
+            log('🎉 演示结束。点击任意节点查看详情，或点击重置重新开始。', 'highlight');
+            
+            isPlaying = false;
+            document.getElementById('btn-play').disabled = false;
+        }
+
+        function resetAnimation() {
+            const svg = document.querySelector('.mermaid svg');
+            if (svg) {
+                svg.querySelectorAll('.node').forEach(n => {
+                    n.classList.remove('node-cp-highlight', 'node-highlight', 'node-infra-highlight');
+                });
+                svg.querySelectorAll('.edgePath').forEach(e => {
+                    e.classList.remove('edge-highlight', 'edge-up');
+                });
+            }
+            document.getElementById('status-log').innerHTML = '<div class="line info">就绪。点击"播放数据流动闭环"开始演示。</div>';
+            document.querySelectorAll('.node-info').forEach(el => el.classList.remove('active'));
+            document.getElementById('info-default').classList.add('active');
+            isPlaying = false;
+            document.getElementById('btn-play').disabled = false;
+        }
+
+        function highlightEdge(svg, from, to) {
+            // 查找连接两个节点的边
+            svg.querySelectorAll('.edgePath').forEach(edge => {
+                const id = edge.id || '';
+                if ((id.includes(from) && id.includes(to)) || edge.getAttribute('data-from') === from) {
+                    edge.classList.add('edge-highlight');
+                }
+            });
+        }
+
+        function highlightDottedEdge(svg, from, to) {
+            svg.querySelectorAll('.edgePath').forEach(edge => {
+                const path = edge.querySelector('path');
+                if (path && path.getAttribute('stroke-dasharray')) {
+                    // 虚线边
+                    const id = edge.id || '';
+                    if (id.includes(from) || id.includes(to)) {
+                        edge.classList.add('edge-highlight');
+                    }
+                }
+            });
+        }
+
+        function highlightDottedEdgeUp(svg, from, to) {
+            svg.querySelectorAll('.edgePath').forEach(edge => {
+                const path = edge.querySelector('path');
+                if (path && path.getAttribute('stroke-dasharray')) {
+                    const id = edge.id || '';
+                    if (id.includes(from) || id.includes(to)) {
+                        edge.classList.add('edge-up');
+                    }
+                }
+            });
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // Mermaid 渲染完成后设置交互
+        window.addEventListener('load', () => {
+            setTimeout(setupInteractions, 500);
+        });
     </script>
 </body>
 </html>

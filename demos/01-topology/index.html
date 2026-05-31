@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>01 双轴正交模型 — Schema-As-Code 联邦自治架构</title>
+    <title>01 双轴正交模型</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <style>
         :root {
             --cp-blue: #1565c0;
-            --cp-bg: #e3f2fd;
             --dp-orange: #ef6c00;
-            --dp-bg: #fff3e0;
             --infra-purple: #6a1b9a;
-            --infra-bg: #f3e5f5;
             --text: #1a1a2e;
             --text-secondary: #666;
             --border: #e0e6ed;
@@ -108,6 +105,12 @@
         .btn-reset { background: var(--text-secondary); color: white; }
         .btn-reset:hover { background: #444; }
         
+        /* Mermaid 节点悬停效果 */
+        .node rect, .node circle, .node polygon, .node path {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
         @media (max-width: 768px) {
             .legend { grid-template-columns: 1fr; }
         }
@@ -122,23 +125,23 @@
 
     <div class="container">
         <div class="mermaid-wrap">
-            <div class="mermaid">
+            <div class="mermaid" id="mermaid-graph">
 graph TB
-    subgraph CP["🔷 控制平面（Control Plane）— 联邦宪法"]
+    subgraph CP["控制平面 Control Plane"]
         CP_NODE[intent-schema-compiler<br/>语义层 / 治理层 / 执行层<br/>Git-Native | 版本化 | 引用闭环]:::cp
     end
 
-    subgraph DP["🔶 数据平面（Data Plane）— 五模块执行拓扑"]
+    subgraph DP["数据平面 Data Plane"]
         direction LR
         R[Registry<br/>版本管理 + 影响面分析]:::dp
-        C[Compiler<br/>YAML → 可执行产物]:::dp
+        C[Compiler<br/>YAML 转 可执行产物]:::dp
         V[Validator<br/>四层推演安检]:::dp
         RT[Runtime<br/>HOC / 中间件 / Tool Guard]:::dp
         B[Bridge<br/>漂移归因 + 反哺 PR]:::dp
         R --> C --> V --> RT --> B
     end
 
-    subgraph INFRA["🟣 基础设施层（纵向生产链路）— 业务价值流动"]
+    subgraph INFRA["基础设施层 Infrastructure"]
         direction LR
         L1[L1 Token<br/>Ant Design / Carbon]:::infra
         L2[L2 组件<br/>React / Vue / Angular]:::infra
@@ -159,23 +162,10 @@ graph TB
     L5 -.->|"观测上采"| B
     B -.->|"闭环反哺<br/>自动 PR"| CP_NODE
 
-    click CP_NODE call showDetail("CP_NODE")
-    click R call showDetail("R")
-    click C call showDetail("C")
-    click V call showDetail("V")
-    click RT call showDetail("RT")
-    click B call showDetail("B")
-    click L1 call showDetail("L1")
-    click L2 call showDetail("L2")
-    click L3 call showDetail("L3")
-    click L4 call showDetail("L4")
-    click L5 call showDetail("L5")
-
     classDef cp fill:#e3f2fd,stroke:#1565c0,stroke-width:3px,color:#1565c0
     classDef dp fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#ef6c00
     classDef infra fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px,color:#6a1b9a
-    classDef group fill:#fafafa,stroke:#999,stroke-width:1px,stroke-dasharray:5 5
-    class CP,DP,INFRA group
+    classDef group fill:#fafafa,stroke:#999,stroke-width:1px
             </div>
         </div>
 
@@ -347,7 +337,7 @@ graph TB
             }
         };
 
-        window.showDetail = function(key) {
+        function showDetail(key) {
             const panel = document.getElementById('detail-panel');
             const title = document.getElementById('detail-title');
             const content = document.getElementById('detail-content');
@@ -359,10 +349,10 @@ graph TB
                 panel.classList.add('show');
                 panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-        };
+        }
 
         mermaid.initialize({
-            securityLevel: 'loose',
+            startOnLoad: true,
             theme: 'base',
             themeVariables: {
                 primaryColor: '#e3f2fd',
@@ -374,21 +364,60 @@ graph TB
             }
         });
 
+        // Mermaid 渲染完成后绑定点击事件
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                bindNodeClicks();
+            }, 500);
+        });
+
+        function bindNodeClicks() {
+            const nodeMap = {
+                'intent-schema-compiler': 'CP_NODE',
+                'Registry': 'R',
+                'Compiler': 'C',
+                'Validator': 'V',
+                'Runtime': 'RT',
+                'Bridge': 'B',
+                'Token': 'L1',
+                '组件': 'L2',
+                'API': 'L3',
+                '容器': 'L4',
+                'DB': 'L5'
+            };
+
+            document.querySelectorAll('.node').forEach(node => {
+                node.style.cursor = 'pointer';
+                node.addEventListener('click', () => {
+                    const text = node.textContent || '';
+                    for (const [keyword, key] of Object.entries(nodeMap)) {
+                        if (text.includes(keyword)) {
+                            showDetail(key);
+                            return;
+                        }
+                    }
+                });
+            });
+        }
+
         function playFlow() {
             const nodes = ['R', 'C', 'V', 'RT', 'B'];
-            nodes.forEach((id, i) => {
+            const nodeTexts = ['Registry', 'Compiler', 'Validator', 'Runtime', 'Bridge'];
+            
+            nodeTexts.forEach((text, i) => {
                 setTimeout(() => {
-                    const selector = `[id^="flowchart-${id}-"]`;
-                    const el = document.querySelector(selector);
-                    if (el) {
-                        el.style.filter = 'brightness(1.3)';
-                        el.style.transform = 'scale(1.08)';
-                        el.style.transition = 'all 0.4s ease';
-                        setTimeout(() => {
-                            el.style.filter = '';
-                            el.style.transform = '';
-                        }, 700);
-                    }
+                    const els = document.querySelectorAll('.node');
+                    els.forEach(el => {
+                        if (el.textContent.includes(text)) {
+                            el.style.filter = 'brightness(1.3)';
+                            el.style.transform = 'scale(1.08)';
+                            el.style.transition = 'all 0.4s ease';
+                            setTimeout(() => {
+                                el.style.filter = '';
+                                el.style.transform = '';
+                            }, 700);
+                        }
+                    });
                 }, i * 500);
             });
         }

@@ -6,49 +6,69 @@
     <title>06 四大设计原则 — 交互验证</title>
     <style>
         :root {
-            --cp-blue: #1565c0;
-            --cp-bg: #e3f2fd;
-            --dp-orange: #ef6c00;
-            --dp-bg: #fff3e0;
-            --success: #4caf50;
-            --error: #d32f2f;
-            --warn: #ff9800;
-            --text: #1a1a2e;
-            --text-secondary: #666;
-            --border: #e0e6ed;
-            --radius: 8px;
-            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --sa-c-navy: #0A2540;
+            --sa-c-navy-light: #1A3A5C;
+            --sa-c-amber: #FF6B35;
+            --sa-c-amber-light: #FFF0EB;
+            --sa-c-teal: #00D4AA;
+            --sa-c-teal-light: #E6FAF5;
+            --sa-c-rose: #E11D48;
+            --sa-c-rose-light: #FDE8EC;
+            --sa-c-bg: #F6F9FC;
+            --sa-c-surface: #FFFFFF;
+            --sa-c-border: #E5E7EB;
+            --sa-c-text: #1A1A2E;
+            --sa-c-muted: #6B7280;
+            --sa-f-base: 14px;
+            --sa-f-sm: 12px;
+            --sa-f-lg: 16px;
+            --sa-f-xl: 24px;
+            --sa-f-xxl: 32px;
+            --sa-r: 12px;
+            --sa-shadow: 0 1px 3px rgba(10,37,64,0.08), 0 4px 12px rgba(10,37,64,0.04);
+            --sa-shadow-hover: 0 8px 24px rgba(10,37,64,0.12);
+            --sa-max-w: 1000px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-font-smoothing: antialiased; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
-            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-size: var(--sa-f-base);
             line-height: 1.6;
+            color: var(--sa-c-text);
+            background: var(--sa-c-bg);
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 600;
+            line-height: 1.3;
+            letter-spacing: -0.02em;
         }
 
         .header {
-            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            background: var(--sa-c-navy);
             color: white;
             padding: 32px;
             text-align: center;
         }
 
-        .header h1 { font-size: 22px; margin-bottom: 8px; }
-        .header p { font-size: 14px; opacity: 0.8; }
-        
+        .header h1 { font-size: var(--sa-f-xl); margin-bottom: 8px; letter-spacing: -0.02em; }
+        .header p { font-size: var(--sa-f-sm); opacity: 0.8; }
+
         .back-link {
             display: inline-block;
             margin-bottom: 16px;
             color: rgba(255,255,255,0.8);
             text-decoration: none;
-            font-size: 13px;
+            font-size: var(--sa-f-sm);
+            transition: color 0.2s;
         }
+        .back-link:hover { color: white; }
 
         .container {
-            max-width: 1000px;
+            max-width: var(--sa-max-w);
             margin: 0 auto;
             padding: 32px;
         }
@@ -62,50 +82,54 @@
         }
 
         .principle-card {
-            background: white;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 2px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             position: relative;
+            box-shadow: var(--sa-shadow);
         }
 
         .principle-card:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            box-shadow: var(--sa-shadow-hover);
         }
 
         .principle-card.active {
-            border-color: var(--cp-blue);
-            background: var(--cp-bg);
+            border-color: var(--sa-c-navy);
+            background: #E8F0FE;
         }
 
         .principle-card .number {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--cp-blue);
+            font-size: var(--sa-f-xl);
+            font-weight: 600;
+            color: var(--sa-c-navy);
             margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
         .principle-card h3 {
-            font-size: 16px;
+            font-size: var(--sa-f-lg);
             margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
         .principle-card p {
-            font-size: 12px;
-            color: var(--text-secondary);
+            font-size: var(--sa-f-sm);
+            color: var(--sa-c-muted);
         }
 
         /* 演示区域 */
         .demo-stage {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: var(--sa-c-surface);
+            border: 1px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 32px;
             min-height: 400px;
             display: none;
+            box-shadow: var(--sa-shadow);
         }
 
         .demo-stage.active {
@@ -113,16 +137,17 @@
         }
 
         .demo-title {
-            font-size: 20px;
-            font-weight: bold;
+            font-size: var(--sa-f-xl);
+            font-weight: 600;
             margin-bottom: 8px;
             padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
+            border-bottom: 2px solid var(--sa-c-border);
+            letter-spacing: -0.02em;
         }
 
         .demo-desc {
-            color: var(--text-secondary);
-            font-size: 14px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-base);
             margin-bottom: 24px;
         }
 
@@ -135,36 +160,38 @@
         }
 
         .side {
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
+            border: 2px solid var(--sa-c-border);
+            border-radius: var(--sa-r);
             padding: 20px;
             position: relative;
+            background: var(--sa-c-surface);
         }
 
         .side.bad {
-            border-color: #ffcdd2;
+            border-color: var(--sa-c-rose-light);
         }
 
         .side.good {
-            border-color: #c8e6c9;
+            border-color: var(--sa-c-teal-light);
         }
 
         .side-label {
             position: absolute;
             top: -12px;
             left: 16px;
-            background: white;
+            background: var(--sa-c-surface);
             padding: 0 8px;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
 
-        .side.bad .side-label { color: var(--error); }
-        .side.good .side-label { color: var(--success); }
+        .side.bad .side-label { color: var(--sa-c-rose); }
+        .side.good .side-label { color: #059669; }
 
         .side-content {
-            font-family: "SF Mono", Monaco, monospace;
-            font-size: 12px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
             line-height: 1.6;
             min-height: 200px;
         }
@@ -172,19 +199,19 @@
         .side-content .file {
             margin-bottom: 8px;
             padding: 8px;
-            border-radius: 4px;
-            background: #f5f5f5;
-            transition: all 0.3s;
+            border-radius: 6px;
+            background: var(--sa-c-bg);
+            transition: all 0.3s ease;
         }
 
         .side-content .file.error {
-            background: #ffebee;
-            border-left: 3px solid var(--error);
+            background: var(--sa-c-rose-light);
+            border-left: 3px solid var(--sa-c-rose);
         }
 
         .side-content .file.success {
-            background: #e8f5e9;
-            border-left: 3px solid var(--success);
+            background: var(--sa-c-teal-light);
+            border-left: 3px solid var(--sa-c-teal);
         }
 
         .controls {
@@ -192,50 +219,59 @@
             margin-top: 20px;
         }
 
-        button {
+        .sa-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             padding: 10px 24px;
-            margin: 0 8px;
             border: none;
-            border-radius: var(--radius);
+            border-radius: var(--sa-r);
+            font-size: var(--sa-f-base);
+            font-weight: 500;
             cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            margin: 0 8px;
         }
 
-        .btn-play {
-            background: var(--cp-blue);
+        .sa-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .sa-btn--accent {
+            background: var(--sa-c-amber);
             color: white;
         }
 
-        .btn-play:hover {
-            background: #0d47a1;
+        .sa-btn--accent:hover:not(:disabled) { filter: brightness(1.1); }
+
+        .sa-btn--ghost {
+            background: transparent;
+            color: var(--sa-c-muted);
+            border: 1px solid var(--sa-c-border);
         }
 
-        .btn-reset {
-            background: var(--text-secondary);
-            color: white;
-        }
-
-        .btn-reset:hover {
-            background: #444;
+        .sa-btn--ghost:hover:not(:disabled) {
+            background: var(--sa-c-bg);
+            color: var(--sa-c-text);
         }
 
         /* 动画元素 */
         .yaml-badge {
             display: inline-block;
-            background: var(--cp-bg);
-            color: var(--cp-blue);
+            background: #E8F0FE;
+            color: var(--sa-c-navy);
             padding: 2px 8px;
             border-radius: 4px;
             font-size: 11px;
-            font-weight: bold;
+            font-weight: 600;
             margin-right: 4px;
+            letter-spacing: 0.05em;
         }
 
         .arrow-down {
             text-align: center;
             font-size: 20px;
-            color: var(--text-secondary);
+            color: var(--sa-c-muted);
             margin: 8px 0;
         }
 
@@ -243,42 +279,44 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--error);
+            background: var(--sa-c-rose);
             animation: pulse-red 2s infinite;
             margin: 0 auto;
         }
 
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(211, 47, 47, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(211, 47, 47, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.5); }
+            70% { box-shadow: 0 0 0 20px rgba(225, 29, 72, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); }
         }
 
         .block-shield {
             text-align: center;
             padding: 40px;
-            background: #ffebee;
-            border: 2px solid var(--error);
-            border-radius: var(--radius);
+            background: var(--sa-c-rose-light);
+            border: 2px solid var(--sa-c-rose);
+            border-radius: var(--sa-r);
         }
 
         .block-shield h3 {
-            color: var(--error);
-            font-size: 24px;
+            color: var(--sa-c-rose);
+            font-size: var(--sa-f-xl);
             margin-bottom: 12px;
+            letter-spacing: -0.02em;
         }
 
         .version-mismatch {
-            background: #fff3e0;
-            border: 2px solid var(--warn);
-            border-radius: var(--radius);
+            background: var(--sa-c-amber-light);
+            border: 2px solid var(--sa-c-amber);
+            border-radius: var(--sa-r);
             padding: 16px;
             text-align: center;
         }
 
         .version-mismatch h4 {
-            color: var(--warn);
+            color: var(--sa-c-amber);
             margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .hash-row {
@@ -286,35 +324,36 @@
             justify-content: center;
             gap: 24px;
             margin-top: 12px;
-            font-family: monospace;
-            font-size: 12px;
+            font-family: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", monospace;
+            font-size: var(--sa-f-sm);
         }
 
         .hash-box {
             padding: 8px 16px;
-            border-radius: 4px;
+            border-radius: 6px;
         }
 
         .hash-box.expected {
-            background: #e8f5e9;
-            color: var(--success);
+            background: var(--sa-c-teal-light);
+            color: #059669;
         }
 
         .hash-box.actual {
-            background: #ffebee;
-            color: var(--error);
+            background: var(--sa-c-rose-light);
+            color: var(--sa-c-rose);
         }
 
         .result-text {
             text-align: center;
             margin-top: 16px;
-            font-size: 14px;
-            font-weight: bold;
+            font-size: var(--sa-f-base);
+            font-weight: 600;
             min-height: 24px;
+            letter-spacing: -0.02em;
         }
 
-        .result-text.success { color: var(--success); }
-        .result-text.error { color: var(--error); }
+        .result-text.success { color: #059669; }
+        .result-text.error { color: var(--sa-c-rose); }
 
         /* 正交穿透可视化 */
         .ortho-viz {
@@ -330,7 +369,7 @@
             bottom: 0;
             width: 60px;
             transform: translateX(-50%);
-            background: linear-gradient(to bottom, #f3e5f5, #e1bee7);
+            background: linear-gradient(to bottom, #E8F0FE, #dbeafe);
             border-radius: 8px;
             display: flex;
             flex-direction: column;
@@ -342,15 +381,15 @@
         .v-node {
             width: 44px;
             height: 44px;
-            background: white;
-            border: 2px solid #6a1b9a;
+            background: var(--sa-c-surface);
+            border: 2px solid var(--sa-c-navy-light);
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 10px;
-            font-weight: bold;
-            color: #6a1b9a;
+            font-weight: 600;
+            color: var(--sa-c-navy-light);
             z-index: 2;
         }
 
@@ -359,7 +398,7 @@
             left: 10%;
             right: 10%;
             height: 4px;
-            background: var(--dp-orange);
+            background: var(--sa-c-amber);
             opacity: 0;
             transition: opacity 0.5s;
             z-index: 1;
@@ -373,7 +412,7 @@
             position: absolute;
             width: 12px;
             height: 12px;
-            background: var(--dp-orange);
+            background: var(--sa-c-amber);
             border-radius: 50%;
             opacity: 0;
             transition: all 0.5s;
@@ -393,10 +432,22 @@
         footer {
             text-align: center;
             padding: 32px;
-            color: var(--text-secondary);
-            font-size: 13px;
+            color: var(--sa-c-muted);
+            font-size: var(--sa-f-sm);
+        }
+
+        footer a {
+            color: var(--sa-c-navy);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            color: var(--sa-c-navy-light);
+            text-decoration: underline;
         }
     </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -435,7 +486,7 @@
         <div class="demo-stage active" id="demo-1">
             <div class="demo-title">01 声明式（Declarative）</div>
             <div class="demo-desc">对比：命令式"逐个改文件" vs 声明式"改 1 个 YAML，自动扩散"</div>
-            
+
             <div class="compare-layout">
                 <div class="side bad">
                     <div class="side-label">❌ 命令式（Imperative）</div>
@@ -450,10 +501,10 @@
                 <div class="side good">
                     <div class="side-label">✅ 声明式（Declarative）</div>
                     <div class="side-content" id="declarative-side">
-                        <div class="file" style="background: var(--cp-bg); border-left: 3px solid var(--cp-blue);">
+                        <div class="file" style="background: #E8F0FE; border-left: 3px solid var(--sa-c-navy);">
                             <span class="yaml-badge">YAML</span>
                             intent-schema-compiler/semantic-tokens.yaml<br>
-                            <span style="color: var(--cp-blue);">status.critical: { color: #D32F2F, immutable: true }</span>
+                            <span style="color: var(--sa-c-navy);">status.critical: { color: #D32F2F, immutable: true }</span>
                         </div>
                         <div class="arrow-down">▼</div>
                         <div class="file" id="d1">✅ Compiler 自动分发到 5 层</div>
@@ -465,10 +516,10 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="controls">
-                <button class="btn-play" onclick="runDeclarative()">▶ 播放自动收敛动画</button>
-                <button class="btn-reset" onclick="resetDeclarative()">↺ 重置</button>
+                <button class="sa-btn sa-btn--accent" onclick="runDeclarative()">▶ 播放自动收敛动画</button>
+                <button class="sa-btn sa-btn--ghost" onclick="resetDeclarative()">↺ 重置</button>
             </div>
             <div class="result-text" id="result-1"></div>
         </div>
@@ -477,7 +528,7 @@
         <div class="demo-stage" id="demo-2">
             <div class="demo-title">02 正交穿透（Orthogonal Penetration）</div>
             <div class="demo-desc">横向治理网格铺在纵向业务链路上，不替代、不侵入、只注入</div>
-            
+
             <div class="ortho-viz" id="ortho-viz">
                 <div class="vertical-lane">
                     <div class="v-node">Token</div>
@@ -493,7 +544,7 @@
                 <div class="inject-dot" id="dot4" style="left: 48%; top: 70%;"></div>
                 <div class="inject-dot" id="dot5" style="left: 48%; top: 90%;"></div>
             </div>
-            
+
             <div class="compare-layout">
                 <div class="side bad">
                     <div class="side-label">❌ 侵入式改造</div>
@@ -506,16 +557,16 @@
                 <div class="side good">
                     <div class="side-label">✅ 正交穿透</div>
                     <div class="side-content">
-                        <div class="file" style="background: #e8f5e9;">Ant Design 不动<br>→ Compiler 注入 Token 注释</div>
-                        <div class="file" style="background: #e8f5e9;">React 组件不动<br>→ HOC 包裹，Props 自动校验</div>
-                        <div class="file" style="background: #e8f5e9;">API Gateway 不动<br>→ 中间件拦截，业务无感知</div>
+                        <div class="file" style="background: var(--sa-c-teal-light);">Ant Design 不动<br>→ Compiler 注入 Token 注释</div>
+                        <div class="file" style="background: var(--sa-c-teal-light);">React 组件不动<br>→ HOC 包裹，Props 自动校验</div>
+                        <div class="file" style="background: var(--sa-c-teal-light);">API Gateway 不动<br>→ 中间件拦截，业务无感知</div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="controls">
-                <button class="btn-play" onclick="runOrthogonal()">▶ 播放正交穿透动画</button>
-                <button class="btn-reset" onclick="resetOrthogonal()">↺ 重置</button>
+                <button class="sa-btn sa-btn--accent" onclick="runOrthogonal()">▶ 播放正交穿透动画</button>
+                <button class="sa-btn sa-btn--ghost" onclick="resetOrthogonal()">↺ 重置</button>
             </div>
             <div class="result-text" id="result-2"></div>
         </div>
@@ -524,7 +575,7 @@
         <div class="demo-stage" id="demo-3">
             <div class="demo-title">03 阻断优于修正（Block over Retry）</div>
             <div class="demo-desc">LLM 输出漂移时：自动重试引入概率漂移，直接拦截保证确定性</div>
-            
+
             <div class="compare-layout">
                 <div class="side bad">
                     <div class="side-label">❌ 自动重试（Retry）</div>
@@ -547,16 +598,16 @@
                             <div class="block-shield">
                                 <h3>🚫 BLOCK</h3>
                                 <p>语义推演失败</p>
-                                <p style="font-size: 12px; color: #666;">自动升级人工审核</p>
+                                <p style="font-size: 12px; color: var(--sa-c-muted);">自动升级人工审核</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="controls">
-                <button class="btn-play" onclick="runBlock()">▶ 播放阻断 vs 重试对比</button>
-                <button class="btn-reset" onclick="resetBlock()">↺ 重置</button>
+                <button class="sa-btn sa-btn--accent" onclick="runBlock()">▶ 播放阻断 vs 重试对比</button>
+                <button class="sa-btn sa-btn--ghost" onclick="resetBlock()">↺ 重置</button>
             </div>
             <div class="result-text" id="result-3"></div>
         </div>
@@ -565,7 +616,7 @@
         <div class="demo-stage" id="demo-4">
             <div class="demo-title">04 版本锁定（Version Lock）</div>
             <div class="demo-desc">所有节点显式声明兼容版本，禁止隐式使用 latest</div>
-            
+
             <div class="compare-layout">
                 <div class="side bad">
                     <div class="side-label">❌ 隐式 latest（危险）</div>
@@ -591,17 +642,17 @@
                             </div>
                             <p style="margin-top: 8px; font-size: 12px;">自动降级：进入 escalate 模式，人工确认后升级</p>
                         </div>
-                        <div class="file" id="v3" style="display:none; background: #e8f5e9; border-left: 3px solid var(--success);">
+                        <div class="file" id="v3" style="display:none; background: var(--sa-c-teal-light); border-left: 3px solid var(--sa-c-teal);">
                             ✅ 产物哈希一致，规则生效<br>
                             ✅ 版本不匹配时拒绝启动，不静默失败
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="controls">
-                <button class="btn-play" onclick="runVersion()">▶ 播放版本锁定验证</button>
-                <button class="btn-reset" onclick="resetVersion()">↺ 重置</button>
+                <button class="sa-btn sa-btn--accent" onclick="runVersion()">▶ 播放版本锁定验证</button>
+                <button class="sa-btn sa-btn--ghost" onclick="resetVersion()">↺ 重置</button>
             </div>
             <div class="result-text" id="result-4"></div>
         </div>
@@ -610,7 +661,7 @@
 
     <footer>
         Schema-As-Code 联邦自治架构 · 四大设计原则交互验证 · 
-        <a href="https://github.com/2436041978-ops/intent-schema-compiler" style="color: var(--cp-blue);">控制平面</a>
+        <a href="https://github.com/2436041978-ops/intent-schema-compiler">控制平面</a>
     </footer>
 
     <script>
@@ -626,24 +677,22 @@
             resetDeclarative();
             const files = ['f1','f2','f3','f4','f5'];
             const outputs = ['d2','d3','d4','d5','d6'];
-            
-            // 命令式：逐个文件变红（人工改，容易错）
+
             for (let f of files) {
                 document.getElementById(f).classList.add('error');
                 await sleep(400);
             }
-            
+
             await sleep(500);
-            
-            // 声明式：YAML 改一处，全部自动绿
-            document.getElementById('d1').style.background = '#e8f5e9';
-            document.getElementById('d1').style.borderLeft = '3px solid var(--success)';
-            
+
+            document.getElementById('d1').style.background = 'var(--sa-c-teal-light)';
+            document.getElementById('d1').style.borderLeft = '3px solid var(--sa-c-teal)';
+
             for (let o of outputs) {
                 document.getElementById(o).style.display = 'block';
                 await sleep(300);
             }
-            
+
             document.getElementById('result-1').textContent = '✅ 声明式：改 1 个 YAML → 5 层自动收敛。命令式：改 5 个文件 → 遗漏 3 处。';
             document.getElementById('result-1').className = 'result-text success';
         }
@@ -665,13 +714,13 @@
             resetOrthogonal();
             document.getElementById('beam').classList.add('show');
             await sleep(500);
-            
+
             const dots = ['dot1','dot2','dot3','dot4','dot5'];
             for (let d of dots) {
                 document.getElementById(d).classList.add('show');
                 await sleep(400);
             }
-            
+
             document.getElementById('result-2').textContent = '✅ 正交穿透完成：横向网格注入 5 个纵向节点，业务代码零修改。';
             document.getElementById('result-2').className = 'result-text success';
         }
@@ -687,8 +736,7 @@
         // DEMO 3: 阻断优于修正
         async function runBlock() {
             resetBlock();
-            
-            // 重试侧：越来越糟
+
             await sleep(500);
             document.getElementById('r1').style.display = 'block';
             await sleep(600);
@@ -697,16 +745,15 @@
             document.getElementById('r3').style.display = 'block';
             await sleep(600);
             document.getElementById('r4').style.display = 'block';
-            
+
             await sleep(800);
-            
-            // 阻断侧：直接拦截
+
             document.getElementById('b1').style.display = 'block';
             await sleep(600);
             document.getElementById('b2').style.display = 'block';
             await sleep(600);
             document.getElementById('b3').style.display = 'block';
-            
+
             document.getElementById('result-3').textContent = '✅ 阻断：1 次推演，0 漂移，升级人工。❌ 重试：3 次漂移，语义完全偏离。';
             document.getElementById('result-3').className = 'result-text success';
         }
@@ -724,8 +771,7 @@
         // DEMO 4: 版本锁定
         async function runVersion() {
             resetVersion();
-            
-            // latest 侧：灾难
+
             await sleep(500);
             document.getElementById('l1').style.display = 'block';
             await sleep(500);
@@ -734,16 +780,15 @@
             document.getElementById('l3').style.display = 'block';
             await sleep(500);
             document.getElementById('l4').style.display = 'block';
-            
+
             await sleep(800);
-            
-            // 锁定侧：安全告警
+
             document.getElementById('v1').style.display = 'block';
             await sleep(600);
             document.getElementById('v2').style.display = 'block';
             await sleep(800);
             document.getElementById('v3').style.display = 'block';
-            
+
             document.getElementById('result-4').textContent = '✅ 版本锁定：哈希不匹配时拒绝启动。❌ 隐式 latest：凌晨自动升级导致生产事故。';
             document.getElementById('result-4').className = 'result-text success';
         }
